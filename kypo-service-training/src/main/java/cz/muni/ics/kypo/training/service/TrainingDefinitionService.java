@@ -411,7 +411,6 @@ public class TrainingDefinitionService {
         TrainingDefinition trainingDefinition = persistedLevel.getTrainingDefinition();
         updatedLevel.setOrder(persistedLevel.getOrder());
         updatedLevel.setTrainingDefinition(trainingDefinition);
-        trainingDefinition.setLastEdited(getCurrentTimeInUTC());
         trainingDefinition.setEstimatedDuration(trainingDefinition.getEstimatedDuration() - persistedLevel.getEstimatedDuration() + updatedLevel.getEstimatedDuration());
     }
 
