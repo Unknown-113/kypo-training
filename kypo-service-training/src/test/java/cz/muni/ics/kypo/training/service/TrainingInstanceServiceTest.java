@@ -14,10 +14,7 @@ import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
 import cz.muni.ics.kypo.training.exceptions.EntityNotFoundException;
 import cz.muni.ics.kypo.training.exceptions.MicroserviceApiException;
 import cz.muni.ics.kypo.training.exceptions.errors.PythonApiError;
-import cz.muni.ics.kypo.training.persistence.model.TrainingDefinition;
-import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.model.UserRef;
+import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.repository.AccessTokenRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingInstanceRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
@@ -57,6 +54,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.BDDMockito.*;
 
 @RunWith(SpringRunner.class)
@@ -89,8 +87,6 @@ public class TrainingInstanceServiceTest {
     private TrainingRun trainingRun1, trainingRun2;
     private UserRef user;
     private UserRefDTO userRefDTO;
-    private LockedPoolInfo lockedPoolInfo;
-    private PoolInfoDTO poolInfoDTO;
 
     @Before
     public void init() {
@@ -119,9 +115,6 @@ public class TrainingInstanceServiceTest {
 
         userRefDTO = testDataFactory.getUserRefDTO1();
 
-        lockedPoolInfo = testDataFactory.getLockedPoolInfo();
-        poolInfoDTO = testDataFactory.getPoolInfoDTO();
-
         given(userService.getUserRefFromUserAndGroup()).willReturn(userRefDTO);
     }
 
@@ -129,13 +122,13 @@ public class TrainingInstanceServiceTest {
     public void findById() {
         given(trainingInstanceRepository.findById(trainingInstance1.getId())).willReturn(Optional.of(trainingInstance1));
 
-        TrainingInstance tI = trainingInstanceService.findById(trainingInstance1.getId());
-        deepEquals(trainingInstance1, tI);
+        TrainingInstance instance = trainingInstanceService.findById(trainingInstance1.getId());
+        deepEquals(trainingInstance1, instance);
         then(trainingInstanceRepository).should().findById(trainingInstance1.getId());
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void findById_NotFound() {
+    public void findByIdNotFound() {
         trainingInstanceService.findById(10L);
     }
 
@@ -149,7 +142,7 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test(expected = EntityNotFoundException.class)
-    public void findByIdIncludingDefinition_NotFound() {
+    public void findByIdIncludingDefinitionNotFound() {
         trainingInstanceService.findByIdIncludingDefinition(10L);
     }
 
@@ -186,23 +179,24 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void createTrainingInstance_createAuthor() {
+    public void createTrainingInstanceCreateOrganizer() {
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
         given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
         given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
 
-        TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
-        deepEquals(trainingInstance2, tI);
+        TrainingInstance instance = trainingInstanceService.create(trainingInstance2);
+        deepEquals(trainingInstance2, instance);
         then(trainingInstanceRepository).should().save(trainingInstance2);
     }
     @Test
-    public void createTrainingInstance_authorIsCreated() {
+    public void createTrainingInstanceOrganizerIsCreated() {
         given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
         given(organizerRefRepository.findUserByUserRefId(user.getUserRefId())).willReturn(Optional.of(user));
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(user.getUserRefId());
 
-        TrainingInstance tI = trainingInstanceService.create(trainingInstance2);
-        deepEquals(trainingInstance2, tI);
+        TrainingInstance instance = trainingInstanceService.create(trainingInstance2);
+        deepEquals(trainingInstance2, instance);
+        assertEquals(userRefDTO.getUserRefFullName(), trainingInstance2.getLastEditedBy());
         then(trainingInstanceRepository).should().save(trainingInstance2);
     }
 
@@ -214,10 +208,25 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void updateTrainingInstance_createUser() {
+    public void updateTrainingInstanceCreateOrganizer() {
         given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
         given(organizerRefRepository.save(any(UserRef.class))).willReturn(user);
         given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(user);
+        given(trainingInstanceRepository.save(any(TrainingInstance.class))).willReturn(trainingInstance2);
+        assertNotEquals(userRefDTO.getUserRefFullName(), trainingInstance2.getLastEditedBy());
+        String token = trainingInstanceService.update(trainingInstance2);
+
+        assertEquals(userRefDTO.getUserRefFullName(), trainingInstance2.getLastEditedBy());
+        then(trainingInstanceRepository).should().findById(trainingInstance2.getId());
+        then(trainingInstanceRepository).should().save(trainingInstance2);
+        assertEquals(trainingInstance2.getAccessToken(), token);
+    }
+
+    @Test
+    public void updateTrainingInstanceAlreadyCreatedOrganizer() {
+        given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
+        given(organizerRefRepository.findUserByUserRefId(user.getUserRefId())).willReturn(Optional.of(user));
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(user.getUserRefId());
         given(trainingInstanceRepository.save(any(TrainingInstance.class))).willReturn(trainingInstance2);
 
         String token = trainingInstanceService.update(trainingInstance2);
@@ -228,16 +237,24 @@ public class TrainingInstanceServiceTest {
     }
 
     @Test
-    public void updateTrainingInstance_alreadyCreatedUser() {
+    public void updateTrainingInstanceGenerateNewToken() {
+        String newToken = "new-token";
+        TrainingInstance trainingInstanceWithNewToken = new TrainingInstance();
+        trainingInstanceWithNewToken.setId(trainingInstance2.getId());
+        trainingInstanceWithNewToken.setAccessToken(newToken);
+        trainingInstanceWithNewToken.setStartTime(trainingInstance2.getStartTime());
+        trainingInstanceWithNewToken.setEndTime(trainingInstance2.getEndTime());
         given(trainingInstanceRepository.findById(any(Long.class))).willReturn(Optional.of(trainingInstance2));
         given(organizerRefRepository.findUserByUserRefId(user.getUserRefId())).willReturn(Optional.of(user));
         given(securityService.getUserRefIdFromUserAndGroup()).willReturn(user.getUserRefId());
         given(trainingInstanceRepository.save(any(TrainingInstance.class))).willReturn(trainingInstance2);
 
-        String token = trainingInstanceService.update(trainingInstance2);
+        String token = trainingInstanceService.update(trainingInstanceWithNewToken);
 
         then(trainingInstanceRepository).should().findById(trainingInstance2.getId());
-        then(trainingInstanceRepository).should().save(trainingInstance2);
+        then(trainingInstanceRepository).should().save(any(TrainingInstance.class));
+        then(accessTokenRepository).should().findOneByAccessToken(anyString());
+        then(accessTokenRepository).should().saveAndFlush(any(AccessToken.class));
         assertEquals(trainingInstance2.getAccessToken(), token);
     }
 
@@ -263,49 +280,18 @@ public class TrainingInstanceServiceTest {
         then(trainingInstanceRepository).should().deleteById(trainingInstance2.getId());
     }
 
-//    @Test
-//    public void lockPool() throws Exception {
-//        given(exchangeFunction.exchange(any(ClientRequest.class))).willReturn(buildMockResponse(lockedPoolInfo));
-//        LockedPoolInfo result = trainingInstanceService.lockPool(lockedPoolInfo.getPoolId());
-//        assertEquals(lockedPoolInfo, result);
-//    }
-//
-//    @Test(expected = MicroserviceApiException.class)
-//    public void lockPool_MicroserviceError() throws Exception {
-//        willThrow(new CustomWebClientException(HttpStatus.CONFLICT, PythonApiError.of("Error when trying to lock pool."))).given(exchangeFunction).exchange(any(ClientRequest.class));
-//        trainingInstanceService.lockPool(lockedPoolInfo.getPoolId());
-//    }
-//
-//    @Test
-//    public void unlockPool() throws Exception {
-//        poolInfoDTO.setId(trainingInstance1.getPoolId());
-//        ArgumentMatcher<ClientRequest> poolsRequest =
-//                clientRequest -> clientRequest.url().equals(URI.create("/pools/" + poolInfoDTO.getId()));
-//        ArgumentMatcher<ClientRequest> deleteRequest =
-//                clientRequest -> clientRequest.url().equals(URI.create("/pools/"+ poolInfoDTO.getId() +"/locks/"+ poolInfoDTO.getLockId() ));
-//        doReturn(buildMockResponse(poolInfoDTO)).when(exchangeFunction).exchange(argThat(poolsRequest));
-//        doReturn(buildMockResponse(null)).when(exchangeFunction).exchange(argThat(deleteRequest));
-//        trainingInstanceService.unlockPool(trainingInstance1.getPoolId());
-//    }
-
-//    @Test(expected = MicroserviceApiException.class)
-//    public void unlockPool_GetLockIdMicroserviceError() throws Exception {
-//        willThrow(new CustomWebClientException(HttpStatus.CONFLICT, PythonApiError.of("Cannot get lock id."))).given(exchangeFunction).exchange(any(ClientRequest.class));
-//        trainingInstanceService.unlockPool(trainingInstance1.getPoolId());
-//    }
-
     @Test
     public void findTrainingRunsByTrainingInstance() {
         List<TrainingRun> expected = new ArrayList<>();
         expected.add(trainingRun1);
         expected.add(trainingRun2);
 
-        Page<TrainingRun> p = new PageImpl<>(expected);
+        Page<TrainingRun> page = new PageImpl<>(expected);
 
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
-        given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
-        Page<TrainingRun> pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), null, PageRequest.of(0, 2));
-        assertEquals(2, pr.getTotalElements());
+        given(trainingRunRepository.findAllByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(page);
+        Page<TrainingRun> resultPage = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), null, PageRequest.of(0, 2));
+        assertEquals(2, resultPage.getTotalElements());
     }
 
     @Test
@@ -314,12 +300,12 @@ public class TrainingInstanceServiceTest {
         expected.add(trainingRun1);
         expected.add(trainingRun2);
 
-        Page<TrainingRun> p = new PageImpl<>(expected);
+        Page<TrainingRun> page = new PageImpl<>(expected);
 
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
-        given(trainingRunRepository.findAllActiveByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
-        Page<TrainingRun> pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), true, PageRequest.of(0, 2));
-        assertEquals(2, pr.getTotalElements());
+        given(trainingRunRepository.findAllActiveByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(page);
+        Page<TrainingRun> resultPage = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), true, PageRequest.of(0, 2));
+        assertEquals(2, resultPage.getTotalElements());
     }
 
     @Test
@@ -328,12 +314,12 @@ public class TrainingInstanceServiceTest {
         expected.add(trainingRun1);
         expected.add(trainingRun2);
 
-        Page<TrainingRun> p = new PageImpl<>(expected);
+        Page<TrainingRun> page = new PageImpl<>(expected);
 
         given(trainingInstanceRepository.findById(anyLong())).willReturn(Optional.of(trainingInstance1));
-        given(trainingRunRepository.findAllInactiveByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(p);
-        Page<TrainingRun> pr = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), false, PageRequest.of(0, 2));
-        assertEquals(2, pr.getTotalElements());
+        given(trainingRunRepository.findAllInactiveByTrainingInstanceId(any(Long.class), any(Pageable.class))).willReturn(page);
+        Page<TrainingRun> resultPage = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstance1.getId(), false, PageRequest.of(0, 2));
+        assertEquals(2, resultPage.getTotalElements());
     }
 
     @Test(expected = EntityNotFoundException.class)
@@ -358,13 +344,5 @@ public class TrainingInstanceServiceTest {
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         return mapper.writeValueAsString(object);
-    }
-
-    private Mono<ClientResponse> buildMockResponse(Object body) throws IOException {
-        ClientResponse clientResponse = ClientResponse.create(HttpStatus.OK)
-                .body(convertObjectToJsonBytes(body))
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
-        return Mono.just(clientResponse);
     }
 }

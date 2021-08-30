@@ -250,9 +250,9 @@ public class TrainingDefinitionsIT {
 
         List<ExtendedMatchingOption> extendedMatchingOptions = testDataFactory.getExtendedMatchingOptions(4, "Option ", extendedMatchingItemsQuestion);
         extendedMatchingItemsQuestion.setExtendedMatchingOptions(extendedMatchingOptions);
-        extendedMatchingItemsQuestion.setExtendedMatchingStatements(testDataFactory.getExtendedMatchingItems(3, "Statement ", extendedMatchingItemsQuestion));
+        extendedMatchingItemsQuestion.setExtendedMatchingStatements(testDataFactory.getExtendedMatchingItems(3, "Statement ", extendedMatchingItemsQuestion,
+                List.of(extendedMatchingOptions.get(1), extendedMatchingOptions.get(3), extendedMatchingOptions.get(0))));
         AtomicInteger index = new AtomicInteger();
-        extendedMatchingItemsQuestion.getExtendedMatchingStatements().forEach(item -> item.setExtendedMatchingOption(extendedMatchingOptions.get(index.getAndIncrement() % 4)));
         assessmentLevelWithQuestions.setQuestions(new ArrayList<>(List.of(freeFormQuestion, multipleChoiceQuestion, extendedMatchingItemsQuestion)));
     }
 

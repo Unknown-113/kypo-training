@@ -202,10 +202,10 @@ public class TestDataFactory {
     public Question getExtendedMatchingItems(){
         return clone(extendedMatchingItems, Question.class);
     }
-    public List<ExtendedMatchingStatement> getExtendedMatchingItems(int numberOfItems, String itemPrefix, Question question){
+    public List<ExtendedMatchingStatement> getExtendedMatchingItems(int numberOfItems, String itemPrefix, Question question, List<ExtendedMatchingOption> options){
         List<ExtendedMatchingStatement> extendedMatchingStatements = new ArrayList<>();
         for (int i = 0; i < numberOfItems; i++) {
-            extendedMatchingStatements.add(generateExtendedMatchingItem(i, itemPrefix + " " + i, question));
+            extendedMatchingStatements.add(generateExtendedMatchingStatement(i, itemPrefix + " " + i, question, options.get(i)));
         }
         return extendedMatchingStatements;
     }
@@ -508,11 +508,12 @@ public class TestDataFactory {
             return extendedMatchingOption;
     }
 
-    private ExtendedMatchingStatement generateExtendedMatchingItem(int itemOrder, String itemText, Question question){
+    private ExtendedMatchingStatement generateExtendedMatchingStatement(int statementOrder, String statementText, Question question, ExtendedMatchingOption option){
         ExtendedMatchingStatement extendedMatchingStatement = new ExtendedMatchingStatement();
-        extendedMatchingStatement.setOrder(itemOrder);
-        extendedMatchingStatement.setText(itemText);
+        extendedMatchingStatement.setOrder(statementOrder);
+        extendedMatchingStatement.setText(statementText);
         extendedMatchingStatement.setQuestion(question);
+        extendedMatchingStatement.setExtendedMatchingOption(option);
         return extendedMatchingStatement;
     }
 
