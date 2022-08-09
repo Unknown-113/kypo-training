@@ -650,6 +650,7 @@ public class TrainingDefinitionFacade {
         return trainingDefinitionService.hasReferenceSolution(trainingDefinitionId);
     }
 
+    //TODO: If one of the to-be-added users is a Trainee, fail with exception, atomically preferably
     private void addAuthorsToTrainingDefinition(TrainingDefinition trainingDefinition, Set<Long> userRefIds) {
         List<UserRefDTO> authors = getAllUsersRefsByGivenUsersIds(new ArrayList<>(userRefIds));
         Set<Long> actualAuthorsIds = trainingDefinition.getAuthors().stream()
