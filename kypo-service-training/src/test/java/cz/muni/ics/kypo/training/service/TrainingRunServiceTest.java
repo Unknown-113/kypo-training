@@ -318,7 +318,7 @@ public class TrainingRunServiceTest {
     public void getNextLevelNoNextLevel() {
         trainingRun2.setLevelAnswered(true);
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun2));
-        given(abstractLevelRepository.getCurrentMaxOrder(anyLong())).willReturn(infoLevel2.getOrder());
+        given(abstractLevelRepository.findAllLevelsByTrainingDefinitionId(anyLong())).willReturn(List.of(infoLevel2, infoLevel2));
         assertThrows(EntityNotFoundException.class, () -> trainingRunService.moveToNextLevel(trainingRun2.getId()));
     }
 

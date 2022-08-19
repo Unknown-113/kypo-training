@@ -210,17 +210,18 @@ public class TrainingRunService {
      */
     public TrainingRun moveToNextLevel(Long runId) {
         TrainingRun trainingRun = findByIdWithLevel(runId);
-        int currentLevelOrder = trainingRun.getCurrentLevel().getOrder();
-        int maxLevelOrder = abstractLevelRepository.getCurrentMaxOrder(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
         if (!trainingRun.isLevelAnswered()) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", runId.getClass(), runId,
                     "You need to answer the level to move to the next level."));
         }
-        if (currentLevelOrder == maxLevelOrder) {
+
+        int currentLevelOrder = trainingRun.getCurrentLevel().getOrder();
+        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
+
+        if (currentLevelOrder == levels.size() - 1) {
             throw new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "There is no next level for current training run (ID: " + runId + ")."));
         }
-        List<AbstractLevel> levels = abstractLevelRepository.findAllLevelsByTrainingDefinitionId(trainingRun.getCurrentLevel().getTrainingDefinition().getId());
-        int nextLevelIndex = levels.indexOf(trainingRun.getCurrentLevel()) + 1;
+        int nextLevelIndex = currentLevelOrder + 1;
         AbstractLevel abstractLevel = levels.get(nextLevelIndex);
         if (trainingRun.getCurrentLevel() instanceof InfoLevel) {
             auditEventsService.auditLevelCompletedAction(trainingRun);
