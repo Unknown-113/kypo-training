@@ -500,7 +500,7 @@ public class TrainingRunServiceTest {
     public void isCorrectAnswer() {
         int scoreBefore = trainingRun1.getTotalTrainingScore() + trainingRun1.getTotalAssessmentScore();
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        boolean isCorrect = trainingRunService.isCorrectAnswer(trainingRun1.getId(), trainingLevel.getAnswer());
+        boolean isCorrect = trainingRunService.isCorrectAnswer(trainingRun1, trainingLevel.getAnswer());
         assertTrue(isCorrect);
         assertEquals(scoreBefore + (trainingRun1.getMaxLevelScore() - trainingRun1.getCurrentPenalty()), trainingRun1.getTotalTrainingScore() + trainingRun1.getTotalAssessmentScore());
         assertTrue(trainingRun1.isLevelAnswered());
@@ -509,7 +509,7 @@ public class TrainingRunServiceTest {
     @Test
     public void isCorrectAnswerNotCorrect() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.of(trainingRun1));
-        boolean isCorrect = trainingRunService.isCorrectAnswer(trainingRun1.getId(), "wrong answer");
+        boolean isCorrect = trainingRunService.isCorrectAnswer(trainingRun1, "wrong answer");
         assertFalse(isCorrect);
         assertFalse(trainingRun1.isLevelAnswered());
     }
@@ -517,13 +517,12 @@ public class TrainingRunServiceTest {
     @Test
     public void isCorrectAnswerOfNonGameLevel() {
         given(trainingRunRepository.findByIdWithLevel(trainingRun2.getId())).willReturn(Optional.of(trainingRun2));
-        assertThrows(BadRequestException.class, () -> trainingRunService.isCorrectAnswer(trainingRun2.getId(), "answer"));
+        assertThrows(BadRequestException.class, () -> trainingRunService.isCorrectAnswer(trainingRun2, "answer"));
     }
 
     @Test
     public void getRemainingAttempts() {
-        given(trainingRunRepository.findByIdWithLevel(trainingRun1.getId())).willReturn(Optional.ofNullable(trainingRun1));
-        int attempts = trainingRunService.getRemainingAttempts(trainingRun1.getId());
+        int attempts = trainingRunService.getRemainingAttempts(trainingRun1);
         assertEquals(trainingLevel.getIncorrectAnswerLimit() - trainingRun1.getIncorrectAnswerCount(), attempts);
     }
 

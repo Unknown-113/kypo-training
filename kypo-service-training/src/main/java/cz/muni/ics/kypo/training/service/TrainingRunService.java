@@ -436,19 +436,18 @@ public class TrainingRunService {
     /**
      * Check given answer of given Training Run.
      *
-     * @param runId  id of Training Run to check answer.
+     * @param trainingRun Training Run to check answer.
      * @param answer string which player submit.
      * @return true if answer is correct, false if answer is wrong.
      * @throws EntityNotFoundException training run is not found.
      * @throws BadRequestException     the current level of training run is not training level.
      */
-    public boolean isCorrectAnswer(Long runId, String answer) {
-        TrainingRun trainingRun = findByIdWithLevel(runId);
+    public boolean isCorrectAnswer(TrainingRun trainingRun, String answer) {
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level.getClass() != TrainingLevel.class) {
             throw new BadRequestException("Current level is not training level and does not have answer.");
         } else if (trainingRun.isLevelAnswered()) {
-                throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The answer of the current level of training run has been already corrected."));
+            throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, trainingRun.getId(), "The answer of the current level of training run has been already corrected."));
         }
         return evaluateTrainingLevelAnswer(trainingRun, answer);
     }
@@ -525,11 +524,10 @@ public class TrainingRunService {
     /**
      * Gets remaining attempts to solve current level of training run.
      *
-     * @param trainingRunId the training run id
+     * @param trainingRun the training run
      * @return the remaining attempts
      */
-    public int getRemainingAttempts(Long trainingRunId) {
-        TrainingRun trainingRun = findByIdWithLevel(trainingRunId);
+    public int getRemainingAttempts(TrainingRun trainingRun) {
         AbstractLevel level = trainingRun.getCurrentLevel();
         if (level instanceof TrainingLevel) {
             if (trainingRun.isSolutionTaken()) {

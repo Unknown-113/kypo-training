@@ -383,8 +383,9 @@ public class TrainingRunFacade {
     @TransactionalWO
     public IsCorrectAnswerDTO isCorrectAnswer(Long trainingRunId, String answer) {
         IsCorrectAnswerDTO correctAnswerDTO = new IsCorrectAnswerDTO();
-        correctAnswerDTO.setCorrect(trainingRunService.isCorrectAnswer(trainingRunId, answer));
-        correctAnswerDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRunId));
+        TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
+        correctAnswerDTO.setCorrect(trainingRunService.isCorrectAnswer(trainingRun, answer));
+        correctAnswerDTO.setRemainingAttempts(trainingRunService.getRemainingAttempts(trainingRun));
         if (correctAnswerDTO.getRemainingAttempts() == 0) {
             correctAnswerDTO.setSolution(getSolution(trainingRunId));
         }

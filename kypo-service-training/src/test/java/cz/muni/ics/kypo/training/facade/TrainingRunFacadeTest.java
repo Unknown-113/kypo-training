@@ -156,8 +156,9 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void isCorrectAnswerBeforeSolutionTaken() {
-        given(trainingRunService.isCorrectAnswer(trainingRun1.getId(), "answer")).willReturn(true);
-        given(trainingRunService.getRemainingAttempts(trainingRun1.getId())).willReturn(1);
+        given(trainingRunService.isCorrectAnswer(trainingRun1, "answer")).willReturn(true);
+        given(trainingRunService.getRemainingAttempts(trainingRun1)).willReturn(1);
+        given(trainingRunService.findByIdWithLevel(trainingRun1.getId())).willReturn(trainingRun1);
         IsCorrectAnswerDTO correctAnswerDTO = trainingRunFacade.isCorrectAnswer(trainingRun1.getId(), "answer");
         assertTrue(correctAnswerDTO.isCorrect());
         assertEquals(1, correctAnswerDTO.getRemainingAttempts());
@@ -165,7 +166,7 @@ public class TrainingRunFacadeTest {
 
     @Test
     public void isCorrectAnswerAfterSolutionTaken() {
-        given(trainingRunService.isCorrectAnswer(trainingRun1.getId(), "answer")).willReturn(false);
+        given(trainingRunService.isCorrectAnswer(trainingRun1, "answer")).willReturn(false);
         IsCorrectAnswerDTO correctAnswerDTO = trainingRunFacade.isCorrectAnswer(trainingRun1.getId(), "answer");
         assertFalse(correctAnswerDTO.isCorrect());
         assertEquals(0, correctAnswerDTO.getRemainingAttempts());
