@@ -299,6 +299,9 @@ public class TrainingRunService {
     public TrainingRun createTrainingRun(TrainingInstance trainingInstance, Long participantRefId) {
         AbstractLevel initialLevel = findFirstLevelForTrainingRun(trainingInstance.getTrainingDefinition().getId());
         TrainingRun trainingRun = getNewTrainingRun(initialLevel, trainingInstance, LocalDateTime.now(Clock.systemUTC()), trainingInstance.getEndTime(), participantRefId);
+        if (!trainingInstance.isLocalEnvironment()) {
+            return assignSandbox(trainingRun, trainingInstance.getPoolId());
+        }
         return trainingRunRepository.save(trainingRun);
     }
 

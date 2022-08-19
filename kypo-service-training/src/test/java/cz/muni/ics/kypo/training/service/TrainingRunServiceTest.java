@@ -358,7 +358,7 @@ public class TrainingRunServiceTest {
         given(participantRefRepository.findUserByUserRefId(participantRef.getUserRefId()))
                 .willReturn(Optional.of(participantRef));
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
-
+        trainingInstance1.setLocalEnvironment(true);
         TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
         then(trainingRunRepository).should().save(any(TrainingRun.class));
         assertEquals(trainingRun1, trainingRun);
@@ -376,6 +376,7 @@ public class TrainingRunServiceTest {
         given(trainingRunRepository.save(any(TrainingRun.class))).willReturn(trainingRun1);
         given(securityService.createUserRefEntityByInfoFromUserAndGroup()).willReturn(newParticipant);
         given(participantRefRepository.save(newParticipant)).willReturn(participantRef);
+        trainingInstance1.setLocalEnvironment(true);
 
         TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance1, participantRef.getId());
         then(trainingRunRepository).should().save(any(TrainingRun.class));

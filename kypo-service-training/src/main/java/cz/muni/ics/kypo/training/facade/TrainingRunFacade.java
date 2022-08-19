@@ -222,7 +222,6 @@ public class TrainingRunFacade {
     @IsTraineeOrAdmin
     @Transactional
     public AccessTrainingRunDTO accessTrainingRun(String accessToken) {
-        TrainingInstance trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
         // checking if the user is not accessing to his existing training run (resume action)
         Long participantRefId = securityService.getUserRefIdFromUserAndGroup();
         Optional<TrainingRun> accessedTrainingRun = trainingRunService.findRunningTrainingRunOfUser(accessToken, participantRefId);
@@ -230,14 +229,13 @@ public class TrainingRunFacade {
             TrainingRun trainingRun = trainingRunService.resumeTrainingRun(accessedTrainingRun.get().getId());
             return convertToAccessTrainingRunDTO(trainingRun);
         }
+
+        TrainingInstance trainingInstance = trainingRunService.getTrainingInstanceForParticularAccessToken(accessToken);
         // Check if the user already clicked access training run, in that case, it returns an exception (it prevents concurrent accesses).
         trainingRunService.trAcquisitionLockToPreventManyRequestsFromSameUser(participantRefId, trainingInstance.getId(), accessToken);
         try {
             // During this action we create a new TrainingRun and lock and get sandbox from OpenStack Sandbox API
             TrainingRun trainingRun = trainingRunService.createTrainingRun(trainingInstance, participantRefId);
-            if (!trainingInstance.isLocalEnvironment()) {
-                trainingRunService.assignSandbox(trainingRun, trainingInstance.getPoolId());
-            }
             trainingRunService.auditTrainingRunStarted(trainingRun);
             return convertToAccessTrainingRunDTO(trainingRun);
         } catch (Exception e) {
