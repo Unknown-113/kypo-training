@@ -495,8 +495,8 @@ public class TrainingRunFacade {
             "or @securityService.isTraineeOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public AbstractLevelDTO getVisitedLevel(Long trainingRunId, Long levelId) {
-        AbstractLevel abstractLevel = trainingRunService.getVisitedLevel(trainingRunId, levelId);
         TrainingRun trainingRun = trainingRunService.findById(trainingRunId);
+        AbstractLevel abstractLevel = trainingRunService.getVisitedLevel(trainingRun, levelId);
         AbstractLevelDTO abstractLevelDTO = getAbstractLevelPreviewDTO(abstractLevel, trainingRun);
         abstractLevelDTO.setTrainingDefinition(null);
         return abstractLevelDTO;

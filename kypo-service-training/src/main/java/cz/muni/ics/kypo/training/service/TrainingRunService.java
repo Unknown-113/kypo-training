@@ -236,17 +236,16 @@ public class TrainingRunService {
     /**
      * Get previous/current level (visited) of given Training Run.
      *
-     * @param runId ID of Training Run whose visited level should be returned.
+     * @param trainingRun Training Run whose visited level should be returned.
      * @param levelId ID of the visited level that should be returned.
      * @return {@link AbstractLevel}
      */
-    public AbstractLevel getVisitedLevel(Long runId, Long levelId) {
-        TrainingRun trainingRun = findByIdWithLevel(runId);
+    public AbstractLevel getVisitedLevel(TrainingRun trainingRun, Long levelId) {
         AbstractLevel abstractLevel = abstractLevelRepository.findById(levelId).orElseThrow(
                 () -> new EntityNotFoundException(new EntityErrorDetail(AbstractLevel.class, "id", levelId.getClass(), levelId, "Level not found")));
         TrainingDefinition trainingRunDefinition = trainingRun.getTrainingInstance().getTrainingDefinition();
         if (!abstractLevel.getTrainingDefinition().getId().equals(trainingRunDefinition.getId())) {
-            throw new EntityConflictException(new EntityErrorDetail("Requested level (ID: " + levelId + ") is not part of the training run (ID: " + runId + ")."));
+            throw new EntityConflictException(new EntityErrorDetail("Requested level (ID: " + levelId + ") is not part of the training run (ID: " + trainingRun.getId() + ")."));
         }
         if (abstractLevel.getOrder() > trainingRun.getCurrentLevel().getOrder()) {
             throw new EntityConflictException(new EntityErrorDetail("Requested level (ID: " + levelId + ") hasn't been visited yet"));
