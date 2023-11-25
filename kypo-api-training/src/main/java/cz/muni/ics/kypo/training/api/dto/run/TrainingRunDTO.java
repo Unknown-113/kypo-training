@@ -29,9 +29,15 @@ public class TrainingRunDTO {
     @ApiModelProperty(value = "Current state of training run.", example = "ALLOCATED")
     private TRState state;
     @ApiModelProperty(value = "Reference to the received sandbox.")
-    private Long sandboxInstanceRefId;
+    private String sandboxInstanceRefId;
     @ApiModelProperty(value = "Reference to participant of training run.")
     private UserRefDTO participantRef;
+    @ApiModelProperty(value = "Boolean to check whether event logging works.", example = "true")
+    private boolean eventLoggingState;
+    @ApiModelProperty(value = "Boolean to check whether command logging works.", example = "true")
+    private boolean commandLoggingState;
+    @ApiModelProperty(value = "Boolean to check whether the run has any detection events logged", example = "true")
+    private boolean hasDetectionEvent;
 
     /**
      * Gets id.
@@ -128,7 +134,7 @@ public class TrainingRunDTO {
      *
      * @return the sandbox instance ref id
      */
-    public Long getSandboxInstanceRefId() {
+    public String getSandboxInstanceRefId() {
         return sandboxInstanceRefId;
     }
 
@@ -137,7 +143,7 @@ public class TrainingRunDTO {
      *
      * @param sandboxInstanceRefId the sandbox instance ref id
      */
-    public void setSandboxInstanceRefId(Long sandboxInstanceRefId) {
+    public void setSandboxInstanceRefId(String sandboxInstanceRefId) {
         this.sandboxInstanceRefId = sandboxInstanceRefId;
     }
 
@@ -159,6 +165,50 @@ public class TrainingRunDTO {
         this.participantRef = participantRef;
     }
 
+    /**
+     * Gets event logging state
+     *
+     * @return the event logging state
+     */
+    public boolean getEventLoggingState() {
+        return eventLoggingState;
+    }
+
+    /**
+     * Sets event logging state
+     *
+     * @param eventLoggingState the new event logging state
+     */
+    public void setEventLoggingState(boolean eventLoggingState) {
+        this.eventLoggingState = eventLoggingState;
+    }
+
+    /**
+     * Gets command logging state
+     *
+     * @return the command logging state
+     */
+    public boolean getCommandLoggingState() {
+        return commandLoggingState;
+    }
+
+    /**
+     * Sets command logging state
+     *
+     * @param commandLoggingState the new command logging state
+     */
+    public void setCommandLoggingState(boolean commandLoggingState) {
+        this.commandLoggingState = commandLoggingState;
+    }
+
+    public boolean getHasDetectionEvent() {
+        return hasDetectionEvent;
+    }
+
+    public void setHasDetectionEvent(boolean hasDetectionEvent) {
+        this.hasDetectionEvent = hasDetectionEvent;
+    }
+
     @Override
     public String toString() {
         return "TrainingRunDTO{" +
@@ -169,6 +219,9 @@ public class TrainingRunDTO {
                 ", state=" + state +
                 ", sandboxInstanceRefId=" + sandboxInstanceRefId +
                 ", participantRef=" + participantRef +
+                ", eventLoggingState=" + eventLoggingState +
+                ", commandLoggingState=" + commandLoggingState +
+                ", hasDetectionEvent=" + hasDetectionEvent +
                 '}';
     }
 
@@ -178,11 +231,12 @@ public class TrainingRunDTO {
         TrainingRunDTO that = (TrainingRunDTO) object;
         return Objects.equals(getId(), that.getId()) &&
                 Objects.equals(getState(), that.getState()) &&
-                Objects.equals(getParticipantRef(), that.getParticipantRef());
+                Objects.equals(getParticipantRef(), that.getParticipantRef()) &&
+                Objects.equals(getHasDetectionEvent(), that.getHasDetectionEvent());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getState(), getParticipantRef());
+        return Objects.hash(getId(), getState(), getParticipantRef(), getHasDetectionEvent());
     }
 }

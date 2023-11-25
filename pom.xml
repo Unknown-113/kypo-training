@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cz.muni.ics.kypo</groupId>
     <artifactId>kypo-training</artifactId>
-    <version>2.1.2</version>
+    <version>2.3.6</version>
     <packaging>pom</packaging>
 
     <name>KYPO Training</name>
@@ -20,7 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <kypo-security-commons.version>2.0.0</kypo-security-commons.version>
-        <kypo-elasticsearch-documents.version>2.0.0</kypo-elasticsearch-documents.version>
+        <kypo-elasticsearch-documents.version>2.1.0-rc.1</kypo-elasticsearch-documents.version>
         <swagger.version>2.9.2</swagger.version>
         <swagger-annotations.version>1.5.22</swagger-annotations.version>
         <swagger.directory>${basedir}/../doc-files</swagger.directory>
@@ -35,6 +35,8 @@
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <!-- added to avoid log4j2 vulnerability CVE-2021-44228 -->
         <log4j2.version>2.15.0</log4j2.version>
+        <commons-math3.version>3.1.1</commons-math3.version>
+        <spring-data-commons.version>2.6.2</spring-data-commons.version>
     </properties>
 
     <repositories>
@@ -90,6 +92,18 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <!-- cluster analysis visualization-->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>${commons-math3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-commons</artifactId>
+                <version>${spring-data-commons.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
@@ -117,3 +131,4 @@
         <module>kypo-api-training</module>
     </modules>
 </project>
+

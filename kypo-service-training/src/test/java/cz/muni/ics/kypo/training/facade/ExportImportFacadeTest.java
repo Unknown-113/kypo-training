@@ -13,6 +13,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
 import cz.muni.ics.kypo.training.persistence.util.TestDataFactory;
+import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
@@ -27,16 +28,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,6 +77,8 @@ public class ExportImportFacadeTest {
     private TrainingFeedbackApiService trainingFeedbackApiService;
     @MockBean
     private UserService userService;
+    @MockBean
+    private SecurityService securityService;
 
     private TrainingDefinition trainingDefinition;
     private TrainingDefinition trainingDefinitionImported;
@@ -97,7 +96,7 @@ public class ExportImportFacadeTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         exportImportFacade = new ExportImportFacade(exportImportService, trainingDefinitionService, elasticsearchApiService,
-                trainingFeedbackApiService, sandboxApiService, userService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
+                trainingFeedbackApiService, sandboxApiService, userService, securityService, exportImportMapper, infoLevelMapper, trainingDefinitionMapper, objectMapper);
 
         assessmentLevel = testDataFactory.getTest();
         assessmentLevel.setId(1L);
@@ -196,23 +195,18 @@ public class ExportImportFacadeTest {
         given(userService.getUserRefDTOByUserRefId(trainingRuns[1].getParticipantRef().getUserRefId())).willReturn(userRefDTOS[1]);
 
         FileToReturnDTO exportedFile = exportImportFacade.exportUserScoreFromTrainingInstance(exportTrainingInstance.getId());
-        byte[] expectedResult = (getCSV(trainingRuns[0]) + getCSV(trainingRuns[1])).getBytes(StandardCharsets.UTF_8);
+        String header = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
+        String expectedString = getCSV(trainingRuns[0]) + getCSV(trainingRuns[1]);
+        byte[] expectedResult = (header + expectedString).getBytes(StandardCharsets.UTF_8);
         // since the buffer will be 0-initialized, we create another similar-sized buffer for easy comparison
         byte[] expected = new byte[1024];
         System.arraycopy(expectedResult, 0, expected, 0, expectedResult.length);
         byte[] buffer = new byte[1024];
 
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(exportedFile.getContent());
-             ZipInputStream zis = new ZipInputStream(bais)) {
-            ZipEntry zipEntry = zis.getNextEntry();
-            assertNotNull(zipEntry);
-            assertEquals("training_instance-id" + exportTrainingInstance.getId() + ".csv", zipEntry.getName());
-            zis.read(buffer);
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(exportedFile.getContent())) {
+            assertEquals("training_instance-id" + exportTrainingInstance.getId() + "-scores", exportedFile.getTitle());
+            bais.read(buffer);
             assertArrayEquals(expected, buffer);
-
-            // no more entries in the zip file
-            zipEntry = zis.getNextEntry();
-            assertNull(zipEntry);
         } catch (IOException ex) {
             fail();
         }
@@ -233,3 +227,4 @@ public class ExportImportFacadeTest {
                 + trainingRun.getTotalTrainingScore() + System.lineSeparator();
     }
 }
+

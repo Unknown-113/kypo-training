@@ -1,3 +1,16 @@
+2.3.9 Add createdAt to training definition. Modify TD import to drop 'uploaded' prefix.
+2.3.8 Added a check for deletion of possible duplicate hints.
+2.3.7 Increase Assessment level instructions limit and lower limit for question title.
+2.3.6 Bugfix - Location similarity detection event single participants are no longer being detected. 
+2.3.5 Answer similarity detection event optimalization.
+2.3.4 Bugifx - fix location similarity detection event incorrect flagging of single user.
+2.3.3 Bugfix - no commands detection method correction. 
+2.3.2 Updated cheating detection service with fixes and optimalizations.
+2.3.1 Updated exported information from training instance with correct level ids. Added new functionality and enhancements to experimental cheating detection - new rest endpoints, bugfixes and reworked data structures.
+22.12-rc.1 Changed sandboxId type to string, added maxAchievableScore field to ClusteringLevelDTO, added new endpoint for clustering visualization, added automatic check if logging works for training events and commands.
+2.3.0 Added experimental version of cheating detection functionality - new rest endpoint, facade and service and mappers. Added entities for cheating detection events. Added a attribute to training run specifying if it has detection events.
+2.2.1 Fixed saving new user ref to repository
+2.2.0 Added functionality to export score from training instance, fix authorization requirements for various training definition/instance functions, trim access codes on instance creation, removed stack trace from errors, it is no longer possible to create/edit non-local instances without setting the pool, fixed incorrect score calculation in the trainees table visualization.
 2.1.2 Added attribute indicating that level can be completed without commands, added level title and order to analytical dashboard data, modify validation of the access token during the TI update, support of APG variables in local environment, fix resolution of the answer viariable in solution and sandbox defintion ID in local content.
 2.1.1 Bugfix - changed transactional annotations in visualization methods.
 2.1.0 Added attribute minimal possible solve time. Support map of games (MITRE techniques). Bugfix - deletion of access level. Bugfix - removed hardcoded page size in progress visualization. Get user IP address from submitted answers. Support backward mode (move to previous levels). Endpoint for analytical dashboard.
@@ -15,3 +28,4 @@
 1.1.73 Integration of APG to the kypo training service.
 1.1.72 Renaming flag to answer, renaming game level to training level.
 1.1.71 KYPO2 renamed to KYPO.
+

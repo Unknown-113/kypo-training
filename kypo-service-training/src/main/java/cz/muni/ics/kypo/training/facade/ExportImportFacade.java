@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.csirt.kypo.events.trainings.LevelStarted;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.security.IsDesignerOrOrganizerOrAdmin;
@@ -35,6 +36,7 @@ import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingOpti
 import cz.muni.ics.kypo.training.persistence.model.question.ExtendedMatchingStatement;
 import cz.muni.ics.kypo.training.persistence.model.question.Question;
 import cz.muni.ics.kypo.training.persistence.model.question.QuestionAnswer;
+import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.UserService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
@@ -46,6 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +81,7 @@ public class ExportImportFacade {
     private final ElasticsearchApiService elasticsearchApiService;
     private final TrainingFeedbackApiService trainingFeedbackApiService;
     private final UserService userService;
+    private final SecurityService securityService;
     private final ExportImportMapper exportImportMapper;
     private final LevelMapper levelMapper;
     private final TrainingDefinitionMapper trainingDefinitionMapper;
@@ -89,6 +93,7 @@ public class ExportImportFacade {
      * @param exportImportService       the export import service
      * @param trainingDefinitionService the training definition service
      * @param userService               the user service
+     * @param securityService
      * @param exportImportMapper        the export import mapper
      * @param levelMapper               the level mapper
      * @param trainingDefinitionMapper  the training definition mapper
@@ -100,7 +105,7 @@ public class ExportImportFacade {
                               ElasticsearchApiService elasticsearchApiService,
                               TrainingFeedbackApiService trainingFeedbackApiService,
                               SandboxApiService sandboxApiService,
-                              UserService userService, ExportImportMapper exportImportMapper,
+                              UserService userService, SecurityService securityService, ExportImportMapper exportImportMapper,
                               LevelMapper levelMapper,
                               TrainingDefinitionMapper trainingDefinitionMapper,
                               ObjectMapper objectMapper) {
@@ -110,6 +115,7 @@ public class ExportImportFacade {
         this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.sandboxApiService = sandboxApiService;
         this.userService = userService;
+        this.securityService = securityService;
         this.exportImportMapper = exportImportMapper;
         this.levelMapper = levelMapper;
         this.trainingDefinitionMapper = trainingDefinitionMapper;
@@ -122,7 +128,8 @@ public class ExportImportFacade {
      * @param trainingDefinitionId the id of the definition to be exported
      * @return the file containing definition, {@link FileToReturnDTO}
      */
-    @IsDesignerOrOrganizerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)")
     @TransactionalRO
     public FileToReturnDTO dbExport(Long trainingDefinitionId) {
         TrainingDefinition td = exportImportService.findById(trainingDefinitionId);
@@ -162,8 +169,8 @@ public class ExportImportFacade {
     @TransactionalWO
     public TrainingDefinitionByIdDTO dbImport(ImportTrainingDefinitionDTO importTrainingDefinitionDTO) {
         importTrainingDefinitionDTO.setState(TDState.UNRELEASED);
-        if (importTrainingDefinitionDTO.getTitle() != null && !importTrainingDefinitionDTO.getTitle().startsWith("Uploaded")) {
-            importTrainingDefinitionDTO.setTitle("Uploaded " + importTrainingDefinitionDTO.getTitle());
+        if (importTrainingDefinitionDTO.getTitle() != null) {
+            importTrainingDefinitionDTO.setTitle(importTrainingDefinitionDTO.getTitle());
         }
 
         TrainingDefinition newDefinition = exportImportMapper.mapToEntity(importTrainingDefinitionDTO);
@@ -281,28 +288,25 @@ public class ExportImportFacade {
      * @param trainingInstanceId id of the training instance
      * @return csv file containing all user score from the instance, {@link FileToReturnDTO}
      */
-    @IsOrganizerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public FileToReturnDTO exportUserScoreFromTrainingInstance(Long trainingInstanceId) {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             ZipOutputStream zos = new ZipOutputStream(baos)) {
-
-            ZipEntry zipEntry = new ZipEntry("training_instance-id" + trainingInstanceId + AbstractFileExtensions.CSV_FILE_EXTENSION);
-            zos.putNextEntry(zipEntry);
-
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Set<TrainingRun> trainingRuns = exportImportService.findRunsByInstanceId(trainingInstanceId);
+            String csvHeader = "trainingInstanceId;userRefSub;totalTrainingScore" + System.lineSeparator();
+            baos.write(csvHeader.getBytes(StandardCharsets.UTF_8));
+
             for (TrainingRun trainingRun : trainingRuns) {
-                zos.write(getCSVString(trainingRun).getBytes(StandardCharsets.UTF_8));
+                baos.write(getCSVString(trainingRun).getBytes(StandardCharsets.UTF_8));
             }
 
-            zos.closeEntry();
-            zos.close();
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
             fileToReturnDTO.setContent(baos.toByteArray());
-            fileToReturnDTO.setTitle("training_instance-id" + trainingInstanceId);
+            fileToReturnDTO.setTitle("training_instance-id" + trainingInstanceId + "-scores");
             return fileToReturnDTO;
         } catch (IOException ex) {
-            throw new InternalServerErrorException("The .zip file was not created since there were some processing error.", ex);
+            throw new InternalServerErrorException("The .csv file was not created due to some processing error.", ex);
         }
     }
 
@@ -324,7 +328,8 @@ public class ExportImportFacade {
      * @param trainingInstanceId the id of the instance to be exported
      * @return the file containing instance, {@link FileToReturnDTO}
      */
-    @IsOrganizerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public FileToReturnDTO archiveTrainingInstance(Long trainingInstanceId) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -372,16 +377,16 @@ public class ExportImportFacade {
             zos.write(objectMapper.writeValueAsBytes(archivedRun));
 
             writeQuestionsAnswers(zos, run, assessmentsDetails);
-            List<Map<String, Object>> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
+            List<AbstractAuditPOJO> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
             if (events.isEmpty()) {
                 continue;
             }
-            Map<Integer, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
+            Map<Long, Long> levelStartTimestampMapping = writeEventsAndGetLevelStartTimestampMapping(zos, run, events);
             writeEventsByLevels(zos, run, events);
 
             List<Map<String, Object>> consoleCommands = getConsoleCommands(trainingInstance, run);
-            Integer sandboxId = events.get(0).get("sandbox_id") == null ?
-                    run.getParticipantRef().getUserRefId().intValue() : (Integer) events.get(0).get("sandbox_id");
+            String sandboxId = events.get(0).getSandboxId() == null ?
+                    run.getParticipantRef().getUserRefId().toString() : events.get(0).getSandboxId();
             writeConsoleCommands(zos, sandboxId, consoleCommands);
             writeConsoleCommandsDetails(zos, trainingInstance, run, sandboxId, levelStartTimestampMapping);
         }
@@ -392,7 +397,7 @@ public class ExportImportFacade {
         if (instance.isLocalEnvironment()) {
             return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(instance.getAccessToken(), run.getParticipantRef().getUserRefId());
         }
-        Long sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
+        String sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
         return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxId);
     }
 
@@ -404,30 +409,30 @@ public class ExportImportFacade {
         }
     }
 
-    private Map<Integer, Long> writeEventsAndGetLevelStartTimestampMapping(ZipOutputStream zos, TrainingRun run, List<Map<String, Object>> events) throws IOException {
+    private Map<Long, Long> writeEventsAndGetLevelStartTimestampMapping(ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
         ZipEntry eventsEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsEntry);
         //Obtain start timestamp of each level, so it can be used later
-        Map<Integer, Long> levelStartTimestampMapping = new LinkedHashMap<>();
+        Map<Long, Long> levelStartTimestampMapping = new LinkedHashMap<>();
 
-        for (Map<String, Object> event : events) {
+        for (AbstractAuditPOJO event : events) {
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
             zos.write(System.lineSeparator().getBytes());
-            if (event.get("type").equals(LevelStarted.class.getCanonicalName())) {
-                levelStartTimestampMapping.put(((Integer) event.get("level")), (Long) event.get("timestamp"));
+            if (event.getType().equals(LevelStarted.class.getCanonicalName())) {
+                levelStartTimestampMapping.put(event.getLevel(), event.getTimestamp());
             }
         }
         return levelStartTimestampMapping;
     }
 
-    private void writeEventsByLevels(ZipOutputStream zos, TrainingRun run, List<Map<String, Object>> events) throws IOException {
-        Integer currentLevel = ((Integer) events.get(0).get("level"));
-        ZipEntry eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+    private void writeEventsByLevels(ZipOutputStream zos, TrainingRun run, List<AbstractAuditPOJO> events) throws IOException {
+        long currentLevelOrder = events.get(0).getLevelOrder();
+        ZipEntry eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + (currentLevelOrder + 1) + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(eventsDetailEntry);
-        for (Map<String, Object> event : events) {
-            if (!event.get("level").equals(currentLevel)) {
-                currentLevel = ((Integer) event.get("level"));
-                eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + currentLevel + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        for (AbstractAuditPOJO event : events) {
+            if (event.getLevelOrder() != currentLevelOrder) {
+                currentLevelOrder = event.getLevelOrder();
+                eventsDetailEntry = new ZipEntry(EVENTS_FOLDER + "/training_run-id" + run.getId() + "-details" + "/level" + (currentLevelOrder + 1) + "-events" + AbstractFileExtensions.JSON_FILE_EXTENSION);
                 zos.putNextEntry(eventsDetailEntry);
             }
             zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(event));
@@ -464,10 +469,10 @@ public class ExportImportFacade {
 
     private String mapEmiAnswerToString(Question question, QuestionEMIAnswer emiAnswer) {
         return "{ statement: '" + question.getExtendedMatchingStatements().get(emiAnswer.getStatementOrder()).getText()
-             + "', option: '" + question.getExtendedMatchingOptions().get(emiAnswer.getOptionOrder()).getText()+ "' }";
+                + "', option: '" + question.getExtendedMatchingOptions().get(emiAnswer.getOptionOrder()).getText()+ "' }";
     }
 
-    private void writeConsoleCommands(ZipOutputStream zos, Integer sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {
+    private void writeConsoleCommands(ZipOutputStream zos, String sandboxId, List<Map<String, Object>> consoleCommands) throws IOException {
         ZipEntry consoleCommandsEntry = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(consoleCommandsEntry);
         for (Map<String, Object> command : consoleCommands) {
@@ -476,14 +481,14 @@ public class ExportImportFacade {
         }
     }
 
-    private void writeConsoleCommandsDetails(ZipOutputStream zos, TrainingInstance instance, TrainingRun run, Integer sandboxId, Map<Integer, Long> levelStartTimestampMapping) throws IOException {
+    private void writeConsoleCommandsDetails(ZipOutputStream zos, TrainingInstance instance, TrainingRun run, String sandboxId, Map<Long, Long> levelStartTimestampMapping) throws IOException {
         List<Long> levelTimestampRanges = new ArrayList<>(levelStartTimestampMapping.values());
-        List<Integer> levelIds = new ArrayList<>(levelStartTimestampMapping.keySet());
+        List<Long> levelIds = new ArrayList<>(levelStartTimestampMapping.keySet());
         levelTimestampRanges.add(Long.MAX_VALUE);
 
         for (int i = 0; i < levelIds.size(); i++) {
             List<Map<String, Object>> consoleCommandsByLevel = getConsoleCommandsWithinTimeRange(instance, run, sandboxId, levelTimestampRanges.get(i), levelTimestampRanges.get(i+1));
-            ZipEntry consoleCommandsEntryDetails = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-details" + "/level" + levelIds.get(i)+ "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+            ZipEntry consoleCommandsEntryDetails = new ZipEntry(LOGS_FOLDER + "/sandbox-" + sandboxId + "-details" + "/level" + (i + 1) + "-useractions" + AbstractFileExtensions.JSON_FILE_EXTENSION);
             zos.putNextEntry(consoleCommandsEntryDetails);
             for (Map<String, Object> command : consoleCommandsByLevel) {
                 zos.write(objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsBytes(command));
@@ -492,7 +497,7 @@ public class ExportImportFacade {
         }
     }
 
-    private List<Map<String, Object>> getConsoleCommandsWithinTimeRange(TrainingInstance instance, TrainingRun run, Integer sandboxId, Long from, Long to) {
+    private List<Map<String, Object>> getConsoleCommandsWithinTimeRange(TrainingInstance instance, TrainingRun run, String sandboxId, Long from, Long to) {
         if(instance.isLocalEnvironment()) {
             return elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserIdAndTimeRange(instance.getAccessToken(), run.getParticipantRef().getUserRefId(), from, to);
         }

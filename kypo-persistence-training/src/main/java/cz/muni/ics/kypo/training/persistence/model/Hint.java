@@ -9,6 +9,12 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "hint")
+@NamedQueries({
+        @NamedQuery(
+                name = "Hint.deleteHintsByLevelId",
+                query = "DELETE FROM Hint h WHERE h.trainingLevel.id = :levelId"
+        ),
+})
 public class Hint extends AbstractEntity<Long> {
 
     @Column(name = "title", nullable = false)

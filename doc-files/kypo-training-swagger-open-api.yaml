@@ -1,11 +1,13 @@
 ---
 swagger: "2.0"
 info:
-  version: "Version: 2.1.2"
+  version: "Version: 2.3.6"
   title: "KYPO Training - API Reference"
 host: "localhost:8083"
 basePath: "/kypo-rest-training/api/v1"
 tags:
+- name: "Cheating detection"
+- name: "Clusters"
 - name: "Command Visualizations"
 - name: "Export Imports"
 - name: "Training definitions"
@@ -16,6 +18,885 @@ schemes:
 - "http"
 - "https"
 paths:
+  /cheating-detections/create-detection:
+    post:
+      tags:
+      - "Cheating detection"
+      summary: "Create and Execute cheating detection"
+      description: "This can only be done by organizer of training instance or administrator."
+      operationId: "createAndExecuteCheatingDetection"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "CheatingDetection to be created"
+        required: false
+        schema:
+          $ref: "#/definitions/CheatingDetectionDTO"
+      responses:
+        200:
+          description: "The Cheating Detection has been created and executed."
+          schema:
+            $ref: "#/definitions/CheatingDetectionDTO"
+        400:
+          description: "The provided cheating detection is not valid"
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/exports/{cheatingDetectionId}:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Archive cheating detection results"
+      description: ""
+      operationId: "archiveCheatingDetectionResults"
+      produces:
+      - "application/octet-stream"
+      parameters:
+      - name: "cheatingDetectionId"
+        in: "path"
+        description: "Id of cheating detection"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Cheating Detection results archived."
+          schema:
+            $ref: "#/definitions/TrainingInstanceArchiveDTO"
+        404:
+          description: "Cheating Detection not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        409:
+          description: "Cannot archive detection that is not finished."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/find-all-participants:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Get all participants of detection event."
+      description: "This can only be done by organizer of training instance or administrator."
+      operationId: "findAllParticipantsOfEvent"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "the event id"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Pagination support."
+        required: false
+        schema:
+          $ref: "#/definitions/Pageable"
+      - name: "fields"
+        in: "query"
+        description: "Fields which should be returned in REST API response"
+        required: false
+        type: "string"
+      - name: "page"
+        in: "query"
+        description: "Results page you want to retrieve (0..N)"
+        required: false
+        type: "integer"
+        x-example: 0
+      - name: "size"
+        in: "query"
+        description: "Number of records per page."
+        required: false
+        type: "integer"
+        x-example: 20
+      - name: "sort"
+        in: "query"
+        description: "Sorting criteria in the format: property(,asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+          example: "asc"
+        collectionFormat: "multi"
+        x-example: "asc"
+      responses:
+        200:
+          description: "Participants have been found."
+          schema:
+            $ref: "#/definitions/DetectionEventRestResource"
+        404:
+          description: "The participants have not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/find-answer-similarity:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Answer Similarity Detection event."
+      description: ""
+      operationId: "findDetectionEventOfAnswerSimilarityById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/find-event:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Detection event."
+      description: ""
+      operationId: "findDetectionEventById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/find-forbidden-commands:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Forbidden Commands Detection event."
+      description: ""
+      operationId: "findDetectionEventOfForbiddenCommandsById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/find-location-similarity:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Location Similarity Detection event."
+      description: ""
+      operationId: "findDetectionEventOfLocationSimilarityById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/find-minimal-solve-time:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Minimal Solve Time Detection event."
+      description: ""
+      operationId: "findDetectionEventOfMinimalSolveTimeById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/find-no-commands:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "No Commands Detection event."
+      description: ""
+      operationId: "findDetectionEventOfNoCommandsById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/find-time-proximity:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Time Proximity Detection event."
+      description: ""
+      operationId: "findDetectionEventOfTimeProximityById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "eventId"
+        in: "query"
+        description: "eventId"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection event has been found."
+          schema:
+            $ref: "#/definitions/AccessTrainingRunDTO"
+        404:
+          description: "The detection event has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/{cheatingDetectionId}/delete:
+    delete:
+      tags:
+      - "Cheating detection"
+      summary: "Delete detection events of cheating detection"
+      description: "This can only be done by organizer of training instance or administrator."
+      operationId: "deleteDetectionEventsOfCheatingDetection"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "cheatingDetectionId"
+        in: "path"
+        description: "Cheating detection ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "trainingInstanceId"
+        in: "query"
+        description: "id of training instance"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The detection events have been deleted."
+        404:
+          description: "The cheating detection has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered"
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/{cheatingDetectionId}/find-all-events:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Get all detection events of cheating detection."
+      description: "This can only be done by organizer of training instance or administrator."
+      operationId: "findAllDetectionEvents"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "cheatingDetectionId"
+        in: "path"
+        description: "id of cheating detection"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "trainingInstanceId"
+        in: "query"
+        description: "id of training instance"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Pagination support."
+        required: false
+        schema:
+          $ref: "#/definitions/Pageable"
+      - name: "fields"
+        in: "query"
+        description: "Fields which should be returned in REST API response"
+        required: false
+        type: "string"
+      - name: "page"
+        in: "query"
+        description: "Results page you want to retrieve (0..N)"
+        required: false
+        type: "integer"
+        x-example: 0
+      - name: "size"
+        in: "query"
+        description: "Number of records per page."
+        required: false
+        type: "integer"
+        x-example: 20
+      - name: "sort"
+        in: "query"
+        description: "Sorting criteria in the format: property(,asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+          example: "asc"
+        collectionFormat: "multi"
+        x-example: "asc"
+      responses:
+        200:
+          description: "Detection Events have been found."
+          schema:
+            $ref: "#/definitions/DetectionEventRestResource"
+        404:
+          description: "The cheating detection has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/{cheatingDetectionId}/rerun/{trainingInstanceId}:
+    patch:
+      tags:
+      - "Cheating detection"
+      summary: "rerun cheating detection"
+      description: "This can only be done by organizer of training instance or administrator."
+      operationId: "rerunCheatingDetection"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "cheatingDetectionId"
+        in: "path"
+        description: "Cheating Detection ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "trainingInstanceId"
+        in: "path"
+        description: "id of training instance"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "The cheating detection was executed."
+        404:
+          description: "The cheating detection has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /cheating-detections/{trainingInstanceId}/find-all-detections:
+    get:
+      tags:
+      - "Cheating detection"
+      summary: "Get all cheating detections of training instance."
+      description: "This can only be done by organizer of training instance or administrator."
+      operationId: "findAllCheatingDetections"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "trainingInstanceId"
+        in: "path"
+        description: "id of training instance"
+        required: true
+        type: "integer"
+        format: "int64"
+      - in: "body"
+        name: "body"
+        description: "Pagination support."
+        required: false
+        schema:
+          $ref: "#/definitions/Pageable"
+      - name: "fields"
+        in: "query"
+        description: "Fields which should be returned in REST API response"
+        required: false
+        type: "string"
+      - name: "page"
+        in: "query"
+        description: "Results page you want to retrieve (0..N)"
+        required: false
+        type: "integer"
+        x-example: 0
+      - name: "size"
+        in: "query"
+        description: "Number of records per page."
+        required: false
+        type: "integer"
+        x-example: 20
+      - name: "sort"
+        in: "query"
+        description: "Sorting criteria in the format: property(,asc|desc). Default\
+          \ sort order is ascending. Multiple sort criteria are supported."
+        required: false
+        type: "array"
+        items:
+          type: "string"
+          example: "asc"
+        collectionFormat: "multi"
+        x-example: "asc"
+      responses:
+        200:
+          description: "Cheating Detections have been found."
+          schema:
+            $ref: "#/definitions/CheatingDetectionRestResource"
+        404:
+          description: "The training instance has not been found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /clusters/training-definitions/{definitionId}/hints:
+    get:
+      tags:
+      - "Clusters"
+      summary: "Get hint cluster."
+      description: ""
+      operationId: "getHintCluster"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "instanceIds"
+        in: "query"
+        description: "List of training instance IDs"
+        required: false
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
+        collectionFormat: "multi"
+      - name: "numberOfClusters"
+        in: "query"
+        description: "Number of clusters"
+        required: true
+        type: "integer"
+        format: "int32"
+      - name: "levelId"
+        in: "query"
+        description: "Level id"
+        required: false
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Hint cluster found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /clusters/training-definitions/{definitionId}/hints/sse:
+    get:
+      tags:
+      - "Clusters"
+      summary: "Get hint cluster SSE."
+      description: ""
+      operationId: "getHintClusterSSE"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "instanceIds"
+        in: "query"
+        description: "List of training instance IDs"
+        required: false
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
+        collectionFormat: "multi"
+      - name: "numberOfClusters"
+        in: "query"
+        description: "Number of clusters"
+        required: true
+        type: "integer"
+        format: "int32"
+      - name: "levelId"
+        in: "query"
+        description: "Level id"
+        required: false
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Hint cluster SSE found."
+          schema:
+            type: "array"
+            items:
+              type: "number"
+              format: "double"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /clusters/training-definitions/{definitionId}/n-dimensional:
+    get:
+      tags:
+      - "Clusters"
+      summary: "Get n-dimensional cluster."
+      description: ""
+      operationId: "getNDimensionalCluster"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "instanceIds"
+        in: "query"
+        description: "List of training instance IDs"
+        required: false
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
+        collectionFormat: "multi"
+      - name: "numberOfClusters"
+        in: "query"
+        description: "Number of clusters"
+        required: true
+        type: "integer"
+        format: "int32"
+      - name: "levelId"
+        in: "query"
+        description: "Level id"
+        required: false
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "N-dimensional cluster found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /clusters/training-definitions/{definitionId}/n-dimensional/sse:
+    get:
+      tags:
+      - "Clusters"
+      summary: "Get n-dimensional cluster SSE."
+      description: ""
+      operationId: "getNDimensionalClusterSSE"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "instanceIds"
+        in: "query"
+        description: "List of training instance IDs"
+        required: false
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
+        collectionFormat: "multi"
+      - name: "numberOfClusters"
+        in: "query"
+        description: "Number of clusters"
+        required: true
+        type: "integer"
+        format: "int32"
+      - name: "levelId"
+        in: "query"
+        description: "Level id"
+        required: false
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "N-dimensional cluster SSE found."
+          schema:
+            type: "array"
+            items:
+              type: "number"
+              format: "double"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /clusters/training-definitions/{definitionId}/wrong-answers:
+    get:
+      tags:
+      - "Clusters"
+      summary: "Get wrong answers cluster."
+      description: ""
+      operationId: "getWrongAnswersCluster"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "instanceIds"
+        in: "query"
+        description: "List of training instance IDs"
+        required: false
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
+        collectionFormat: "multi"
+      - name: "numberOfClusters"
+        in: "query"
+        description: "Number of clusters"
+        required: true
+        type: "integer"
+        format: "int32"
+      - name: "levelId"
+        in: "query"
+        description: "Level id"
+        required: false
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Wrong answers cluster found."
+          schema:
+            $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /clusters/training-definitions/{definitionId}/wrong-answers/sse:
+    get:
+      tags:
+      - "Clusters"
+      summary: "Get wrong answers SSE."
+      description: ""
+      operationId: "getWrongAnswersClusterSSE"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "instanceIds"
+        in: "query"
+        description: "List of training instance IDs"
+        required: false
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
+        collectionFormat: "multi"
+      - name: "numberOfClusters"
+        in: "query"
+        description: "Number of clusters"
+        required: true
+        type: "integer"
+        format: "int32"
+      - name: "levelId"
+        in: "query"
+        description: "Level id"
+        required: false
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Wrong answer cluster SSE found."
+          schema:
+            type: "array"
+            items:
+              type: "number"
+              format: "double"
+        404:
+          description: "Training run with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /exports/training-definitions/{definitionId}:
     get:
       tags:
@@ -74,6 +955,37 @@ paths:
             $ref: "#/definitions/ApiError"
         409:
           description: "Cannot archive instance that is not finished."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /exports/training-instances/{instanceId}/scores:
+    get:
+      tags:
+      - "Export Imports"
+      summary: "Export training instance scores"
+      description: ""
+      operationId: "exportTrainingInstanceScores"
+      produces:
+      - "text/plain"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Id of training instance"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Training instance score exported"
+          schema:
+            type: "string"
+        404:
+          description: "Training instance not found."
           schema:
             $ref: "#/definitions/ApiError"
         500:
@@ -2513,6 +3425,34 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
+  /visualizations/commands/training-instances/{instanceId}:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get all commands executed in the given training instance associated\
+        \ by training runs"
+      description: ""
+      operationId: "getAllCommandsByTrainingInstance"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training Instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "All commands for the given training instance found"
+          schema:
+            type: "object"
+        404:
+          description: "All commands for the given training instance not found"
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/commands/training-instances/{instanceId}/aggregated:
     get:
       tags:
@@ -2642,6 +3582,33 @@ paths:
         404:
           description: "Aggregated correct/incorrect commands for the given training\
             \ runs not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/commands/training-runs/{runId}/all:
+    get:
+      tags:
+      - "Command Visualizations"
+      summary: "Get all commands executed in the given Training Run"
+      description: ""
+      operationId: "getAllCommandsByRun"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "runId"
+        in: "path"
+        description: "Training Run ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "All commands for the given Training Run found"
+          schema:
+            type: "object"
+        404:
+          description: "All commands for the given Training Run not found"
           schema:
             $ref: "#/definitions/ApiError"
       security:
@@ -2839,6 +3806,72 @@ paths:
             $ref: "#/definitions/ApiError"
       security:
       - bearerAuth: []
+  /visualizations/training-definitions/{definitionId}/clustering:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary clustering visualization data for training definition."
+      description: ""
+      operationId: "getClusteringVisualizationsForTrainingDefinition"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "definitionId"
+        in: "path"
+        description: "Training definition ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for visualization found."
+          schema:
+            $ref: "#/definitions/ClusteringVisualizationDTO"
+        404:
+          description: "Training definition with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-instances/clustering:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary clustering visualization data for the specified training\
+        \ instances."
+      description: ""
+      operationId: "getClusteringVisualizationsForTrainingInstances"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceIds"
+        in: "query"
+        description: "Training instance IDs"
+        required: true
+        type: "array"
+        items:
+          type: "integer"
+          format: "int64"
+        collectionFormat: "multi"
+      responses:
+        200:
+          description: "Data for visualization found."
+          schema:
+            $ref: "#/definitions/ClusteringVisualizationDTO"
+        404:
+          description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
   /visualizations/training-instances/{instanceId}:
     get:
       tags:
@@ -2860,6 +3893,39 @@ paths:
           description: "Visualization info found."
           schema:
             $ref: "#/definitions/VisualizationInfoDTO"
+        404:
+          description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/assessments:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get assessment visualization data."
+      description: ""
+      operationId: "getAssessmentVisualizations"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for assessment visualization found."
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/AssessmentVisualizationDTO"
         404:
           description: "Training instance with given id not found."
           schema:
@@ -2926,6 +3992,43 @@ paths:
               $ref: "#/definitions/LevelTabsLevelDTO"
         404:
           description: "Training instance with given id not found."
+          schema:
+            $ref: "#/definitions/ApiError"
+        500:
+          description: "Unexpected condition was encountered."
+          schema:
+            $ref: "#/definitions/ApiError"
+      security:
+      - bearerAuth: []
+  /visualizations/training-instances/{instanceId}/levels/{levelId}:
+    get:
+      tags:
+      - "Visualizations"
+      summary: "Get necessary data for compact level view visualization."
+      description: ""
+      operationId: "compact level view visualization"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "instanceId"
+        in: "path"
+        description: "Training instance ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "levelId"
+        in: "path"
+        description: "Level ID"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "Data for analytical dashboard found."
+          schema:
+            $ref: "#/definitions/TimelineDTO"
+        404:
+          description: "Training run with given id not found."
           schema:
             $ref: "#/definitions/ApiError"
         500:
@@ -3309,6 +4412,65 @@ securityDefinitions:
     name: "Authorization"
     in: "header"
 definitions:
+  AbstractAnswerDTO:
+    type: "object"
+    properties:
+      text:
+        type: "string"
+        example: "Ubuntu"
+        description: "Text of the answer option"
+    description: "Superclass for classes EMIAnswerDTO, FFQAnswerDTO, MCQAnswerDTO"
+  AbstractDetectionEventDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "id of detection event."
+      training_instance_id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "id of a training instance in which the event was detected."
+      cheating_detection_id:
+        type: "integer"
+        format: "int64"
+        example: 2
+        description: "id of a cheating detection during which the event was detected."
+      level_id:
+        type: "integer"
+        format: "int64"
+        example: 3
+        description: "Training level id in which the event occurred."
+      level_title:
+        type: "string"
+        example: "SQL injection"
+        description: "Title of the training level."
+      detected_at:
+        type: "string"
+        format: "date-time"
+        example: "1.1.2022 5:55:23"
+        description: "Time at which the event was detected."
+      participant_count:
+        type: "integer"
+        format: "int64"
+        example: 3
+        description: "number of participants of the event."
+      detection_event_type:
+        type: "string"
+        example: "answer similarity"
+        description: "type of the event."
+        enum:
+        - "LOCATION_SIMILARITY"
+        - "ANSWER_SIMILARITY"
+        - "MINIMAL_SOLVE_TIME"
+        - "TIME_PROXIMITY"
+        - "NO_COMMANDS"
+        - "FORBIDDEN_COMMANDS"
+    description: "Superclass for classes AnswerSimilarityDetectionEventDTO, ForbiddenCommandsDetectionEventDTO,\
+      \ LocationSimilarityDetectionEventDTO,MinimalSolveTimeDetectionEventDTO, NoCommandsDetectionEventDTO\
+      \ and TimeProximityDetectionEventDTO"
   AbstractLevelDTO:
     type: "object"
     properties:
@@ -3619,9 +4781,8 @@ definitions:
         example: false
         description: "Sign if stepper bar should be displayed."
       sandbox_instance_ref_id:
-        type: "integer"
-        format: "int64"
-        example: 2
+        type: "string"
+        example: "2"
         description: "Main identifier of sandbox which is assigned to training run."
       abstract_level_dto:
         description: "First level in the current training run."
@@ -3731,6 +4892,20 @@ definitions:
     description: "Content (Retrieved data) and meta information about REST API result\
       \ page. Including page number, number of elements in page, size of elements,\
       \ total number of elements and total number of pages"
+  AnswerSimilarityDetectionEventDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractDetectionEventDTO"
+    - type: "object"
+      properties:
+        answer:
+          type: "string"
+          example: "pass"
+          description: "Correct answer to the level."
+        answer_owner:
+          type: "string"
+          example: "John Doe"
+          description: "Name of a player who was assigned the correct answer."
+      description: "A detection event of type Answer Similarity."
   ApiEntityError:
     allOf:
     - $ref: "#/definitions/ApiError"
@@ -3982,6 +5157,37 @@ definitions:
           items:
             $ref: "#/definitions/QuestionDTO"
       description: "Information about assessment level needed for visualizations."
+  AssessmentVisualizationDTO:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of level."
+      title:
+        type: "string"
+        example: "Training Level1"
+        description: "Short textual description of the level."
+      order:
+        type: "integer"
+        format: "int32"
+        example: 1
+        description: "Order of level among levels in training definition."
+      assessment_type:
+        type: "string"
+        example: "TEST"
+        description: "Type of assessment."
+        enum:
+        - "TEST"
+        - "QUESTIONNAIRE"
+      questions:
+        type: "array"
+        example: "What is my mothers name?"
+        description: "List of questions in this assessment as JSON."
+        items:
+          $ref: "#/definitions/QuestionVisualizationDTO"
+    description: "Information needed to visualize assessments statistic."
   AttachmentImportDTO:
     type: "object"
     properties:
@@ -4042,6 +5248,117 @@ definitions:
           type: "integer"
           format: "int64"
     description: "BetaTesting group to update. (Deprecated)"
+  CheatingDetectionDTO:
+    type: "object"
+    properties:
+      training_instance_id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "id of a training instance in which the event was detected."
+      executed_by:
+        type: "string"
+        example: "John Doe"
+        description: "Name of user who executed the detection."
+      execute_time:
+        type: "string"
+        format: "date-time"
+        example: "1.1.2022 5:55:23"
+        description: "Time when the cheating detection was executed."
+      proximity_threshold:
+        type: "integer"
+        format: "int64"
+        example: 120
+        description: "Proximity threshold for time proximity cheat."
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "id of cheating detection."
+      current_state:
+        type: "string"
+        example: "RUNNING"
+        description: "State of the detection."
+        enum:
+        - "QUEUED"
+        - "RUNNING"
+        - "DISABLED"
+        - "FINISHED"
+      results:
+        type: "integer"
+        format: "int64"
+        example: 20
+        description: "Number of detected events in detection."
+      answer_similarity_state:
+        type: "string"
+        example: "RUNNING"
+        description: "state of detection run of answer similarity."
+        enum:
+        - "QUEUED"
+        - "RUNNING"
+        - "DISABLED"
+        - "FINISHED"
+      location_similarity_state:
+        type: "string"
+        example: "RUNNING"
+        description: "state of detection run of location_similarity."
+        enum:
+        - "QUEUED"
+        - "RUNNING"
+        - "DISABLED"
+        - "FINISHED"
+      time_proximity_state:
+        type: "string"
+        example: "RUNNING"
+        description: "state of detection run of time proximity."
+        enum:
+        - "QUEUED"
+        - "RUNNING"
+        - "DISABLED"
+        - "FINISHED"
+      minimal_solve_time_state:
+        type: "string"
+        example: "RUNNING"
+        description: "state of detection run of minimal solve time."
+        enum:
+        - "QUEUED"
+        - "RUNNING"
+        - "DISABLED"
+        - "FINISHED"
+      forbidden_commands_state:
+        type: "string"
+        example: "RUNNING"
+        description: "state of detection run of forbidden commands."
+        enum:
+        - "QUEUED"
+        - "RUNNING"
+        - "DISABLED"
+        - "FINISHED"
+      no_commands_state:
+        type: "string"
+        example: "RUNNING"
+        description: "state of detection run of no commands."
+        enum:
+        - "QUEUED"
+        - "RUNNING"
+        - "DISABLED"
+        - "FINISHED"
+    description: "Basic information about cheating detection."
+  CheatingDetectionRestResource:
+    type: "object"
+    properties:
+      content:
+        type: "array"
+        description: "Retrieved Cheating detections from databases."
+        items:
+          $ref: "#/definitions/CheatingDetectionDTO"
+      pagination:
+        description: "Pagination including: page number, number of elements in page,\
+          \ size, total elements and total pages."
+        $ref: "#/definitions/Pagination"
+    description: "Content (Retrieved data) and meta information about REST API result\
+      \ page. Including page number, number of elements in page, size of elements,\
+      \ total number of elements and total number of pages"
   ClusteringLevelDTO:
     type: "object"
     properties:
@@ -4064,6 +5381,9 @@ definitions:
         type: "integer"
         format: "int64"
       max_participant_score:
+        type: "integer"
+        format: "int32"
+      max_achievable_score:
         type: "integer"
         format: "int32"
       max_participant_time:
@@ -4115,6 +5435,54 @@ definitions:
         items:
           $ref: "#/definitions/ClusteringLevelDTO"
     description: "Clustering visualization."
+  CompactLevelViewDTO:
+    type: "object"
+    properties:
+      level_id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of the level."
+      title:
+        type: "string"
+        example: "Intro level"
+        description: "Title of the level."
+      users:
+        type: "array"
+        description: "Users that played the level."
+        items:
+          $ref: "#/definitions/CompactLevelViewUserDTO"
+    description: "Information needed for compact level visualization."
+  CompactLevelViewEventDTO:
+    type: "object"
+    properties:
+      timestamp:
+        type: "integer"
+        format: "int64"
+        example: 364897891
+        description: "Timestamp of the event."
+      type:
+        type: "string"
+        example: "cz.muni.csirt.kypo.events.trainings.TrainingRunResumed"
+        description: "Type of the event."
+      commands:
+        type: "array"
+        description: "Commands used between the last event and this event."
+        items:
+          type: "string"
+    description: "Information about a specific event for compact level visualization."
+  CompactLevelViewUserDTO:
+    type: "object"
+    properties:
+      user:
+        description: "Information about the user."
+        $ref: "#/definitions/UserRefDTO"
+      events:
+        type: "array"
+        description: "Events from the training run this user was in."
+        items:
+          $ref: "#/definitions/CompactLevelViewEventDTO"
+    description: "Information about a specific user for compact level visualization."
   CorrectAnswerDTO:
     type: "object"
     properties:
@@ -4140,6 +5508,94 @@ definitions:
         type: "string"
         example: "username"
         description: "Identifier of the variant answer."
+  DetectionEventParticipantDTO:
+    type: "object"
+    properties:
+      ip_address:
+        type: "string"
+        example: "1.1.1.1"
+        description: "Ip address of participant."
+      occurred_at:
+        type: "string"
+        format: "date-time"
+        example: "1.1.2022 5:55:23"
+        description: "Time when the event occurred."
+      solved_in_time:
+        type: "integer"
+        format: "int64"
+        example: 20
+        description: "Time in which the level was solved."
+      participant_name:
+        type: "string"
+        example: "John Doe"
+        description: "Name of the participant."
+      user_id:
+        type: "integer"
+        format: "int64"
+        example: 6
+        description: "User id of participant."
+      detection_event_id:
+        type: "integer"
+        format: "int64"
+        example: 3
+        description: "the id of detection event"
+    description: "Basic Information about a detection event participant."
+  DetectionEventParticipantRestResource:
+    type: "object"
+    properties:
+      content:
+        type: "array"
+        description: "Retrieved Event participants from databases."
+        items:
+          $ref: "#/definitions/DetectionEventParticipantDTO"
+      pagination:
+        description: "Pagination including: page number, number of elements in page,\
+          \ size, total elements and total pages."
+        $ref: "#/definitions/Pagination"
+    description: "Content (Retrieved data) and meta information about REST API result\
+      \ page. Including page number, number of elements in page, size of elements,\
+      \ total number of elements and total number of pages"
+  DetectionEventRestResource:
+    type: "object"
+    properties:
+      content:
+        type: "array"
+        description: "Retrieved Detection events from databases."
+        items:
+          $ref: "#/definitions/AbstractDetectionEventDTO"
+      pagination:
+        description: "Pagination including: page number, number of elements in page,\
+          \ size, total elements and total pages."
+        $ref: "#/definitions/Pagination"
+    description: "Content (Retrieved data) and meta information about REST API result\
+      \ page. Including page number, number of elements in page, size of elements,\
+      \ total number of elements and total number of pages"
+  EMIAnswerDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractAnswerDTO"
+    - type: "object"
+      properties:
+        options:
+          type: "array"
+          description: "List of all available options for EMI statement."
+          items:
+            $ref: "#/definitions/EMIOptionDTO"
+      description: "Holds an answer data about the specific EMI statement."
+  EMIOptionDTO:
+    type: "object"
+    properties:
+      text:
+        type: "string"
+        example: "ssh"
+        description: "Text of the EMI option"
+      participants:
+        type: "array"
+        description: "List of the participants that have chosen this FFQ answer."
+        items:
+          $ref: "#/definitions/UserRefDTO"
+      correct:
+        type: "boolean"
+    description: "Holds a data about the specific EMI option."
   EntityErrorDetail:
     type: "object"
     properties:
@@ -4255,6 +5711,31 @@ definitions:
         description: "The order of the correct option in the list of extended matching\
           \ options."
         minimum: 0
+  FFQAnswerDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractAnswerDTO"
+    - type: "object"
+      properties:
+        participants:
+          type: "array"
+          description: "List of the participants that have chosen this FFQ answer."
+          items:
+            $ref: "#/definitions/UserRefDTO"
+        correct:
+          type: "boolean"
+      description: "Holds a data about the specific FFQ answer."
+  ForbiddenCommandsDetectionEventDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractDetectionEventDTO"
+    - type: "object"
+      properties:
+        forbidden_commands:
+          type: "array"
+          example: "1"
+          description: "List of forbidden commands."
+          items:
+            type: "string"
+      description: "A detection event of type Forbidden Commands."
   HintDTO:
     type: "object"
     required:
@@ -4684,6 +6165,46 @@ definitions:
         format: "int64"
       displayed_solution:
         type: "boolean"
+  LocationSimilarityDetectionEventDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractDetectionEventDTO"
+    - type: "object"
+      properties:
+        ip_address:
+          type: "string"
+          example: "1.1.1.1"
+          description: "Ip address of participant."
+        dns:
+          type: "string"
+          example: "fi.muni.cz"
+          description: "DNS of participant."
+        address_deploy:
+          type: "boolean"
+      description: "A detection event of type Location Similarity."
+  MCQAnswerDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractAnswerDTO"
+    - type: "object"
+      properties:
+        participants:
+          type: "array"
+          description: "List of the participants that have chosen this MCQ option"
+          items:
+            $ref: "#/definitions/UserRefDTO"
+        correct:
+          type: "boolean"
+      description: "Holds a data about the specific MCQ option."
+  MinimalSolveTimeDetectionEventDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractDetectionEventDTO"
+    - type: "object"
+      properties:
+        minimal_solve_time:
+          type: "integer"
+          format: "int64"
+          example: 1
+          description: "Minimal time required to solve the level."
+      description: "A detection event of type Minimal Solve Time."
   MitreTechniqueDTO:
     type: "object"
     required:
@@ -4699,6 +6220,12 @@ definitions:
         example: "T1548.001"
     description: "Represent 'how' an trainee achieves a tactical goal of the training\
       \ level by performing an action."
+  NoCommandsDetectionEventDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractDetectionEventDTO"
+    - type: "object"
+      properties: {}
+      description: "A detection event of type No Commands."
   Pageable:
     type: "object"
     properties:
@@ -4944,6 +6471,39 @@ definitions:
         description: "Statements displayed to the participant in case of EMI."
         items:
           $ref: "#/definitions/ExtendedMatchingStatementDTO"
+  QuestionVisualizationDTO:
+    type: "object"
+    required:
+    - "question_type"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        example: 1
+        description: "Main identifier of the question."
+      question_type:
+        type: "string"
+        example: "FFQ"
+        description: "Type of the question."
+        enum:
+        - "FFQ"
+        - "MCQ"
+        - "EMI"
+      text:
+        type: "string"
+        example: "What transport protocol is used for reliable transmission?"
+        description: "The content of the question."
+      order:
+        type: "integer"
+        format: "int32"
+        example: 0
+        description: "Order of the question, starts with 0"
+      answers:
+        type: "array"
+        description: "Free form question answers to questions submitted by participants."
+        items:
+          $ref: "#/definitions/AbstractAnswerDTO"
+    description: "Information needed to visualize assessments statistic."
   ReferenceSolutionNodeDTO:
     type: "object"
     required:
@@ -5040,6 +6600,17 @@ definitions:
         example: 1
         description: "The order of hint in training level"
     description: "A taken brief textual description to aid the participant."
+  TimeProximityDetectionEventDTO:
+    allOf:
+    - $ref: "#/definitions/AbstractDetectionEventDTO"
+    - type: "object"
+      properties:
+        threshold:
+          type: "integer"
+          format: "int64"
+          example: 1
+          description: "Time threshold for detection."
+      description: "A detection event of type Time Proximity."
   TimelineDTO:
     type: "object"
     properties:
@@ -5607,8 +7178,7 @@ definitions:
         example: "[3,15]"
         description: "Ids of sandboxes which are assigned to training run."
         items:
-          type: "integer"
-          format: "int64"
+          type: "string"
       last_edited:
         type: "string"
         format: "date-time"
@@ -5999,119 +7569,102 @@ definitions:
             \ the level. Default is true."
       description: "Imported training level."
   TrainingLevelUpdateDTO:
-    type: "object"
-    required:
-    - "answer"
-    - "id"
-    - "incorrect_answer_limit"
-    - "max_score"
-    - "solution_penalized"
-    - "title"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-        example: 1
-        description: "Main identifier of level."
-      title:
-        type: "string"
-        example: "Training Level1"
-        description: "Short textual description of the level."
-      level_type:
-        type: "string"
-        example: "TRAINING_LEVEL"
-        description: "Type of the level."
-        enum:
-        - "INFO_LEVEL"
-        - "TRAINING_LEVEL"
-        - "ACCESS_LEVEL"
-        - "ASSESSMENT_LEVEL"
-      max_score:
-        type: "integer"
-        format: "int32"
-        example: 20
-        description: "The maximum score a participant can achieve during a level."
-        minimum: 0
-        maximum: 100
-      answer:
-        type: "string"
-        example: "secretAnswer"
-        description: "Keyword found in training, used for access next level."
-        minLength: 0
-        maxLength: 50
-      answer_variable_name:
-        type: "string"
-        example: "username"
-        description: "Identifier that is used to obtain answer from remote storage."
-        minLength: 0
-        maxLength: 50
-      content:
-        type: "string"
-        example: "Play me"
-        description: "The information and experiences that are directed towards an\
-          \ player."
-      solution:
-        type: "string"
-        example: "This is how you do it"
-        description: "Instruction how to get answer in training."
-      solution_penalized:
-        type: "boolean"
-        example: false
-        description: "Sign if displaying of solution is penalized."
-      estimated_duration:
-        type: "integer"
-        format: "int32"
-        example: 20
-        description: "Estimated time (minutes) taken by the player to solve the level."
-      incorrect_answer_limit:
-        type: "integer"
-        format: "int32"
-        example: 5
-        description: "How many times participant can submit incorrect answer before\
-          \ displaying solution."
-        minimum: 0
-        maximum: 100
-      hints:
-        type: "array"
-        description: "Information which helps participant resolve the level."
-        uniqueItems: true
-        items:
-          $ref: "#/definitions/HintDTO"
-      variant_answers:
-        type: "boolean"
-        example: false
-        description: "Indicates if flags/answers are randomly generated and are different\
-          \ for each trainee. Default is false."
-      reference_solution:
-        type: "array"
-        example: "false"
-        description: "Sequence of commands that leads to the level answer."
-        items:
-          $ref: "#/definitions/ReferenceSolutionNodeDTO"
-      mitre_techniques:
-        type: "array"
-        description: "List of mitre techniques used in the training level."
-        items:
-          $ref: "#/definitions/MitreTechniqueDTO"
-      expected_commands:
-        type: "array"
-        description: "Set of the expected commands to be executed during the training\
-          \ level."
-        uniqueItems: true
-        items:
+    allOf:
+    - $ref: "#/definitions/AbstractLevelUpdateDTO"
+    - type: "object"
+      required:
+      - "answer"
+      - "incorrect_answer_limit"
+      - "max_score"
+      - "solution_penalized"
+      properties:
+        max_score:
+          type: "integer"
+          format: "int32"
+          example: 20
+          description: "The maximum score a participant can achieve during a level."
+          minimum: 0
+          maximum: 100
+        answer:
           type: "string"
-      minimal_possible_solve_time:
-        type: "integer"
-        format: "int32"
-        example: 5
-        description: "Minimal possible solve time (minutes) that must be taken by\
-          \ the player to solve the level."
-      commands_required:
-        type: "boolean"
-        example: true
-        description: "Indicates if at least one command has to be executed to complete\
-          \ the level. Default is true."
-    description: "Training level to update."
+          example: "secretAnswer"
+          description: "Keyword found in training, used for access next level."
+          minLength: 0
+          maxLength: 50
+        answer_variable_name:
+          type: "string"
+          example: "username"
+          description: "Identifier that is used to obtain answer from remote storage."
+          minLength: 0
+          maxLength: 50
+        content:
+          type: "string"
+          example: "Play me"
+          description: "The information and experiences that are directed towards\
+            \ an player."
+        solution:
+          type: "string"
+          example: "This is how you do it"
+          description: "Instruction how to get answer in training."
+        solution_penalized:
+          type: "boolean"
+          example: false
+          description: "Sign if displaying of solution is penalized."
+        estimated_duration:
+          type: "integer"
+          format: "int32"
+          example: 20
+          description: "Estimated time (minutes) taken by the player to solve the\
+            \ level."
+        incorrect_answer_limit:
+          type: "integer"
+          format: "int32"
+          example: 5
+          description: "How many times participant can submit incorrect answer before\
+            \ displaying solution."
+          minimum: 0
+          maximum: 100
+        hints:
+          type: "array"
+          description: "Information which helps participant resolve the level."
+          uniqueItems: true
+          items:
+            $ref: "#/definitions/HintDTO"
+        variant_answers:
+          type: "boolean"
+          example: false
+          description: "Indicates if flags/answers are randomly generated and are\
+            \ different for each trainee. Default is false."
+        reference_solution:
+          type: "array"
+          example: "false"
+          description: "Sequence of commands that leads to the level answer."
+          items:
+            $ref: "#/definitions/ReferenceSolutionNodeDTO"
+        mitre_techniques:
+          type: "array"
+          description: "List of mitre techniques used in the training level."
+          items:
+            $ref: "#/definitions/MitreTechniqueDTO"
+        expected_commands:
+          type: "array"
+          description: "Set of the expected commands to be executed during the training\
+            \ level."
+          uniqueItems: true
+          items:
+            type: "string"
+        minimal_possible_solve_time:
+          type: "integer"
+          format: "int32"
+          example: 5
+          description: "Minimal possible solve time (minutes) that must be taken by\
+            \ the player to solve the level."
+        commands_required:
+          type: "boolean"
+          example: true
+          description: "Indicates if at least one command has to be executed to complete\
+            \ the level. Default is true."
+      description: "Training level to update."
   TrainingLevelVisualizationDTO:
     allOf:
     - $ref: "#/definitions/AbstractLevelVisualizationDTO"
@@ -6146,6 +7699,9 @@ definitions:
       estimated_time:
         type: "integer"
         format: "int64"
+      max_achievable_score:
+        type: "integer"
+        format: "int32"
       max_participant_score:
         type: "integer"
         format: "int32"
@@ -6203,8 +7759,7 @@ definitions:
         - "FINISHED"
         - "ARCHIVED"
       sandbox_instance_ref_id:
-        type: "integer"
-        format: "int64"
+        type: "string"
         description: "Reference to the received sandbox."
       participant_ref:
         description: "Reference to participant of training run."
@@ -6218,9 +7773,8 @@ definitions:
         format: "int64"
         description: "Id of associated training instance"
       previous_sandbox_instance_ref_id:
-        type: "integer"
-        format: "int64"
-        example: 12
+        type: "string"
+        example: "12"
         description: "Id of a previous sandbox instance assigned to the training run."
     description: "The act, or a recording, of performing actions during training from\
       \ a perspective of one concrete participant."
@@ -6253,12 +7807,23 @@ definitions:
         - "FINISHED"
         - "ARCHIVED"
       sandbox_instance_ref_id:
-        type: "integer"
-        format: "int64"
+        type: "string"
         description: "Reference to the received sandbox."
       participant_ref:
         description: "Reference to participant of training run."
         $ref: "#/definitions/UserRefDTO"
+      event_logging_state:
+        type: "boolean"
+        example: true
+        description: "Boolean to check whether event logging works."
+      command_logging_state:
+        type: "boolean"
+        example: true
+        description: "Boolean to check whether command logging works."
+      has_detection_event:
+        type: "boolean"
+        example: true
+        description: "Boolean to check whether the run has any detection events logged"
     description: "The act, or a recording, of performing actions during training from\
       \ a perspective of one concrete participant."
   TrainingRunRestResource:

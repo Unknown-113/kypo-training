@@ -11,12 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriBuilder;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -106,6 +108,18 @@ public class UserService {
         } catch (CustomWebClientException ex) {
             throw new MicroserviceApiException("Error when calling user management service API to obtain users by IDs: " + userRefIds + ".", ex);
         }
+    }
+
+    public List<UserRefDTO> getUsersRefDTOByGivenUserIds(List<Long> participantsRefIds) {
+        List<UserRefDTO> participants = new ArrayList<>();
+        PageResultResource<UserRefDTO> participantsInfo;
+        int page = 0;
+        do {
+            participantsInfo = this.getUsersRefDTOByGivenUserIds(participantsRefIds, PageRequest.of(page, 999), null, null);
+            participants.addAll(participantsInfo.getContent());
+            page++;
+        } while (page < participantsInfo.getPagination().getTotalPages());
+        return participants;
     }
 
     /**

@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.PathBuilder;
+import cz.muni.csirt.kypo.events.trainings.LevelCompleted;
 import cz.muni.ics.kypo.training.api.responses.SandboxInfo;
 import cz.muni.ics.kypo.training.exceptions.*;
 import cz.muni.ics.kypo.training.exceptions.errors.JavaApiError;
@@ -135,7 +136,7 @@ public class TrainingRunServiceTest {
         infoLevel2.setTrainingDefinition(trainingDefinition2);
 
         sandboxInfo = new SandboxInfo();
-        sandboxInfo.setId(7L);
+        sandboxInfo.setId("7L");
 
         trainingRun1 = testDataFactory.getRunningRun();
         trainingRun1.setId(1L);
@@ -586,6 +587,26 @@ public class TrainingRunServiceTest {
     public void testFinishTrainingRunNotAnsweredLevel() {
         given(trainingRunRepository.findByIdWithLevel(any(Long.class))).willReturn(Optional.of(trainingRun1));
         assertThrows(EntityConflictException.class, () -> trainingRunService.finishTrainingRun(trainingRun1.getId()));
+    }
+
+    @Test
+    public void testCheckRunEventLogging() {
+        given(elasticsearchApiService.findAllEventsFromTrainingRun(trainingRun1)).willReturn(List.of());
+        given(elasticsearchApiService.findAllEventsFromTrainingRun(trainingRun2)).willReturn(List.of(new LevelCompleted()));
+
+        assertFalse(trainingRunService.checkRunEventLogging(trainingRun1));
+        assertTrue(trainingRunService.checkRunEventLogging(trainingRun2));
+    }
+
+    @Test
+    public void testCheckRunCommandLogging() {
+        trainingRun1.getTrainingInstance().setLocalEnvironment(false);
+        trainingRun2.getTrainingInstance().setLocalEnvironment(true);
+        given(elasticsearchApiService.findAllConsoleCommandsBySandbox(anyString())).willReturn(List.of());
+        given(elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(anyString(), anyLong())).willReturn(List.of(new HashMap<>()));
+
+        assertFalse(trainingRunService.checkRunCommandLogging(trainingRun1));
+        assertTrue(trainingRunService.checkRunCommandLogging(trainingRun2));
     }
 
     private Mono<ClientResponse> buildMockResponse(Object body) throws IOException {

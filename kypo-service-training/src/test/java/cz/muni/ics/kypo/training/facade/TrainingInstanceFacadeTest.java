@@ -70,6 +70,8 @@ public class TrainingInstanceFacadeTest {
     @MockBean
     private TrainingRunService trainingRunService;
     @MockBean
+    private CheatingDetectionService cheatingDetectionService;
+    @MockBean
     private ElasticsearchApiService elasticsearchApiService;
     @MockBean
     private TrainingDefinitionService trainingDefinitionService;
@@ -97,8 +99,8 @@ public class TrainingInstanceFacadeTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         trainingInstanceFacade = new TrainingInstanceFacade(trainingInstanceService, trainingDefinitionService, trainingRunService,
-                userService, elasticsearchApiService, securityService, sandboxApiService, trainingInstanceMapper, trainingRunMapper,
-                trainingFeedbackApiService);
+                cheatingDetectionService, userService, elasticsearchApiService, securityService, sandboxApiService, trainingInstanceMapper,
+                trainingRunMapper, trainingFeedbackApiService);
 
         pageable = PageRequest.of(0, 5);
 

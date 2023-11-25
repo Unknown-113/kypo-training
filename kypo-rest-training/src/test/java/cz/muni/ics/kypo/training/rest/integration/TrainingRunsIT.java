@@ -165,11 +165,11 @@ public class TrainingRunsIT {
                 .build();
 
         sandboxInfo1 = new SandboxInfo();
-        sandboxInfo1.setId(1L);
+        sandboxInfo1.setId("1L");
         sandboxInfo2 = new SandboxInfo();
-        sandboxInfo2.setId(2L);
+        sandboxInfo2.setId("2L");
         sandboxInfo3 = new SandboxInfo();
-        sandboxInfo3.setId(3L);
+        sandboxInfo3.setId("3L");
 
         userRefDTO1 = new UserRefDTO();
         userRefDTO1.setUserRefFullName("Ing. John Doe");
@@ -238,7 +238,7 @@ public class TrainingRunsIT {
         isCorrectAnswerDTO.setRemainingAttempts(trainingLevel1.getIncorrectAnswerLimit() - trainingRun1.getIncorrectAnswerCount());
 
         sandboxInfo = new SandboxInfo();
-        sandboxInfo.setId(1L);
+        sandboxInfo.setId("1L");
 
         sandboxInfoPageResult = new PageResultResourcePython();
         sandboxInfoPageResult.setResults(Arrays.asList(sandboxInfo));

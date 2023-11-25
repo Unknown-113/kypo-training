@@ -5,7 +5,7 @@
     <parent>
         <groupId>cz.muni.ics.kypo</groupId>
         <artifactId>kypo-training</artifactId>
-        <version>2.1.2</version>
+        <version>2.3.6</version>
     </parent>
     <artifactId>kypo-rest-training</artifactId>
     <packaging>jar</packaging>
@@ -14,12 +14,12 @@
         <dependency>
             <groupId>cz.muni.ics.kypo</groupId>
             <artifactId>kypo-service-training</artifactId>
-            <version>2.1.2</version>
+            <version>2.3.6</version>
         </dependency>
         <dependency> <!-- reuse src/test/java code from persistence module! -->
             <groupId>cz.muni.ics.kypo</groupId>
             <artifactId>kypo-persistence-training</artifactId>
-            <version>2.1.2</version>
+            <version>2.3.6</version>
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>

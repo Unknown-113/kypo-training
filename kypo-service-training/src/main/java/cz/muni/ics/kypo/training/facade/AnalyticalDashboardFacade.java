@@ -49,7 +49,8 @@ public class AnalyticalDashboardFacade {
      * @return data for analytical dashboard
      */
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)")
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#definitionId)" +
+            "or @securityService.isOrganizerForGivenTrainingDefinition(#definitionId)")
     @TransactionalWO
     public List<TrainingInstanceAnalyticalDashboardDTO> getDataForAnalyticalDashboard(Long definitionId) {
         List<TrainingLevel> trainingLevels = trainingDefinitionService.findAllLevelsFromDefinition(definitionId).stream()
@@ -66,7 +67,7 @@ public class AnalyticalDashboardFacade {
         //INSTANCES
         for (TrainingInstance instance: trainingInstances) {
             TrainingInstanceData instanceData = new TrainingInstanceData(instance.getId(), trainingLevels);
-            var eventsByTrainingRunsAndLevels= elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(instance);
+            var eventsByTrainingRunsAndLevels= elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(instance.getId());
             List<ParticipantAnalyticalDashboardDTO> participantsDetails = processParticipants(eventsByTrainingRunsAndLevels, instanceData, trainingLevelIds);
 
             TrainingInstanceAnalyticalDashboardDTO analysedInstance = new TrainingInstanceAnalyticalDashboardDTO();

@@ -28,10 +28,8 @@ import org.springframework.util.StringUtils;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +41,7 @@ public class TrainingInstanceFacade {
     private final TrainingInstanceService trainingInstanceService;
     private final TrainingDefinitionService trainingDefinitionService;
     private final TrainingRunService trainingRunService;
+    private final CheatingDetectionService cheatingDetectionService;
     private final UserService userService;
     private final SecurityService securityService;
     private final TrainingInstanceMapper trainingInstanceMapper;
@@ -58,6 +57,7 @@ public class TrainingInstanceFacade {
      * @param trainingInstanceService   the training instance service
      * @param trainingDefinitionService the training definition service
      * @param trainingRunService        the training run service
+     * @param cheatingDetectionService  the cheating detection service
      * @param trainingInstanceMapper    the training instance mapper
      * @param trainingRunMapper         the training run mapper
      * @param userService               the user service
@@ -68,6 +68,7 @@ public class TrainingInstanceFacade {
     public TrainingInstanceFacade(TrainingInstanceService trainingInstanceService,
                                   TrainingDefinitionService trainingDefinitionService,
                                   TrainingRunService trainingRunService,
+                                  CheatingDetectionService cheatingDetectionService,
                                   UserService userService,
                                   ElasticsearchApiService elasticsearchApiService,
                                   SecurityService securityService,
@@ -78,6 +79,7 @@ public class TrainingInstanceFacade {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.trainingRunService = trainingRunService;
+        this.cheatingDetectionService = cheatingDetectionService;
         this.userService = userService;
         this.elasticsearchApiService = elasticsearchApiService;
         this.securityService = securityService;
@@ -127,7 +129,8 @@ public class TrainingInstanceFacade {
      * @param trainingInstanceUpdateDTO to be updated
      * @return new access token if it was changed
      */
-    @IsOrganizerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+                      "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceUpdateDTO.getId())")
     @TransactionalWO
     public String update(TrainingInstanceUpdateDTO trainingInstanceUpdateDTO) {
         TrainingInstance updatedTrainingInstance = trainingInstanceMapper.mapUpdateToEntity(trainingInstanceUpdateDTO);
@@ -276,6 +279,7 @@ public class TrainingInstanceFacade {
             deleteBashCommandsByAccessToken(trainingInstance.getAccessToken());
         }
         trainingInstanceService.delete(trainingInstance);
+        cheatingDetectionService.deleteAllCheatingDetectionsOfTrainingInstance(trainingInstanceId);
         trainingFeedbackApiService.deleteAllGraphsByTrainingInstance(trainingInstanceId);
         elasticsearchApiService.deleteEventsByTrainingInstanceId(trainingInstance.getId());
     }
@@ -355,9 +359,22 @@ public class TrainingInstanceFacade {
     @TransactionalRO
     public PageResultResource<TrainingRunDTO> findTrainingRunsByTrainingInstance(Long trainingInstanceId, Boolean isActive, Pageable pageable) {
         Page<TrainingRun> trainingRuns = trainingInstanceService.findTrainingRunsByTrainingInstance(trainingInstanceId, isActive, pageable);
-        PageResultResource<TrainingRunDTO> trainingRunDTOsPageResult = trainingRunMapper.mapToPageResultResource(trainingRuns);
+        Set<Long> runIdsWithWorkingEventLogging = checkLogging(trainingRuns, trainingRunService::checkRunEventLogging);
+        Set<Long> runIdsWithWorkingCommandLogging = checkLogging(trainingRuns, trainingRunService::checkRunCommandLogging);
+        PageResultResource<TrainingRunDTO> trainingRunDTOsPageResult = trainingRunMapper.mapToPageResultResourceLogging(trainingRuns, runIdsWithWorkingEventLogging, runIdsWithWorkingCommandLogging);
         addParticipantsToTrainingRunDTOs(trainingRunDTOsPageResult.getContent());
         return trainingRunDTOsPageResult;
+    }
+
+    private Set<Long> checkLogging(Page<TrainingRun> runs, Function<TrainingRun, Boolean> checker) {
+        Set<Long> runIdsWithWorkingLogging = new HashSet<>();
+        runs.forEach(trainingRun -> {
+            if (checker.apply(trainingRun)) {
+                runIdsWithWorkingLogging.add(trainingRun.getId());
+            }
+        });
+
+        return runIdsWithWorkingLogging;
     }
 
     private void addParticipantsToTrainingRunDTOs(List<TrainingRunDTO> trainingRunDTOS) {

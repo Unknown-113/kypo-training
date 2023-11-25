@@ -70,6 +70,8 @@ public class TrainingDefinitionServiceTest {
     private TrainingInstanceRepository trainingInstanceRepository;
     @MockBean
     private MitreTechniqueRepository mitreTechniqueRepository;
+
+    private HintRepository hintRepository;
     @MockBean
     private UserRefRepository userRefRepository;
     @MockBean
@@ -96,7 +98,7 @@ public class TrainingDefinitionServiceTest {
         MockitoAnnotations.openMocks(this);
         trainingDefinitionService = new TrainingDefinitionService(trainingDefinitionRepository, abstractLevelRepository,
                 infoLevelRepository, trainingLevelRepository, assessmentLevelRepository, accessLevelRepository, trainingInstanceRepository,
-                mitreTechniqueRepository, userRefRepository, securityService, userService, defaultLevelsLoader, cloneMapper);
+                mitreTechniqueRepository, hintRepository, userRefRepository, securityService, userService, defaultLevelsLoader, cloneMapper);
 
         infoLevel = testDataFactory.getInfoLevel1();
         infoLevel.setId(1L);

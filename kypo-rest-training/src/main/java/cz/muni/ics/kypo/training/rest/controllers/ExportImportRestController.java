@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * The controller for export/import.
@@ -147,31 +148,34 @@ public class ExportImportRestController {
                     value = "Export training instance scores",
                     response = String.class,
                     nickname = "exportTrainingInstanceScores",
-                    produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                    produces = MediaType.TEXT_PLAIN_VALUE)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Training instance score exported", response = String.class),
             @ApiResponse(code = 404, message = "Training instance not found.", response = ApiError.class),
             @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
     })
-    @GetMapping(path = "/exports/training-instances/{instanceId}/scores", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    @GetMapping(path = "/exports/training-instances/{instanceId}/scores", produces = "text/plain")
     public ResponseEntity<byte[]> exportTrainingInstanceScores(
             @ApiParam(value = "Id of training instance", required = true)
             @PathVariable("instanceId") Long trainingInstanceId) {
         FileToReturnDTO file = exportImportFacade.exportUserScoreFromTrainingInstance(trainingInstanceId);
-        HttpHeaders header = zipHeader(file.getTitle(), file.getContent().length);
+        HttpHeaders header = fileHttpHeader(new MediaType("text", "plain"),
+                file.getTitle() + AbstractFileExtensions.CSV_FILE_EXTENSION, file.getContent().length);
         return new ResponseEntity<>(file.getContent(), header, HttpStatus.OK);
     }
 
     /**
-     * Create a http header for zip files
+     * Create a http header for file exports
+     * @param type      media type of the file
      * @param fileName  name of the file
      * @param length    size of the file
      * @return corresponding {@link HttpHeaders}
      */
-    private HttpHeaders zipHeader(String fileName, int length) {
+    private HttpHeaders fileHttpHeader(MediaType type, String fileName, int length) {
         HttpHeaders header = new HttpHeaders();
-        header.setContentType(new MediaType("application", "octet-stream"));
-        header.set("Content-Disposition", "inline; filename=" + fileName + AbstractFileExtensions.ZIP_FILE_EXTENSION);
+        header.setContentType(type);
+        header.setAccessControlExposeHeaders(List.of("Content-Disposition"));
+        header.set("Content-Disposition", "inline; filename=" + fileName);
         header.setContentLength(length);
         return header;
     }

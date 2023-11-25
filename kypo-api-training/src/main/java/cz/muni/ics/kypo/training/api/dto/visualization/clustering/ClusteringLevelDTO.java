@@ -12,6 +12,7 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
     private final String title;
     private final long estimatedTime;
     private final int maxParticipantScore;
+    private final int maxAchievableScore;
     private final long maxParticipantTime;
     private final float averageTime;
     private final float averageScore;
@@ -22,6 +23,7 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
         this.title = builder.title;
         this.estimatedTime = builder.estimatedTime;
         this.maxParticipantScore = builder.maxParticipantScore;
+        this.maxAchievableScore = builder.maxAchievableScore;
         this.maxParticipantTime = builder.maxParticipantTime;
         this.averageTime = builder.averageTime;
         this.averageScore = builder.averageScore;
@@ -38,6 +40,9 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
 
     public int getMaxParticipantScore() {
         return maxParticipantScore;
+    }
+    public int getMaxAchievableScore() {
+        return maxAchievableScore;
     }
 
     public long getMaxParticipantTime() {
@@ -74,6 +79,7 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
         private String title;
         private long estimatedTime;
         private int maxParticipantScore;
+        private int maxAchievableScore;
         private long maxParticipantTime;
         private float averageTime;
         private float averageScore;
@@ -96,6 +102,10 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
 
         public ClusteringLevelBuilder maxParticipantScore(int maxParticipantScore) {
             this.maxParticipantScore = maxParticipantScore;
+            return this;
+        }
+        public ClusteringLevelBuilder maxAchievableScore(int maxAchievableScore) {
+            this.maxAchievableScore = maxAchievableScore;
             return this;
         }
 

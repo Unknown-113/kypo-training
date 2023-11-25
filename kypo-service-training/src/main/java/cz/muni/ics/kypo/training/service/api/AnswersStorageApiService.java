@@ -37,7 +37,7 @@ public class AnswersStorageApiService {
      * @param answerVariableName identifier of the answer.
      * @throws MicroserviceApiException error with specific message when calling answer storage microservice.
      */
-    public String getCorrectAnswerByCloudSandboxIdAndVariableName(Long sandboxId, String answerVariableName){
+    public String getCorrectAnswerByCloudSandboxIdAndVariableName(String sandboxId, String answerVariableName){
         try {
             return answersStorageWebClient
                     .get()
@@ -79,7 +79,7 @@ public class AnswersStorageApiService {
      * @param sandboxId id of the sandbox.
      * @throws MicroserviceApiException error with specific message when calling answer storage microservice.
      */
-    public SandboxAnswersInfo getAnswersBySandboxId(Long sandboxId) {
+    public SandboxAnswersInfo getAnswersBySandboxId(String sandboxId) {
         try {
             return answersStorageWebClient
                     .get()
@@ -118,7 +118,7 @@ public class AnswersStorageApiService {
      * @param sandboxIds ids of the sandboxes.
      * @throws MicroserviceApiException error with specific message when calling answers storage microservice.
      */
-    public PageResultResource<SandboxAnswersInfo> getAnswersBySandboxIds(List<Long> sandboxIds) {
+    public PageResultResource<SandboxAnswersInfo> getAnswersBySandboxIds(List<String> sandboxIds) {
         try {
             return answersStorageWebClient
                     .get()

@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+
 
 /**
  * The type Security service.
@@ -75,8 +77,7 @@ public class SecurityService {
         TrainingInstance trainingInstance = trainingInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new EntityNotFoundException(new EntityErrorDetail(TrainingInstance.class, "id", instanceId.getClass(),
                         instanceId, "The necessary permissions are required for a resource.")));
-        return trainingInstance.getOrganizers().stream()
-                .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+        return isOrganizerOfGivenInstance(trainingInstance);
     }
 
     /**
@@ -105,6 +106,26 @@ public class SecurityService {
                         "id", definitionId.getClass(), definitionId, "The necessary permissions are required for a resource.")));
         return trainingDefinition.getAuthors().stream()
                 .anyMatch(a -> a.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
+    }
+
+    /**
+     * Is organizer of one of the training instances from the given training definition
+     * @param definitionId the definition id
+     * @return the boolean
+     */
+    public boolean isOrganizerForGivenTrainingDefinition(Long definitionId) {
+        List<TrainingInstance> instances = trainingInstanceRepository.findAllByTrainingDefinitionId(definitionId);
+        for (TrainingInstance trainingInstance : instances) {
+            if (isOrganizerOfGivenInstance(trainingInstance)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isOrganizerOfGivenInstance(TrainingInstance trainingInstance) {
+        return trainingInstance.getOrganizers().stream()
+                .anyMatch(o -> o.getUserRefId().equals(getUserRefIdFromUserAndGroup()));
     }
 
     /**

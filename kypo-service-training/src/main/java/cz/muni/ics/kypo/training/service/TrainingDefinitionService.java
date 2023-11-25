@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.hibernate.exception.ConstraintViolationException;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -43,6 +44,7 @@ public class TrainingDefinitionService {
     private AssessmentLevelRepository assessmentLevelRepository;
     private AccessLevelRepository accessLevelRepository;
     private MitreTechniqueRepository mitreTechniqueRepository;
+    private HintRepository hintRepository;
     private UserRefRepository userRefRepository;
     private SecurityService securityService;
     private UserService userService;
@@ -71,6 +73,7 @@ public class TrainingDefinitionService {
                                      AccessLevelRepository accessLevelRepository,
                                      TrainingInstanceRepository trainingInstanceRepository,
                                      MitreTechniqueRepository mitreTechniqueRepository,
+                                     HintRepository hintRepository,
                                      UserRefRepository userRefRepository,
                                      SecurityService securityService,
                                      UserService userService,
@@ -84,6 +87,7 @@ public class TrainingDefinitionService {
         this.accessLevelRepository = accessLevelRepository;
         this.trainingInstanceRepository = trainingInstanceRepository;
         this.mitreTechniqueRepository = mitreTechniqueRepository;
+        this.hintRepository = hintRepository;
         this.userRefRepository = userRefRepository;
         this.securityService = securityService;
         this.userService = userService;
@@ -177,6 +181,7 @@ public class TrainingDefinitionService {
      */
     public TrainingDefinition create(TrainingDefinition trainingDefinition, boolean createDefaultContent) {
         addLoggedInUserToTrainingDefinitionAsAuthor(trainingDefinition);
+        trainingDefinition.setCreatedAt(getCurrentTimeInUTC());
         if(createDefaultContent) {
             this.createDefaultLevels(trainingDefinition);
         }
@@ -834,7 +839,12 @@ public class TrainingDefinitionService {
         } else if (level instanceof AccessLevel accessLevel) {
             accessLevelRepository.delete(accessLevel);
         } else {
-            trainingLevelRepository.delete((TrainingLevel) level);
+            try {
+                trainingLevelRepository.delete((TrainingLevel) level);
+            } catch (ConstraintViolationException ex) {
+                hintRepository.deleteHintsByLevelId(level.getId());
+                trainingLevelRepository.delete((TrainingLevel) level);
+            }
         }
     }
 
@@ -848,6 +858,7 @@ public class TrainingDefinitionService {
             trainingDefinition.addAuthor(user.get());
         } else {
             UserRef newUser = securityService.createUserRefEntityByInfoFromUserAndGroup();
+            userRefRepository.saveAndFlush(newUser);
             trainingDefinition.addAuthor(newUser);
         }
     }

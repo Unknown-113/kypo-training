@@ -124,3 +124,4 @@ docker_image_push_development:
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_CUSTOM_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG --build-arg PROPRIETARY_REPO_URL=$PROPRIETARY_REPO_URL
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
+

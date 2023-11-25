@@ -9,6 +9,7 @@ import java.util.Objects;
 public class TrainingResultsDTO {
 
     private long estimatedTime;
+    private int maxAchievableScore;
     private int maxParticipantScore;
     private int maxParticipantTrainingScore;
     private int maxParticipantAssessmentScore;
@@ -25,6 +26,14 @@ public class TrainingResultsDTO {
 
     public void setEstimatedTime(long estimatedTime) {
         this.estimatedTime = estimatedTime;
+    }
+
+    public int getMaxAchievableScore() {
+        return maxAchievableScore;
+    }
+
+    public void setMaxAchievableScore(int maxAchievableScore) {
+        this.maxAchievableScore = maxAchievableScore;
     }
 
     public int getMaxParticipantScore() {

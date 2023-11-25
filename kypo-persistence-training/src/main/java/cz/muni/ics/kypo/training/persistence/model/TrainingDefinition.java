@@ -87,6 +87,8 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     private LocalDateTime lastEdited;
     @Column(name = "last_edited_by", nullable = false)
     private String lastEditedBy;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     /**
      * Gets unique identification number of Training definition
@@ -327,6 +329,22 @@ public class TrainingDefinition extends AbstractEntity<Long> {
         this.lastEditedBy = lastEditedBy;
     }
 
+    /**
+     * Gets the time the Training Definition was created at
+     * @return the time of Training Definition creation
+     */
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    /**
+     * Sets the creation time of the Training Definition
+     * @param createdAt time of Training Definition creation
+     */
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(description, outcomes, prerequisites, state, title);
@@ -360,6 +378,7 @@ public class TrainingDefinition extends AbstractEntity<Long> {
                 ", showStepperBar=" + showStepperBar +
                 ", estimatedDuration=" + estimatedDuration +
                 ", lastEdited=" + lastEdited +
+                ", createdAt=" + createdAt +
                 '}';
     }
 }

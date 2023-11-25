@@ -41,7 +41,7 @@ import java.util.Set;
         HintMapper.class, AttachmentMapper.class,
         QuestionMapper.class, ReferenceSolutionNodeMapper.class,
         MitreTechniqueMapper.class
-        },
+},
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface LevelMapper extends ParentMapper {
     // INFO LEVEL

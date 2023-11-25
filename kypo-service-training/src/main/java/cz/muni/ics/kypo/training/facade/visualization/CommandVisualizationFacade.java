@@ -1,9 +1,11 @@
 package cz.muni.ics.kypo.training.facade.visualization;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import cz.muni.ics.kypo.training.annotations.security.IsOrganizerOrAdmin;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.CommandDTO;
 import cz.muni.ics.kypo.training.api.enums.MistakeType;
 import cz.muni.ics.kypo.training.exceptions.BadRequestException;
 import cz.muni.ics.kypo.training.exceptions.EntityConflictException;
@@ -14,7 +16,10 @@ import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.service.*;
+import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
 import cz.muni.ics.kypo.training.service.api.TrainingFeedbackApiService;
+import cz.muni.ics.kypo.training.utils.AbstractCommandPrefixes;
+import cz.muni.ics.kypo.training.utils.ElasticSearchCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +29,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 @Service
 @Transactional
@@ -38,6 +46,8 @@ public class CommandVisualizationFacade {
     private final UserService userService;
     private final TrainingFeedbackApiService trainingFeedbackApiService;
     private final TrainingRunMapper trainingRunMapper;
+    private final ElasticsearchApiService elasticsearchApiService;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     public CommandVisualizationFacade(TrainingInstanceService trainingInstanceService,
@@ -45,13 +55,15 @@ public class CommandVisualizationFacade {
                                       SecurityService securityService,
                                       UserService userService,
                                       TrainingFeedbackApiService trainingFeedbackApiService,
-                                      TrainingRunMapper trainingRunMapper) {
+                                      TrainingRunMapper trainingRunMapper, ElasticsearchApiService elasticsearchApiService, ObjectMapper objectMapper) {
         this.trainingInstanceService = trainingInstanceService;
         this.trainingRunService = trainingRunService;
         this.securityService = securityService;
         this.userService = userService;
         this.trainingFeedbackApiService = trainingFeedbackApiService;
         this.trainingRunMapper = trainingRunMapper;
+        this.elasticsearchApiService = elasticsearchApiService;
+        this.objectMapper = objectMapper;
     }
 
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR, " +
@@ -127,7 +139,7 @@ public class CommandVisualizationFacade {
     @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) " +
             "or @securityService.isOrganizerOfGivenTrainingRun(#runId) " +
             "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
-    public Object getAllCommandsByTrainingRun(Long runId) {
+    public Object getAllCommandsByFinishedTrainingRun(Long runId) {
         this.checkIfTrainingRunIsFinished(runId);
         return trainingFeedbackApiService.getAllCommandsByTrainingRun(runId);
     }
@@ -165,4 +177,78 @@ public class CommandVisualizationFacade {
         }
     }
 
+    /**
+     * Retrieve all commands from a specific Training Instance
+     * @param trainingInstanceId id of Training Instance
+     * @return map of {@link TrainingRunDTO} and commands from a specific {@link TrainingInstance}
+     */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) " +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
+    @TransactionalRO
+    public Map<Long, List<CommandDTO>> getAllCommandsByTrainingInstance(Long trainingInstanceId) {
+        Set<TrainingRun> trainingRunSet = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId);
+        Map<Long, List<CommandDTO>> commandsByTrainingRun = new HashMap<>(trainingRunSet.size());
+        trainingRunSet.stream().map(TrainingRun::getId).forEach(runId -> commandsByTrainingRun.put(runId, getAllCommandsByTrainingRun(runId)));
+        return commandsByTrainingRun;
+    }
+
+    /**
+     * Retrieve all commands from a specific training run
+     * @param runId id of the Training Run
+     * @return list of commands executed during a training run
+     */
+    @PreAuthorize("hasAnyAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR) " +
+            "or @securityService.isOrganizerOfGivenTrainingRun(#runId)" +
+            "or @securityService.isTraineeOfGivenTrainingRun(#runId)")
+    @TransactionalRO
+    public List<CommandDTO> getAllCommandsByTrainingRun(Long runId) {
+        TrainingRun trainingRun = trainingRunService.findById(runId);
+        TrainingInstance trainingInstance = trainingRun.getTrainingInstance();
+        List<Map<String, Object>> elasticCommands;
+
+        if (trainingInstance.isLocalEnvironment()) {
+            String accessToken = trainingInstance.getAccessToken();
+            Long userId = trainingRun.getParticipantRef().getId();
+            elasticCommands = elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(accessToken, userId);
+        } else {
+            String sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
+            elasticCommands = elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxId);
+        }
+
+        return elasticCommandsToCommandDTOlist(elasticCommands, trainingRun.getStartTime());
+    }
+
+    private List<CommandDTO> elasticCommandsToCommandDTOlist(List<Map<String, Object>> elasticCommands, LocalDateTime runStartTime) {
+        List<CommandDTO> commandDTOS = new ArrayList<>(elasticCommands.size());
+        elasticCommands.stream()
+                .map(elasticCommand -> objectMapper.convertValue(elasticCommand, ElasticSearchCommand.class))
+                .forEach(command -> commandDTOS.add(elasticSearchCommandToCommandDTO(command, runStartTime)));
+        return commandDTOS;
+    }
+
+    private CommandDTO elasticSearchCommandToCommandDTO(ElasticSearchCommand elasticSearchCommand, LocalDateTime runStartTime) {
+        String[] commandSplit =  elasticSearchCommand.getCmd().split(" ", 2);
+        String command = commandSplit[0];
+        if (AbstractCommandPrefixes.isPrefix(command)) {
+            commandSplit = commandSplit[1].split(" ", 2);
+            command += " " + commandSplit[0];
+        }
+
+        // if there were no options, the option string should be null
+        String options = null;
+        if (commandSplit.length == 2) {
+            options = commandSplit[1];
+        }
+        String timestampString = elasticSearchCommand.getTimestampStr();
+        LocalDateTime commandTimestamp = ZonedDateTime.parse(timestampString).toLocalDateTime();
+
+        return CommandDTO.builder()
+                .commandType(elasticSearchCommand.getCmdType())
+                .cmd(command)
+                .timestamp(commandTimestamp)
+                .trainingTime(Duration.between(runStartTime, commandTimestamp))
+                .fromHostIp(elasticSearchCommand.getIp())
+                .options(options)
+                .build();
+    }
 }

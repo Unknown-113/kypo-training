@@ -55,8 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 @SpringBootTest(classes = {TestDataFactory.class})
@@ -206,6 +205,22 @@ public class TrainingInstanceServiceTest {
         trainingInstance1.setStartTime(LocalDateTime.now(Clock.systemUTC()).minusHours(1L));
         trainingInstance1.setEndTime(LocalDateTime.now(Clock.systemUTC()).minusHours(10L));
         assertThrows(EntityConflictException.class, () -> trainingInstanceService.create(trainingInstance1));
+    }
+
+    @Test
+    public void createTrainingInstanceWithTrimmedAccessToken() {
+        given(trainingInstanceRepository.save(trainingInstance2)).willReturn(trainingInstance2);
+        given(organizerRefRepository.findUserByUserRefId(user.getUserRefId())).willReturn(Optional.of(user));
+        given(securityService.getUserRefIdFromUserAndGroup()).willReturn(user.getUserRefId());
+
+        // multiple spaces for emphasis
+        String accessToken = "    chonk   ";
+        given(accessTokenRepository.findOneByAccessToken(accessToken)).willReturn(null);
+        trainingInstance2.setAccessToken(accessToken);
+        trainingInstanceService.create(trainingInstance2);
+
+        String accessTokenWithoutPin = trainingInstance2.getAccessToken().split("-")[0];
+        assertEquals(accessToken.trim(), accessTokenWithoutPin);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.rest.controllers;
 
 import cz.muni.ics.kypo.training.api.dto.run.TrainingRunDTO;
+import cz.muni.ics.kypo.training.api.dto.visualization.CommandDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.VisualizationInfoDTO;
 import cz.muni.ics.kypo.training.api.enums.MistakeType;
 import cz.muni.ics.kypo.training.facade.visualization.CommandVisualizationFacade;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -215,7 +217,7 @@ public class CommandVisualizationRestController {
     }
 
     /**
-     * Get all commands executed in the given training run.
+     * Get all commands executed in the given finished training run.
      *
      * @param runId ID of training run.
      * @return all commands executed during the given training run.
@@ -234,7 +236,7 @@ public class CommandVisualizationRestController {
     public ResponseEntity<Object> getAllCommandsByTrainingRun(
             @ApiParam(value = "Training Run ID", required = true) @PathVariable Long runId
     ) {
-        return ResponseEntity.ok(commandVisualizationFacade.getAllCommandsByTrainingRun(runId));
+        return ResponseEntity.ok(commandVisualizationFacade.getAllCommandsByFinishedTrainingRun(runId));
     }
 
     /**
@@ -259,5 +261,50 @@ public class CommandVisualizationRestController {
     ) {
         List<TrainingRunDTO> trainingRuns = commandVisualizationFacade.findTrainingRunsByTrainingInstance(instanceId);
         return ResponseEntity.ok(trainingRuns);
+    }
+
+    /**
+     * Get all commands executed in the given training instance associated by training runs
+     * @param instanceId ID of training instance.
+     * @return all commands executed in the given training instance associated by training runs
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get all commands executed in the given training instance associated by training runs",
+            response = Object.class,
+            nickname = "getAllCommandsByTrainingInstance",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "All commands for the given training instance found", response = Map.class),
+            @ApiResponse(code = 404, message = "All commands for the given training instance not found", response = ApiError.class)
+    })
+    @GetMapping(path = "/commands/training-instances/{instanceId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<Long, List<CommandDTO>>> getAllCommandsByTrainingInstance(
+            @ApiParam(value = "Training Instance ID", required = true) @PathVariable("instanceId") Long instanceId
+    ) {
+        return ResponseEntity.ok(commandVisualizationFacade.getAllCommandsByTrainingInstance(instanceId));
+    }
+
+
+    /**
+     * Get all commands executed in the given Training Run
+     * @param runId ID of Training Run
+     * @return all commands executed in the given Training Run
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get all commands executed in the given Training Run",
+            response = Object.class,
+            nickname = "getAllCommandsByRun",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "All commands for the given Training Run found", response = List.class),
+            @ApiResponse(code = 404, message = "All commands for the given Training Run not found", response = ApiError.class)
+    })
+    @GetMapping(path = "/commands/training-runs/{runId}/all", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<CommandDTO>> getAllCommandsByRun(
+            @ApiParam(value = "Training Run ID", required = true) @PathVariable("runId") Long runId
+    ) {
+        return ResponseEntity.ok(commandVisualizationFacade.getAllCommandsByTrainingRun(runId));
     }
 }

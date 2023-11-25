@@ -23,7 +23,7 @@ public class AccessTrainingRunDTO {
     @ApiModelProperty(value = "Sign if stepper bar should be displayed.", example = "false")
     private boolean showStepperBar;
     @ApiModelProperty(value = "Main identifier of sandbox which is assigned to training run.", example = "2")
-    private Long sandboxInstanceRefId;
+    private String sandboxInstanceRefId;
     @ApiModelProperty(value = "First level in the current training run.")
     private AbstractLevelDTO abstractLevelDTO;
     @ApiModelProperty(value = "Information about all levels in training instance.")
@@ -87,7 +87,7 @@ public class AccessTrainingRunDTO {
      *
      * @return the sandbox instance id
      */
-    public Long getSandboxInstanceRefId() {
+    public String getSandboxInstanceRefId() {
         return sandboxInstanceRefId;
     }
 
@@ -96,7 +96,7 @@ public class AccessTrainingRunDTO {
      *
      * @param sandboxInstanceRefId the sandbox instance id
      */
-    public void setSandboxInstanceRefId(Long sandboxInstanceRefId) {
+    public void setSandboxInstanceRefId(String sandboxInstanceRefId) {
         this.sandboxInstanceRefId = sandboxInstanceRefId;
     }
 

@@ -50,7 +50,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -154,7 +153,7 @@ public class VisualizationFacade {
                     trainingRun.getTrainingInstance().getAccessToken(),
                     trainingRun.getParticipantRef().getUserRefId());
         }
-        Long sandboxIdentifier = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
+        String sandboxIdentifier = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
         return elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxIdentifier);
     }
 
@@ -183,20 +182,7 @@ public class VisualizationFacade {
     @IsTraineeOrAdmin
     public List<UserRefDTO> getParticipantsForGivenTrainingInstance(Long trainingInstanceId) {
         Set<Long> participantsRefIds = visualizationService.getAllParticipantsRefIdsForSpecificTrainingInstance(trainingInstanceId);
-        return getAllUsersRefsByGivenUsersIds(new ArrayList<>(participantsRefIds));
-    }
-
-    private List<UserRefDTO> getAllUsersRefsByGivenUsersIds(List<Long> participantsRefIds) {
-        List<UserRefDTO> participants = new ArrayList<>();
-        PageResultResource<UserRefDTO> participantsInfo;
-        int page = 0;
-        do {
-            participantsInfo = userService.getUsersRefDTOByGivenUserIds(participantsRefIds, PageRequest.of(page, 999), null, null);
-            participants.addAll(participantsInfo.getContent());
-            page++;
-        }
-        while (page < participantsInfo.getPagination().getTotalPages());
-        return participants;
+        return getUserRefsByIds(new ArrayList<>(participantsRefIds)).values().stream().toList();
     }
 
     /**
@@ -219,7 +205,7 @@ public class VisualizationFacade {
         Map<Long, String> answerVariableNameByLevelId = abstractLevels.stream()
                 .filter(abstractLevel -> abstractLevel.getClass() == TrainingLevel.class && ((TrainingLevel) abstractLevel).getAnswerVariableName() != null)
                 .collect(Collectors.toMap(AbstractLevel::getId, abstractLevel -> ((TrainingLevel) abstractLevel).getAnswerVariableName()));
-        Map<Long, Map<String, String>> variantAnswersBySandbox = getVariantAnswers(trainingInstance, !answerVariableNameByLevelId.isEmpty());
+        Map<String, Map<String, String>> variantAnswersBySandbox = getVariantAnswers(trainingInstance, !answerVariableNameByLevelId.isEmpty());
 
         VisualizationProgressDTO visualizationProgressDTO = new VisualizationProgressDTO();
         visualizationProgressDTO.setStartTime(trainingInstance.getStartTime().toEpochSecond(ZoneOffset.UTC));
@@ -228,7 +214,7 @@ public class VisualizationFacade {
         visualizationProgressDTO.setPlayers(getListOfPlayers(trainingInstanceId));
         visualizationProgressDTO.setLevels(getLevelDefinitions(trainingDefinitionOfTrainingRun.getId()));
 
-        Map<Long, Map<Long, List<AbstractAuditPOJO>>> eventsFromElasticsearch = elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(trainingInstance);
+        Map<Long, Map<Long, List<AbstractAuditPOJO>>> eventsFromElasticsearch = elasticsearchApiService.getAggregatedEventsByTrainingRunsAndLevels(trainingInstance.getId());
 
         //Player progress
         List<PlayerProgress> playerProgresses = new ArrayList<>();
@@ -271,30 +257,39 @@ public class VisualizationFacade {
     }
 
     private String getLevelVariantAnswer(Long levelId, AbstractAuditPOJO levelEvent, Map<Long, String> answerVariableNameByLevelId,
-                                         boolean isLocalEnvironment, Map<Long, Map<String, String>> variantAnswersBySandbox) {
+                                         boolean isLocalEnvironment, Map<String, Map<String, String>> variantAnswersBySandbox) {
         // if local environment is enabled, the sandbox is identified by user ID, otherwise unique sandbox ID is used
-        Long sandboxIdentifier = isLocalEnvironment ? levelEvent.getUserRefId() : levelEvent.getSandboxId();
+        String sandboxIdentifier = isLocalEnvironment ? String.valueOf(levelEvent.getUserRefId()) : levelEvent.getSandboxId();
         return variantAnswersBySandbox.getOrDefault(sandboxIdentifier, new HashMap<>()).get(answerVariableNameByLevelId.get(levelId));
     }
 
-    private Map<Long, Map<String, String>> getVariantAnswers(TrainingInstance instance, boolean isVariableNamesDefined) {
+    private Map<String, Map<String, String>> getVariantAnswers(TrainingInstance instance, boolean isVariableNamesDefined) {
         if (!isVariableNamesDefined) {
             return new HashMap<>();
         }
         // TODO cache the response because those data are not changing and frontend requests progress data periodically
-        return instance.isLocalEnvironment() ?
-            answersStorageApiService.getAnswersByAccessTokenAndUserIds(instance.getAccessToken(), trainingInstanceService.findAllTraineesByTrainingInstance(instance.getId()))
+        Map<String, Map<String, String>> variantAnswers;
+        if (instance.isLocalEnvironment()) {
+            variantAnswers =
+                    answersStorageApiService.getAnswersByAccessTokenAndUserIds(instance.getAccessToken(), trainingInstanceService.findAllTraineesByTrainingInstance(instance.getId()))
                     .getContent()
                     .stream()
-                    .collect(Collectors.toMap(SandboxAnswersInfo::getUserId, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers()))) :
-            answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(instance.getId()))
+                    .collect(Collectors.toMap(this::userIdToString, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
+        } else {
+            variantAnswers = answersStorageApiService.getAnswersBySandboxIds(trainingInstanceService.findAllSandboxesUsedByTrainingInstanceId(instance.getId()))
                     .getContent()
                     .stream()
                     .collect(Collectors.toMap(SandboxAnswersInfo::getSandboxRefId, sandboxAnswerInfo -> getAnswersByVariableNames(sandboxAnswerInfo.getVariantAnswers())));
+        }
+        return variantAnswers;
+    }
+
+    private String userIdToString(SandboxAnswersInfo answersInfo) {
+        return answersInfo.getUserId().toString();
     }
 
     private List<UserRefDTO> getListOfPlayers(Long instanceId) {
-        List<UserRefDTO> players = getParticipantsForGivenTrainingInstance(instanceId);
+        List<UserRefDTO> players = new ArrayList<>(getParticipantsForGivenTrainingInstance(instanceId));
         players.sort(Comparator.comparingLong(UserRefDTO::getUserRefId));
         return players;
     }
@@ -347,7 +342,92 @@ public class VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public ClusteringVisualizationDTO getClusteringVisualizationsForOrganizer(Long trainingInstanceId) {
-        return getClusteringVisualizations(trainingInstanceId, null);
+        return getClusteringVisualizations(trainingInstanceId);
+    }
+
+    /**
+     * Gather all the necessary information for designer to display clustering visualizations.
+     *
+     * @param trainingDefinitionId id of training definition
+     * @return {@link ClusteringVisualizationDTO} with data from all training instances with the specified training definition
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)")
+    @TransactionalRO
+    public ClusteringVisualizationDTO getClusteringVisualizationsForTrainingDefinition(Long trainingDefinitionId) {
+        List<TrainingInstance> instances = trainingDefinitionService.findAllTrainingInstancesByTrainingDefinitionId(trainingDefinitionId);
+        TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);
+        Long estimatedDuration = trainingDefinition.getEstimatedDuration();
+        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition.getId());
+        return getClustering(instances, levels, estimatedDuration);
+    }
+
+    /**
+     * Gather all the necessary information for designer to display clustering visualizations from specified instances
+     *
+     * @param instanceIds ids of training instances
+     * @return {@link ClusteringVisualizationDTO} with data from all the specified training instances
+     */
+    @TransactionalRO
+    public ClusteringVisualizationDTO getClusteringForTrainingInstances(List<Long> instanceIds) {
+        List<TrainingInstance> instances = instanceIds.stream().map(trainingInstanceService::findById).toList();
+        TrainingDefinition trainingDefinition = trainingInstanceService.findByIdIncludingDefinition(instanceIds.get(0)).getTrainingDefinition();
+        Long estimatedDuration = trainingDefinition.getEstimatedDuration();
+        List<AbstractLevel> levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingDefinition.getId());
+        return getClustering(instances, levels, estimatedDuration);
+    }
+
+    private ClusteringVisualizationDTO getClustering(List<TrainingInstance> instances,
+                                                     List<AbstractLevel> levels,
+                                                     Long estimatedDuration) {
+        TrainingInstanceStatistics trainingInstanceStatistics = new TrainingInstanceStatistics();
+        TrainingData trainingData = getTrainingData(instances, levels, estimatedDuration, trainingInstanceStatistics);
+
+
+        int maxScore = 0;
+        for (AbstractLevel level : levels) {
+            maxScore += level.getMaxScore();
+        }
+        // we reuse the TrainingInstanceStatistics class as the corresponding class
+        // for training definition statistics would have the same fields and same functions
+        TrainingResultsDTO finalResultsField = mapToFinalResultsDTO(
+                trainingData.estimatedDuration,
+                trainingData.participantsByTrainingRuns,
+                trainingInstanceStatistics);
+        finalResultsField.setMaxAchievableScore(maxScore);
+        return new ClusteringVisualizationDTO(finalResultsField, trainingData.levelsField);
+    }
+
+    private TrainingData getTrainingData(List<TrainingInstance> instances,
+                                         List<AbstractLevel> levels,
+                                         Long estimatedDuration,
+                                         TrainingInstanceStatistics trainingInstanceStatistics) {
+        TrainingData trainingData = new TrainingData();
+        trainingData.estimatedDuration = estimatedDuration;
+        trainingData.participantsByTrainingRuns = new HashMap<>();
+        trainingData.levelsField = new ArrayList<>(levels.size());
+        // the mapping is map<levelId, map<runId, list<events>>>
+        trainingData.events = new HashMap<>(levels.size());
+
+        for (TrainingInstance trainingInstance : instances) {
+            Map<Long, Map<Long, List<AbstractAuditPOJO>>> instanceEvents = elasticsearchApiService.getAggregatedEventsByLevelsAndTrainingRuns(trainingInstance.getId());
+            for (AbstractLevel level : levels) {
+                trainingData.events.computeIfAbsent(level.getId(), value -> new HashMap<>())
+                        .putAll(instanceEvents.get(level.getId()));
+            }
+
+            trainingData.participantsByTrainingRuns.putAll(
+                    getUserRefDTOsFromInstanceEvents(
+                            trainingInstance.getId(),
+                            instanceEvents,
+                            this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns)
+            );
+        }
+
+        for (AbstractLevel level : levels) {
+            trainingData.levelsField.add(mapToLevelResultDTO(level, trainingData, trainingInstanceStatistics));
+        }
+        return trainingData;
     }
 
     /**
@@ -361,19 +441,30 @@ public class VisualizationFacade {
     @TransactionalWO
     public ClusteringVisualizationDTO getClusteringVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
-        return getClusteringVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
+        return getClusteringVisualizations(trainingRun.getTrainingInstance().getId());
     }
 
-    private ClusteringVisualizationDTO getClusteringVisualizations(Long trainingInstanceId, Long userRefIdToAnonymize) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns,
-                this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns, userRefIdToAnonymize);
+    private ClusteringVisualizationDTO getClusteringVisualizations(Long trainingInstanceId) {
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
+                elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns,
+                this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns);
         TrainingInstanceStatistics trainingInstanceStatistics = new TrainingInstanceStatistics();
+        TrainingData trainingData = new TrainingData(
+                trainingInstanceData.trainingDefinition.getEstimatedDuration(),
+                trainingInstanceData.events,
+                trainingInstanceData.participantsByTrainingRuns);
         // Must be before getFinalResultsField() because of statistics
         List<ClusteringLevelDTO> levelsField = new ArrayList<>();
+        int maxScore = 0;
         for (AbstractLevel abstractLevel : trainingInstanceData.levels) {
-            levelsField.add(mapToLevelResultDTO(abstractLevel, trainingInstanceData, trainingInstanceStatistics));
+            levelsField.add(mapToLevelResultDTO(abstractLevel, trainingData, trainingInstanceStatistics));
+            maxScore += abstractLevel.getMaxScore();
         }
-        TrainingResultsDTO finalResultsField = mapToFinalResultsDTO(trainingInstanceData, trainingInstanceStatistics);
+        TrainingResultsDTO finalResultsField = mapToFinalResultsDTO(
+                trainingData.estimatedDuration,
+                trainingData.participantsByTrainingRuns,
+                trainingInstanceStatistics);
+        finalResultsField.setMaxAchievableScore(maxScore);
         return new ClusteringVisualizationDTO(finalResultsField, levelsField);
     }
 
@@ -387,7 +478,7 @@ public class VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public List<PlayerDataDTO> getTableVisualizationsForOrganizer(Long trainingInstanceId) {
-        return getTableVisualizations(trainingInstanceId, null);
+        return getTableVisualizations(trainingInstanceId);
     }
 
     /**
@@ -401,18 +492,16 @@ public class VisualizationFacade {
     @TransactionalWO
     public List<PlayerDataDTO> getTableVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
-        return getTableVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
+        return getTableVisualizations(trainingRun.getTrainingInstance().getId());
     }
 
-    private List<PlayerDataDTO> getTableVisualizations(Long trainingInstanceId, Long userRefIdToAnonymize) {
+    private List<PlayerDataDTO> getTableVisualizations(Long trainingInstanceId) {
         TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
-                elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels, this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels, userRefIdToAnonymize);
+                elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels,
+                this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels);
 
         return trainingInstanceData.events.entrySet().stream().map(runEvents -> {
             AbstractAuditPOJO lastLevelEvent = null;
-            int unfinishedAssessmentLevelScore = 0;
-            int unfinishedTrainingLevelScore = 0;
-            AbstractLevel unfinishedLevel = null;
             UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(runEvents.getKey());
             TablePlayerDTO tablePlayerDataDTO = new TablePlayerDTO(participantInfo, runEvents.getKey());
 
@@ -420,19 +509,13 @@ public class VisualizationFacade {
                 List<AbstractAuditPOJO> levelEvents = runEvents.getValue().get(abstractLevel.getId());
                 if (levelEvents != null) {
                     lastLevelEvent = levelEvents.get(levelEvents.size() - 1);
-                    unfinishedLevel = abstractLevel;
                 } else {
                     levelEvents = Collections.emptyList();
                 }
                 tablePlayerDataDTO.addTableLevel(mapToTableLevelDTO(abstractLevel, levelEvents));
             }
-            if (!(lastLevelEvent instanceof TrainingRunEnded) && unfinishedLevel instanceof TrainingLevel) {
-                unfinishedTrainingLevelScore = lastLevelEvent.getActualScoreInLevel();
-            } else if (!(lastLevelEvent instanceof TrainingRunEnded) && unfinishedLevel instanceof AssessmentLevel) {
-                unfinishedAssessmentLevelScore = lastLevelEvent.getActualScoreInLevel();
-            }
-            tablePlayerDataDTO.setTrainingScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalTrainingScore() + unfinishedTrainingLevelScore);
-            tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore() + unfinishedAssessmentLevelScore);
+            tablePlayerDataDTO.setTrainingScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalTrainingScore());
+            tablePlayerDataDTO.setAssessmentScore(lastLevelEvent == null ? 0 : lastLevelEvent.getTotalAssessmentScore());
             tablePlayerDataDTO.setFinished(lastLevelEvent instanceof TrainingRunEnded);
             tablePlayerDataDTO.setTrainingTime(lastLevelEvent == null ? 0 : lastLevelEvent.getTrainingTime());
             return tablePlayerDataDTO;
@@ -449,8 +532,9 @@ public class VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public List<LevelTabsLevelDTO> getLevelTabsVisualizations(Long trainingInstanceId) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns,
-                this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns, null);
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
+                elasticsearchApiService::getAggregatedEventsByLevelsAndTrainingRuns,
+                this::retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns);
         List<LevelTabsLevelDTO> levelTabsData = new ArrayList<>();
         for (AbstractLevel level : trainingInstanceData.levels) {
             levelTabsData.add(mapToLevelTabsLevelDTO(level, trainingInstanceData));
@@ -500,7 +584,7 @@ public class VisualizationFacade {
             "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
     @TransactionalRO
     public TimelineDTO getTimelineVisualizationsForTrainingInstance(Long trainingInstanceId) {
-        return getTimelineVisualizations(trainingInstanceId, null);
+        return getTimelineVisualizations(trainingInstanceId);
     }
 
     /**
@@ -514,12 +598,13 @@ public class VisualizationFacade {
     @TransactionalWO
     public TimelineDTO getTimelineVisualizationsForTrainee(Long trainingRunId) {
         TrainingRun trainingRun = trainingRunService.findByIdWithLevel(trainingRunId);
-        return getTimelineVisualizations(trainingRun.getTrainingInstance().getId(), trainingRun.getParticipantRef().getUserRefId());
+        return getTimelineVisualizations(trainingRun.getTrainingInstance().getId());
     }
 
-    private TimelineDTO getTimelineVisualizations(Long trainingInstanceId, Long userRefIdToAnonymize) {
-        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId, elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels,
-                this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels, userRefIdToAnonymize);
+    private TimelineDTO getTimelineVisualizations(Long trainingInstanceId) {
+        TrainingInstanceData trainingInstanceData = getTrainingInstanceData(trainingInstanceId,
+                elasticsearchApiService::getAggregatedEventsByTrainingRunsAndLevels,
+                this::retrieveRunIdsFromEventsAggregatedByRunsAndLevels);
 
         TimelineDTO timelineDTO = new TimelineDTO();
         timelineDTO.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
@@ -621,7 +706,7 @@ public class VisualizationFacade {
                 .id(abstractLevel.getId())
                 .order(abstractLevel.getOrder());
         AbstractAuditPOJO lastLevelEvent = levelEvents.isEmpty() ? null : levelEvents.get(levelEvents.size() -1);
-        if (!levelEvents.isEmpty()) {
+        if (!levelEvents.isEmpty() && (lastLevelEvent instanceof LevelCompleted || lastLevelEvent instanceof TrainingRunEnded)) {
             tableLevelBuilder.score(lastLevelEvent.getActualScoreInLevel());
         }
 
@@ -640,13 +725,14 @@ public class VisualizationFacade {
     }
 
     private ClusteringLevelDTO mapToLevelResultDTO(AbstractLevel abstractLevel,
-                                                   TrainingInstanceData trainingInstanceData,
+                                                   TrainingData trainingData,
                                                    TrainingInstanceStatistics trainingInstanceStatistics) {
         ClusteringLevelDTO.ClusteringLevelBuilder clusteringLevelBuilder = new ClusteringLevelDTO.ClusteringLevelBuilder()
                 .id(abstractLevel.getId())
                 .title(abstractLevel.getTitle())
                 .order(abstractLevel.getOrder())
-                .estimatedTime(TimeUnit.MINUTES.toMillis(abstractLevel.getEstimatedDuration()));
+                .estimatedTime(TimeUnit.MINUTES.toMillis(abstractLevel.getEstimatedDuration()))
+                .maxAchievableScore(abstractLevel.getMaxScore());
         if (abstractLevel instanceof TrainingLevel) {
             clusteringLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.TRAINING_LEVEL);
         } else if (abstractLevel instanceof InfoLevel) {
@@ -657,16 +743,14 @@ public class VisualizationFacade {
             clusteringLevelBuilder.levelType(cz.muni.ics.kypo.training.api.enums.LevelType.ACCESS_LEVEL);
         }
         LevelStatistics levelStatistics = new LevelStatistics();
-        Map<Long, List<AbstractAuditPOJO>> levelEventsOfTrainingRuns = trainingInstanceData.events.getOrDefault(abstractLevel.getId(), Collections.emptyMap());
+        Map<Long, List<AbstractAuditPOJO>> levelEventsOfTrainingRuns = trainingData.events.getOrDefault(abstractLevel.getId(), Collections.emptyMap());
         for (Map.Entry<Long, List<AbstractAuditPOJO>> trainingRunLevelEvents : levelEventsOfTrainingRuns.entrySet()) {
             AbstractAuditPOJO firstLevelEvent = trainingRunLevelEvents.getValue().get(0);
             AbstractAuditPOJO lastLevelEvent = trainingRunLevelEvents.getValue().get(trainingRunLevelEvents.getValue().size() - 1);
-            UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(trainingRunLevelEvents.getKey());
+            UserRefDTO participantInfo = trainingData.participantsByTrainingRuns.get(trainingRunLevelEvents.getKey());
             ClusteringLevelPlayerDTO playerDataDTOForLevel = new ClusteringLevelPlayerDTO(participantInfo, trainingRunLevelEvents.getKey(),
                     lastLevelEvent.getTrainingTime() - firstLevelEvent.getTrainingTime(), lastLevelEvent.getActualScoreInLevel(), lastLevelEvent instanceof LevelCompleted);
-//            if (lastLevelEvent instanceof LevelCompleted || lastLevelEvent instanceof TrainingRunEnded) {
             levelStatistics.updateStatistics(playerDataDTOForLevel.getTrainingTime(), playerDataDTOForLevel.getParticipantLevelScore());
-//            }
             if (!(lastLevelEvent instanceof LevelCompleted)) {
                 trainingInstanceStatistics.addTrainingRun(lastLevelEvent);
             }
@@ -695,12 +779,13 @@ public class VisualizationFacade {
                 .wrongAnswers(wrongAnswers);
     }
 
-    private TrainingResultsDTO mapToFinalResultsDTO(TrainingInstanceData trainingInstanceData,
+    private TrainingResultsDTO mapToFinalResultsDTO(Long estimatedDuration,
+                                                    Map<Long, UserRefDTO> participants,
                                                     TrainingInstanceStatistics trainingInstanceStatistics) {
         TrainingResultsDTO finalResults = new TrainingResultsDTO();
-        finalResults.setEstimatedTime(TimeUnit.MINUTES.toMillis(trainingInstanceData.trainingDefinition.getEstimatedDuration()));
+        finalResults.setEstimatedTime(TimeUnit.MINUTES.toMillis(estimatedDuration));
         for (Map.Entry<Long, AbstractAuditPOJO> lastEventOfTrainingRun : trainingInstanceStatistics.lastEventsOfTrainingRuns.entrySet()) {
-            UserRefDTO participantInfo = trainingInstanceData.participantsByTrainingRuns.get(lastEventOfTrainingRun.getKey());
+            UserRefDTO participantInfo = participants.get(lastEventOfTrainingRun.getKey());
             finalResults.addPlayerData(new TrainingResultsPlayerDTO(participantInfo, lastEventOfTrainingRun.getKey(), lastEventOfTrainingRun.getValue().getTrainingTime(),
                     lastEventOfTrainingRun.getValue().getTotalTrainingScore(), lastEventOfTrainingRun.getValue().getTotalAssessmentScore(), lastEventOfTrainingRun.getValue() instanceof TrainingRunEnded));
         }
@@ -716,39 +801,51 @@ public class VisualizationFacade {
     }
 
     private TrainingInstanceData getTrainingInstanceData(Long trainingInstanceId,
-                                                         Function<TrainingInstance, Map<Long, Map<Long, List<AbstractAuditPOJO>>>> aggregatedEventsFunction,
-                                                         Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>> trainingRunsIdsRetrieveFunction,
-                                                         @Nullable Long userRefIdToAnonymize) {
+                                                         Function<Long, Map<Long, Map<Long, List<AbstractAuditPOJO>>>> aggregatedEventsFunction,
+                                                         Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>> trainingRunsIdsRetrieveFunction) {
         TrainingInstanceData trainingInstanceData = new TrainingInstanceData();
         trainingInstanceData.trainingInstance = trainingInstanceService.findById(trainingInstanceId);
         trainingInstanceData.trainingDefinition = trainingInstanceData.trainingInstance.getTrainingDefinition();
         trainingInstanceData.levels = trainingDefinitionService.findAllLevelsFromDefinition(trainingInstanceData.trainingInstance.getTrainingDefinition().getId());
-        trainingInstanceData.events = aggregatedEventsFunction.apply(trainingInstanceData.trainingInstance);
-        Set<Long> trainingRunsIdsFromEvents = trainingRunsIdsRetrieveFunction.apply(trainingInstanceData.events);
-        Set<TrainingRun> trainingRuns = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId)
-                .stream()
-                .filter(trainingRun -> trainingRunsIdsFromEvents.contains(trainingRun.getId()))
-                .collect(Collectors.toSet());
-        List<Long> participantsIds = trainingRuns.stream()
-                .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
-                .collect(Collectors.toList());
-        Map<Long, UserRefDTO> participantsByIds = getAllUsersRefsByGivenUsersIds(participantsIds).stream()
-                .collect(Collectors.toMap(UserRefDTO::getUserRefId, Function.identity()));
-
-        if (userRefIdToAnonymize != null && !participantsByIds.isEmpty()) {
-            participantsByIds.values().forEach(userRefDTO -> this.anonymizeTheUser(userRefDTO, "other player"));
-            this.anonymizeTheUser(participantsByIds.get(userRefIdToAnonymize), "you");
-        }
-        trainingInstanceData.participantsByTrainingRuns = trainingRuns.stream()
-                .collect(Collectors.toMap(TrainingRun::getId, trainingRun -> participantsByIds.get(trainingRun.getParticipantRef().getUserRefId())));
+        trainingInstanceData.events = aggregatedEventsFunction.apply(trainingInstanceData.trainingInstance.getId());
+        trainingInstanceData.participantsByTrainingRuns = getUserRefDTOsFromInstanceEvents(trainingInstanceId,
+                                                                                           trainingInstanceData.events,
+                                                                                           trainingRunsIdsRetrieveFunction);
         return trainingInstanceData;
     }
 
-    private void anonymizeTheUser(UserRefDTO participant, String anonymizedName) {
-        participant.setUserRefFamilyName(anonymizedName);
-        participant.setUserRefFullName(anonymizedName);
-        participant.setUserRefGivenName(anonymizedName);
-        participant.setUserRefSub(anonymizedName);
+    private Map<Long, UserRefDTO> getUserRefDTOsFromInstanceEvents(Long trainingInstanceId,
+                                                                   Map<Long, Map<Long, List<AbstractAuditPOJO>>> trainingInstanceEvents,
+                                                                   Function<Map<Long, Map<Long, List<AbstractAuditPOJO>>>, Set<Long>> trainingRunsIdsRetrieveFunction) {
+        Set<Long> trainingRunsIdsFromEvents = trainingRunsIdsRetrieveFunction.apply(trainingInstanceEvents);
+        Set<TrainingRun> foundRuns = trainingRunService.findAllByTrainingInstanceId(trainingInstanceId)
+                .stream()
+                .filter(trainingRun -> trainingRunsIdsFromEvents.contains(trainingRun.getId()))
+                .collect(Collectors.toSet());
+        List<Long> userRefIds = foundRuns
+                .stream()
+                .map(trainingRun -> trainingRun.getParticipantRef().getUserRefId())
+                .toList();
+
+        Map<Long, UserRefDTO> userRefDTOsById = getUserRefsByIds(userRefIds);
+        return foundRuns.stream().collect(
+                Collectors.toMap(
+                        TrainingRun::getId,
+                        trainingRun -> userRefDTOsById.get(trainingRun.getParticipantRef().getUserRefId())));
+    }
+
+    private Map<Long, UserRefDTO> getUserRefsByIds(List<Long> userRefIds) {
+        Map<Long, UserRefDTO> users = new HashMap<>(userRefIds.size());
+        PageResultResource<UserRefDTO> participantsInfo;
+        int page = 0;
+
+        do {
+            participantsInfo = userService.getUsersRefDTOByGivenUserIds(userRefIds, PageRequest.of(page, 999), null, null);
+            participantsInfo.getContent().forEach(userRefDTO -> users.put(userRefDTO.getUserRefId(), userRefDTO));
+            page++;
+        } while (page < participantsInfo.getPagination().getTotalPages());
+
+        return users;
     }
 
     private Set<Long> retrieveRunsIdsFromEventsAggregatedByLevelsAndTrainingRuns(Map<Long, Map<Long, List<AbstractAuditPOJO>>> events) {
@@ -985,5 +1082,22 @@ public class VisualizationFacade {
         List<AbstractLevel> levels;
         Map<Long, Map<Long, List<AbstractAuditPOJO>>> events;
         Map<Long, UserRefDTO> participantsByTrainingRuns;
+    }
+
+    private class TrainingData {
+        Long estimatedDuration;
+        Map<Long, Map<Long, List<AbstractAuditPOJO>>> events;
+        Map<Long, UserRefDTO> participantsByTrainingRuns;
+
+        List<ClusteringLevelDTO> levelsField;
+
+        public TrainingData() {}
+        public TrainingData(Long estimatedDuration,
+                            Map<Long, Map<Long, List<AbstractAuditPOJO>>> events,
+                            Map<Long, UserRefDTO> participantsByTrainingRuns) {
+            this.estimatedDuration = estimatedDuration;
+            this.events = events;
+            this.participantsByTrainingRuns = participantsByTrainingRuns;
+        }
     }
 }

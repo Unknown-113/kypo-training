@@ -42,6 +42,10 @@ public class TrainingDefinitionDTO {
     private LocalDateTime lastEdited;
     @ApiModelProperty(value = "Name of the user who has done the last edit in definition.", example = "John Doe")
     private String lastEditedBy;
+    @ApiModelProperty(value = "Time of creation of definition.", example = "2017-10-19 10:23:54+02")
+    @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
+    private LocalDateTime createdAt;
+
 
     /**
      * Gets id.
@@ -259,6 +263,22 @@ public class TrainingDefinitionDTO {
         this.lastEditedBy = lastEditedBy;
     }
 
+    /**
+     * Gets the time the Training Definition was created at
+     * @return the time of Training Definition creation
+     */
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    /**
+     * Sets the creation time of the Training Definition
+     * @param createdAt time of Training Definition creation
+     */
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     @Override
     public String toString() {
         return "TrainingDefinitionDTO{" +
@@ -273,6 +293,7 @@ public class TrainingDefinitionDTO {
                 ", canBeArchived=" + canBeArchived +
                 ", estimatedDuration=" + estimatedDuration +
                 ", lastEdited=" + lastEdited +
+                ", createdAt=" + createdAt +
                 '}';
     }
 

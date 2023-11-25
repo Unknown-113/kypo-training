@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.service;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.assessmentlevel.question.QuestionAnswerDTO;
 import cz.muni.ics.kypo.training.exceptions.*;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -164,7 +166,7 @@ public class TrainingRunService {
             Long userId = trainingRun.getParticipantRef().getUserRefId();
             elasticsearchApiService.deleteCommandsByAccessTokenAndUserId(accessToken, userId);
         } else {
-            Long sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
+            String sandboxId = trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId();
             elasticsearchApiService.deleteCommandsBySandbox(sandboxId);
         }
         elasticsearchApiService.deleteEventsFromTrainingRun(trainingRun.getTrainingInstance().getId(), trainingRun.getId());
@@ -394,7 +396,7 @@ public class TrainingRunService {
      * @throws MicroserviceApiException error calling OpenStack Sandbox Service API
      */
     public TrainingRun assignSandbox(TrainingRun trainingRun, long poolId) {
-        Long sandboxInstanceRef = sandboxApiService.getAndLockSandbox(poolId).getId();
+        String sandboxInstanceRef = sandboxApiService.getAndLockSandbox(poolId).getId();
         trainingRun.setSandboxInstanceRefId(sandboxInstanceRef);
         return trainingRunRepository.save(trainingRun);
     }
@@ -668,6 +670,36 @@ public class TrainingRunService {
         trainingRun.setSandboxInstanceRefId(null);
         trAcquisitionLockRepository.deleteByParticipantRefIdAndTrainingInstanceId(trainingRun.getParticipantRef().getUserRefId(), trainingRun.getTrainingInstance().getId());
         trainingRunRepository.save(trainingRun);
+    }
+
+    /**
+     * Check if run event logging works
+     *
+     * @param run run to check
+     * @return resulting boolean
+     */
+    public boolean checkRunEventLogging(TrainingRun run) {
+        return !elasticsearchApiService.findAllEventsFromTrainingRun(run).isEmpty();
+    }
+
+    /**
+     * Check if run command logging works
+     *
+     * @param run run to check
+     * @return resulting boolean
+     */
+    public boolean checkRunCommandLogging(TrainingRun run) {
+        List<Map<String, Object>> runCommands;
+        if (run.getTrainingInstance().isLocalEnvironment()) {
+            String accessToken = run.getTrainingInstance().getAccessToken();
+            Long userId = run.getParticipantRef().getUserRefId();
+            runCommands = elasticsearchApiService.findAllConsoleCommandsByAccessTokenAndUserId(accessToken, userId);
+        } else {
+            String sandboxId = run.getSandboxInstanceRefId() == null ? run.getPreviousSandboxInstanceRefId() : run.getSandboxInstanceRefId();
+            runCommands = elasticsearchApiService.findAllConsoleCommandsBySandbox(sandboxId);
+        }
+
+        return !runCommands.isEmpty();
     }
 
     /**

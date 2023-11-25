@@ -35,7 +35,7 @@ public class TrainingInstanceDTO {
     @ApiModelProperty(value = "Id of sandbox pool belonging to training instance", example = "1")
     private Long poolId;
     @ApiModelProperty(value = "Ids of sandboxes which are assigned to training run.", example = "[3,15]")
-    private List<Long> sandboxesWithTrainingRun = new ArrayList<>();
+    private List<String> sandboxesWithTrainingRun = new ArrayList<>();
     @ApiModelProperty(value = "Time of last edit done to instance.", example = "2017-10-19 10:23:54+02")
     @JsonSerialize(using = LocalDateTimeUTCSerializer.class)
     private LocalDateTime lastEdited;
@@ -179,7 +179,7 @@ public class TrainingInstanceDTO {
      *
      * @return the sandboxes with training run
      */
-    public List<Long> getSandboxesWithTrainingRun() {
+    public List<String> getSandboxesWithTrainingRun() {
         return sandboxesWithTrainingRun;
     }
 
@@ -188,7 +188,7 @@ public class TrainingInstanceDTO {
      *
      * @param sandboxesWithTrainingRun the sandboxes with training run
      */
-    public void setSandboxesWithTrainingRun(List<Long> sandboxesWithTrainingRun) {
+    public void setSandboxesWithTrainingRun(List<String> sandboxesWithTrainingRun) {
         this.sandboxesWithTrainingRun = sandboxesWithTrainingRun;
     }
 

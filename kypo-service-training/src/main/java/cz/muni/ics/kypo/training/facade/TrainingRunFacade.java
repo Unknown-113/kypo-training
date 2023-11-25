@@ -23,6 +23,7 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 import cz.muni.ics.kypo.training.api.enums.QuestionType;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
+import cz.muni.ics.kypo.training.enums.RoleTypeSecurity;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.AssessmentLevel;
@@ -147,6 +148,15 @@ public class TrainingRunFacade {
         if(trainingRunIds.isEmpty()) {
             return;
         }
+
+        if (!securityService.hasRole(RoleTypeSecurity.ROLE_TRAINING_ADMINISTRATOR)) {
+            for (Long trainingRunId : trainingRunIds) {
+                if (!securityService.isOrganizerOfGivenTrainingRun(trainingRunId)) {
+                    throw new SecurityException("Cannot delete training runs from different instance.");
+                }
+            }
+        }
+
         TrainingInstance trainingInstance = null;
         for (Long trainingRunId : trainingRunIds) {
             trainingInstance = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true).getTrainingInstance();
@@ -162,7 +172,8 @@ public class TrainingRunFacade {
      * @param trainingRunId training run to delete
      * @param forceDelete   indicates if this training run should be force deleted.
      */
-    @IsOrganizerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+        "or @securityService.isOrganizerOfGivenTrainingRun(#trainingRunId)")
     @TransactionalWO
     public void deleteTrainingRun(Long trainingRunId, boolean forceDelete) {
         TrainingRun deletedTrainingRun = trainingRunService.deleteTrainingRun(trainingRunId, forceDelete, true);

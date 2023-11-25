@@ -120,8 +120,8 @@ public class TrainingRun extends AbstractEntity<Long> {
     private AbstractLevel currentLevel;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private TrainingInstance trainingInstance;
-    @Column(name = "sandbox_instance_ref_id")
-    private Long sandboxInstanceRefId;
+    @Column(name = "sandbox_instance_ref_id", length = 36)
+    private String sandboxInstanceRefId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_ref_id", nullable = false)
     private UserRef participantRef;
@@ -143,10 +143,12 @@ public class TrainingRun extends AbstractEntity<Long> {
     @ElementCollection(targetClass = HintInfo.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "hint_info", joinColumns = @JoinColumn(name = "training_run_id"))
     private Set<HintInfo> hintInfoList = new HashSet<>();
-    @Column(name = "previous_sandbox_instance_ref_id")
-    private Long previousSandboxInstanceRefId;
+    @Column(name = "previous_sandbox_instance_ref_id", length = 36)
+    private String previousSandboxInstanceRefId;
     @Column(name = "current_penalty")
     private int currentPenalty;
+    @Column(name = "has_detection_event")
+    private boolean hasDetectionEvent;
 
     /**
      * Gets unique identification number of Training run
@@ -286,7 +288,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @return the sandbox instance ref id
      */
-    public Long getSandboxInstanceRefId() {
+    public String getSandboxInstanceRefId() {
         return sandboxInstanceRefId;
     }
 
@@ -295,7 +297,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @param sandboxInstanceRefId the sandbox instance ref id
      */
-    public void setSandboxInstanceRefId(Long sandboxInstanceRefId) {
+    public void setSandboxInstanceRefId(String sandboxInstanceRefId) {
         this.sandboxInstanceRefId = sandboxInstanceRefId;
     }
 
@@ -561,7 +563,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @return the id of previous sandbox instance ref
      */
-    public Long getPreviousSandboxInstanceRefId() {
+    public String getPreviousSandboxInstanceRefId() {
         return previousSandboxInstanceRefId;
     }
 
@@ -570,7 +572,7 @@ public class TrainingRun extends AbstractEntity<Long> {
      *
      * @param previousSandboxInstanceRefId the id of previous sandbox instance ref
      */
-    public void setPreviousSandboxInstanceRefId(Long previousSandboxInstanceRefId) {
+    public void setPreviousSandboxInstanceRefId(String previousSandboxInstanceRefId) {
         this.previousSandboxInstanceRefId = previousSandboxInstanceRefId;
     }
 
@@ -590,6 +592,14 @@ public class TrainingRun extends AbstractEntity<Long> {
      */
     public void setCurrentPenalty(int currentPenalty) {
         this.currentPenalty = currentPenalty;
+    }
+
+    public boolean isHasDetectionEvent() {
+        return hasDetectionEvent;
+    }
+
+    public void setHasDetectionEvent(boolean hasDetectionEvent) {
+        this.hasDetectionEvent = hasDetectionEvent;
     }
 
     @Override

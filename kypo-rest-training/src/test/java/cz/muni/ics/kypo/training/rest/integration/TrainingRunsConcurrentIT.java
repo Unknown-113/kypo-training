@@ -121,7 +121,7 @@ public class TrainingRunsConcurrentIT {
                 .setControllerAdvice(new CustomRestExceptionHandlerTraining())
                 .build();
         sandboxInfo1 = new SandboxInfo();
-        sandboxInfo1.setId(1L);
+        sandboxInfo1.setId("1L");
         sandboxInfo1.setLockId(1);
 
         participant1 = new UserRef();

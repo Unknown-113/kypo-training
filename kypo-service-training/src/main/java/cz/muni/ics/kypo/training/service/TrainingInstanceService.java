@@ -107,13 +107,23 @@ public class TrainingInstanceService {
     }
 
     /**
+     * Find all training instances based on the list of IDs.
+     *
+     * @param ids the list of IDs
+     * @return the page
+     */
+    public List<TrainingInstance> findAllByIds(List<Long> ids) {
+        return trainingInstanceRepository.findAllById(ids);
+    }
+
+    /**
      * Creates new training instance
      *
      * @param trainingInstance to be created
      * @return created {@link TrainingInstance}
      */
     public TrainingInstance create(TrainingInstance trainingInstance) {
-        trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken()));
+        trainingInstance.setAccessToken(generateAccessToken(trainingInstance.getAccessToken().trim()));
         if (trainingInstance.getStartTime().isAfter(trainingInstance.getEndTime())) {
             throw new EntityConflictException(new EntityErrorDetail(TrainingInstance.class, "id", trainingInstance.getId().getClass(), trainingInstance.getId(),
                     "End time must be later than start time."));
@@ -303,7 +313,7 @@ public class TrainingInstanceService {
      *
      * @param trainingInstanceId id of training instance.
      */
-    public List<Long> findAllSandboxesUsedByTrainingInstanceId(Long trainingInstanceId) {
+    public List<String> findAllSandboxesUsedByTrainingInstanceId(Long trainingInstanceId) {
         return trainingRunRepository.findAllByTrainingInstanceId(trainingInstanceId)
                 .stream()
                 .map(trainingRun -> trainingRun.getSandboxInstanceRefId() == null ? trainingRun.getPreviousSandboxInstanceRefId() : trainingRun.getSandboxInstanceRefId())

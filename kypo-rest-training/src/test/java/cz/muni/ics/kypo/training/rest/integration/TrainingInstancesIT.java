@@ -145,9 +145,9 @@ public class TrainingInstancesIT {
         userRefRepository.saveAll(Set.of(organizer1, organizer2, participant1, participant2));
 
         sandboxInfo1 = new SandboxInfo();
-        sandboxInfo1.setId(1L);
+        sandboxInfo1.setId("1L");
         sandboxInfo2 = new SandboxInfo();
-        sandboxInfo2.setId(2L);
+        sandboxInfo2.setId("2L");
 
         sandboxPoolInfo = new SandboxPoolInfo();
         sandboxPoolInfo.setId(15L);

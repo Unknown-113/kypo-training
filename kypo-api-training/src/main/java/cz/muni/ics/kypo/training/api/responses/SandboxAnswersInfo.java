@@ -9,7 +9,7 @@ public class SandboxAnswersInfo {
 
     @ApiModelProperty(value = "The identifier of a sandbox for that we store the answers", example = "12")
     @JsonProperty("sandbox_ref_id")
-    private Long sandboxRefId;
+    private String sandboxRefId;
     @ApiModelProperty(value = "The access token of the training instance used to identify local sandbox.", example = "token-1234")
     @JsonProperty("access_token")
     private String accessToken;
@@ -20,11 +20,11 @@ public class SandboxAnswersInfo {
     @JsonProperty("sandbox_answers")
     private List<VariantAnswer> variantAnswers;
 
-    public Long getSandboxRefId() {
+    public String getSandboxRefId() {
         return sandboxRefId;
     }
 
-    public void setSandboxRefId(Long sandboxRefId) {
+    public void setSandboxRefId(String sandboxRefId) {
         this.sandboxRefId = sandboxRefId;
     }
 

@@ -9,7 +9,6 @@ import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.accesslevel.AccessLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.LevelReferenceSolutionDTO;
-import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelDTO;
 import cz.muni.ics.kypo.training.api.dto.traininglevel.TrainingLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.api.dto.*;
@@ -90,7 +89,8 @@ public class TrainingDefinitionFacade {
      * @param id of a Training Definition that would be returned
      * @return specific {@link TrainingDefinitionByIdDTO}
      */
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_TRAINEE)")
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
     @TransactionalRO
     public TrainingDefinitionByIdDTO findById(Long id) {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(id);
@@ -160,7 +160,7 @@ public class TrainingDefinitionFacade {
     /**
      * Find all Training Definitions.
      *
-     * @param state    represents a string if the training definitions should be relased or not.
+     * @param state    represents a string if the training definitions should be released or not.
      * @param pageable pageable parameter with information about pagination.
      * @return page of all {@link TrainingDefinitionInfoDTO} accessible for organizers
      */
@@ -212,7 +212,8 @@ public class TrainingDefinitionFacade {
      *
      * @param trainingDefinitionUpdateDTO to be updated
      */
-    @IsDesignerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionUpdateDTO.getId())")
     @TransactionalWO
     public void update(TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO) {
         TrainingDefinition mappedTrainingDefinition = trainingDefinitionMapper.mapUpdateToEntity(trainingDefinitionUpdateDTO);
@@ -255,7 +256,8 @@ public class TrainingDefinitionFacade {
      * @param title the title of cloned definition
      * @return DTO of cloned definition, {@link TrainingDefinitionByIdDTO}
      */
-    @IsDesignerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#id)")
     @TransactionalWO
     public TrainingDefinitionByIdDTO clone(Long id, String title) {
         TrainingDefinitionByIdDTO clonedDefinition = trainingDefinitionMapper.mapToDTOById(trainingDefinitionService.clone(id, title));
@@ -371,7 +373,7 @@ public class TrainingDefinitionFacade {
                     trainingDefinitionService.updateAssessmentLevel(updatedAssessmentLevel, (AssessmentLevel) persistedLevel);
                     break;
             }
-        };
+        }
         if (referenceSolutionChanged) {
             updateReferenceSolution(definitionId);
         }
@@ -535,8 +537,7 @@ public class TrainingDefinitionFacade {
     @IsDesignerOrAdmin
     @TransactionalRO
     public PageResultResource<UserRefDTO> getUsersWithGivenRole(RoleType roleType, Pageable pageable, String givenName, String familyName) {
-        Object result = userService.getUsersByGivenRole(roleType, pageable, givenName, familyName);
-        return (PageResultResource<UserRefDTO>) result;
+        return userService.getUsersByGivenRole(roleType, pageable, givenName, familyName);
     }
 
     /**
@@ -623,7 +624,8 @@ public class TrainingDefinitionFacade {
      * @param authorsAddition      ids of the authors to be added to the training definition
      * @param authorsRemoval       ids of the authors to be removed from the training definition.
      */
-    @IsDesignerOrAdmin
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isDesignerOfGivenTrainingDefinition(#trainingDefinitionId)")
     @TransactionalWO
     public void editAuthors(Long trainingDefinitionId, Set<Long> authorsAddition, Set<Long> authorsRemoval) {
         TrainingDefinition trainingDefinition = trainingDefinitionService.findById(trainingDefinitionId);

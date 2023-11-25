@@ -57,6 +57,17 @@ public interface TrainingRunMapper extends ParentMapper {
         return new PageResultResource<>(mapped, createPagination(objects));
     }
 
+    default PageResultResource<TrainingRunDTO> mapToPageResultResourceLogging(Page<TrainingRun> objects, Set<Long> eventLoggingIds, Set<Long> commandLoggingIds) {
+        List<TrainingRunDTO> mapped = new ArrayList<>();
+        objects.forEach(object -> {
+            TrainingRunDTO runDTO = mapToDTO(object);
+            runDTO.setEventLoggingState(eventLoggingIds.contains(runDTO.getId()));
+            runDTO.setCommandLoggingState(commandLoggingIds.contains(runDTO.getId()));
+            mapped.add(runDTO);
+        });
+        return new PageResultResource<>(mapped, createPagination(objects));
+    }
+
     default PageResultResource<AccessedTrainingRunDTO> mapToPageResultResourceAccessed(Page<AccessedTrainingRunDTO> objects){
         List<AccessedTrainingRunDTO> mapped = new ArrayList<>();
         objects.forEach(mapped::add);
