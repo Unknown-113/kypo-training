@@ -16,7 +16,7 @@ RUN mvn clean install -DskipTests -Dproprietary-repo-url=$PROPRIETARY_REPO_URL &
     cp /app/$PROJECT_ARTIFACT_ID/target/$PROJECT_ARTIFACT_ID-*.jar /app/$PROJECT_ARTIFACT_ID.jar
 
 ############ RUNNABLE STAGE ############
-FROM eclipse-temurin:17-jre-focal
+FROM eclipse-temurin:17-jre-jammy
 ARG PROJECT_ARTIFACT_ID
 WORKDIR /app
 COPY /etc/training.properties /app/etc/training.properties
