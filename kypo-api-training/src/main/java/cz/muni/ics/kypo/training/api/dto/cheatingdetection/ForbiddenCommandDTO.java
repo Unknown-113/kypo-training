@@ -17,7 +17,8 @@ public class ForbiddenCommandDTO {
     private String command;
     @ApiModelProperty(value = "Type of command.", example = "BASH")
     private CommandType type;
-
+    @ApiModelProperty(value = "Id of cheating detection.", example = "1")
+    private Long cheating_detection_id;
     public String getCommand() {
         return command;
     }
