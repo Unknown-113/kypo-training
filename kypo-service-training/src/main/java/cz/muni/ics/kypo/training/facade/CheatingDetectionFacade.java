@@ -358,83 +358,100 @@ public class CheatingDetectionFacade {
 
     private void auditAnswerSimilarityGroup(List<DetectionEventParticipant> participants, AnswerSimilarityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
+
+        csvData.append("\nANSWER SIMILARITY EVENT");
+        csvData.append("detected at,level title,answer,answer owner\n");
+        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectedAt(), event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()));
+
+        csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
         }
-        csvData.append("\n");
-        csvData.append("detection type,detected at,level title,answer,answer owner\n");
-        csvData.append(String.format("%s,%s,%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()));
-        csvData.append("\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
 
     private void auditLocationSimilarityGroup(List<DetectionEventParticipant> participants, LocationSimilarityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
+
+        csvData.append("\nLOCATION SIMILARITY EVENT");
+        csvData.append("detected at,level title,dns,ip address\n");
+        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectedAt(), event.getLevelTitle(), event.getDns(), event.getIpAddress()));
+
+        csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time,ip address\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt(), participant.getIpAddress()));
         }
-        csvData.append("\n");
-        csvData.append("detection type,detected at,level title,dns,ip address\n");
-        csvData.append(String.format("%s,%s,%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle(), event.getDns(), event.getIpAddress()));
-        csvData.append("\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
 
     private void auditMinimalSolveTimeGroup(List<DetectionEventParticipant> participants, MinimalSolveTimeDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
-        csvData.append("participant,time,solved in(seconds)\n");
+
+        csvData.append("\nMINIMAL SOLVE TIME EVENT");
+        csvData.append("detected at,level title,minimal solve time\n");
+        csvData.append(String.format("%s,%s,%s\n",  event.getDetectedAt(), event.getLevelTitle(), event.getMinimalSolveTime()));
+
+        csvData.append("\nPARTICIPANTS\n");
+        csvData.append("participant,time,solved in (seconds)\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt(), participant.getSolvedInTime()));
         }
-        csvData.append("\n");
-        csvData.append("detection type,detected at,level title,minimal solve time\n");
-        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle(), event.getMinimalSolveTime()));
-        csvData.append("\n\n");
+
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
 
     private void auditTimeProximityGroup(List<DetectionEventParticipant> participants, TimeProximityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
+
+        csvData.append("\nTIME PROXIMITY EVENT");
+        csvData.append("detected at,level title,proximity\n");
+        csvData.append(String.format("%s,%s,%s\n", event.getDetectedAt(), event.getLevelTitle(), event.getThreshold()));
+
+        csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
         }
-        csvData.append("\n");
-        csvData.append("detection type,detected at,level title,proximity\n");
-        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle(), event.getThreshold()));
-        csvData.append("\n\n");
+
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
 
     private void auditNoCommandsGroup(List<DetectionEventParticipant> participants, NoCommandsDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
+
+        csvData.append("\nNO COMMANDS EVENT");
+        csvData.append("detected at,level title\n");
+        csvData.append(String.format("%s,%s\n", event.getDetectedAt(), event.getLevelTitle()));
+
+        csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n\n", participant.getParticipantName(), participant.getOccurredAt()));
         }
-        csvData.append("detection type,detected at,level title\n");
-        csvData.append(String.format("%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle()));
-        csvData.append("\n\n");
+
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
 
     private void auditForbiddenCommandsGroup(List<DetectionEventParticipant> participants, ForbiddenCommandsDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
+
+        csvData.append("\nFORBIDDEN COMMANDS EVENT");
+        csvData.append("detected at,level title,proximity\n");
+        csvData.append(String.format("%s,%s\n", event.getDetectedAt(), event.getLevelTitle()));
+
+        csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
         }
-        csvData.append("\n");
-        csvData.append("detection type,detected at,level title,proximity\n");
-        csvData.append(String.format("%s,%s,%s\n", event.getDetectionEventType(), event.getDetectedAt(), event.getLevelTitle()));
-        csvData.append("\n\n");
+
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
