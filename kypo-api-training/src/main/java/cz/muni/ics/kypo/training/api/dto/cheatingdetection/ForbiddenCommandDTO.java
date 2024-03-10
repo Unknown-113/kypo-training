@@ -18,7 +18,7 @@ public class ForbiddenCommandDTO {
     @ApiModelProperty(value = "Type of command.", example = "BASH")
     private CommandType type;
     @ApiModelProperty(value = "Id of cheating detection.", example = "1")
-    private Long cheating_detection_id;
+    private Long cheatingDetectionId;
     public String getCommand() {
         return command;
     }
@@ -35,17 +35,25 @@ public class ForbiddenCommandDTO {
         this.type = type;
     }
 
+    public Long getCheatingDetectionId() {
+        return cheatingDetectionId;
+    }
+
+    public void setCheatingDetectionId(Long cheatingDetectionId) {
+        this.cheatingDetectionId = cheatingDetectionId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ForbiddenCommandDTO that = (ForbiddenCommandDTO) o;
-        return Objects.equals(command, that.command) && type == that.type;
+        return Objects.equals(command, that.command) && type == that.type && cheatingDetectionId.equals(that.cheatingDetectionId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(command, type);
+        return Objects.hash(command, type, cheatingDetectionId);
     }
 
     @Override
@@ -53,6 +61,7 @@ public class ForbiddenCommandDTO {
         return "ForbiddenCommandDTO{" +
                 "command='" + command + '\'' +
                 ", type=" + type +
+                ", cheatingDetectionId=" + cheatingDetectionId +
                 '}';
     }
 }
