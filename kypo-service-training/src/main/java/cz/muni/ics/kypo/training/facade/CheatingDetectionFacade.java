@@ -45,7 +45,7 @@ public class CheatingDetectionFacade {
     private static final String MINIMAL_SOLVE_TIME_FOLDER = "minimal_solve_time";
     private static final String NO_COMMANDS_FOLDER = "no_commands";
     private static final String FORBIDDEN_COMMANDS_FOLDER = "forbidden_commands";
-    private static final String PARTICIPANT_RESPONSE_FOLDER = "participant_responses";
+    private static final String PARTICIPANT_RESPONSE_FOLDER = "participant_groups";
     private final CheatingDetectionService cheatingDetectionService;
     public final UserService userService;
     private final TrainingInstanceService trainingInstanceService;
@@ -289,6 +289,8 @@ public class CheatingDetectionFacade {
 
     private void writeTraineeParticipantGroups(ZipOutputStream zos, Long cheatingDetectionId) throws IOException {
         ParticipantGroups groups = populateParticipantGroups(cheatingDetectionId);
+        ZipEntry participantsEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/participantGroupsObject" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        zos.putNextEntry(participantsEntry);
         List<List<Long>> userIdGroups = groups.getUserIdGroups();
         List<List<Long>> eventIdGroups = groups.getEventIdGroups();
 
