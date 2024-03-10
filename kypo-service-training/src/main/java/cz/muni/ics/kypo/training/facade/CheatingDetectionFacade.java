@@ -353,7 +353,6 @@ public class CheatingDetectionFacade {
                 case FORBIDDEN_COMMANDS -> auditForbiddenCommandsGroup(participants, cheatingDetectionService.findForbiddenCommandsEventById(eventId), zos, writer);
             }
         }
-        writer.close();
     }
 
     private void auditAnswerSimilarityGroup(List<DetectionEventParticipant> participants, AnswerSimilarityDetectionEvent event, ZipOutputStream zos, OutputStreamWriter writer) throws IOException {
