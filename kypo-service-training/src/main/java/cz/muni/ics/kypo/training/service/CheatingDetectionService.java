@@ -509,8 +509,8 @@ public class CheatingDetectionService {
                         run.getSandboxInstanceRefId(),
                         from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
                         currentSubmission.getDate().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
-                for (var command : submittedCommands) {
-                    forbiddenCommands = evaluateForbiddenCommand(cd.getForbiddenCommands(), command, currentSubmission, cd);
+                forbiddenCommands = evaluateForbiddenCommands(cd.getForbiddenCommands(), submittedCommands);
+                if (!forbiddenCommands.isEmpty()) {
                     auditForbiddenCommandsEvent(currentSubmission, cd, extractParticipant(currentSubmission), forbiddenCommands);
                 }
             }
@@ -519,16 +519,18 @@ public class CheatingDetectionService {
         updateCheatingDetection(cd);
     }
 
-    private List<DetectedForbiddenCommand> evaluateForbiddenCommand(List<ForbiddenCommand> fc, Map<String, Object> commandMap, Submission s, CheatingDetection cd) {
-        String command = commandMap.get("cmd").toString();
-        String type = commandMap.get("cmd_type").toString();
+    private List<DetectedForbiddenCommand> evaluateForbiddenCommands(List<ForbiddenCommand> fc, List<Map<String, Object>> submittedCommands) {
         List<DetectedForbiddenCommand> commandsList = new ArrayList<>();
-        for (var forbiddenCommand : fc) {
-            if (type.equals(forbiddenCommand.getType().toString()) && command != null && command.contains(forbiddenCommand.getCommand())) {
-                DetectedForbiddenCommand detectedCommand = new DetectedForbiddenCommand();
-                detectedCommand.setCommand(forbiddenCommand.getCommand());
-                detectedCommand.setType(forbiddenCommand.getType());
-                commandsList.add(detectedCommand);
+        for (var commandMap : submittedCommands) {
+            String command = commandMap.get("cmd").toString();
+            String type = commandMap.get("cmd_type").toString();
+            for (var forbiddenCommand : fc) {
+                if (type.equals(forbiddenCommand.getType().toString()) && command != null && command.contains(forbiddenCommand.getCommand())) {
+                    DetectedForbiddenCommand detectedCommand = new DetectedForbiddenCommand();
+                    detectedCommand.setCommand(forbiddenCommand.getCommand());
+                    detectedCommand.setType(forbiddenCommand.getType());
+                    commandsList.add(detectedCommand);
+                }
             }
         }
         return commandsList;
