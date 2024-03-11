@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.facade;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.cheatingdetection.*;
 import cz.muni.ics.kypo.training.api.dto.export.FileToReturnDTO;
 import cz.muni.ics.kypo.training.api.responses.PageResultResource;
@@ -303,8 +304,23 @@ public class CheatingDetectionFacade {
             }
             ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/" + usersString + AbstractFileExtensions.CSV_FILE_EXTENSION);
             zos.putNextEntry(participantResponseEntry);
-            auditParticipantGroup(currentEventGroup, zos);
+            auditParticipants(currentUserGroup, zos);
+            auditParticipantGroupEvents(currentEventGroup, zos);
         }
+    }
+
+    private void auditParticipants(List<Long> userIds, ZipOutputStream zos) throws IOException {
+        StringBuilder csvData = new StringBuilder();
+
+        csvData.append("GROUP PARTICIPANTS\n");
+        csvData.append("user id,name,iss\n");
+        for (var userId : userIds) {
+            UserRefDTO user = userService.getUserRefDTOByUserRefId(userId);
+            csvData.append(String.format("%s,%s,%s\n", userId, user.getUserRefFullName(), user.getIss()));
+        }
+        csvData.append("\n");
+        byte[] bytes = csvData.toString().getBytes();
+        zos.write(bytes, 0, bytes.length);
     }
 
     private ParticipantGroups populateParticipantGroups(Long cheatingDetectionId) {
@@ -340,7 +356,8 @@ public class CheatingDetectionFacade {
         return new ParticipantGroups(userIdGroups, eventIdGroups);
     }
 
-    private void auditParticipantGroup(List<Long> eventIds, ZipOutputStream zos) throws IOException {
+    private void auditParticipantGroupEvents(List<Long> eventIds, ZipOutputStream zos) throws IOException {
+
         for (var eventId : eventIds) {
             AbstractDetectionEvent event = cheatingDetectionService.findDetectionEventById(eventId);
             var eventType = event.getDetectionEventType();
