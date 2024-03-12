@@ -25,10 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -57,6 +55,7 @@ public class CheatingDetectionFacade {
     private final DetectedForbiddenCommandMapper detectedForbiddenCommandMapper;
     private final SecurityService securityService;
     private final ObjectMapper objectMapper;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * Instantiates a new Cheating detection facade.
@@ -316,10 +315,10 @@ public class CheatingDetectionFacade {
         StringBuilder csvData = new StringBuilder();
 
         csvData.append("GROUP PARTICIPANTS\n");
-        csvData.append("user id,name,iss\n");
+        csvData.append("user id,name,ref\n");
         for (var userId : userIds) {
             UserRefDTO user = userService.getUserRefDTOByUserRefId(userId);
-            csvData.append(String.format("%s,%s,%s\n", userId, user.getUserRefFullName(), user.getIss()));
+            csvData.append(String.format("%s,%s,%s\n", userId, user.getUserRefFullName(), user.getUserRefSub()));
         }
         csvData.append("\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -328,33 +327,26 @@ public class CheatingDetectionFacade {
 
     private ParticipantGroups populateParticipantGroups(Long cheatingDetectionId) {
         List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfCheatingDetection(cheatingDetectionId);
-        List<List<Long>> userIdGroups = new ArrayList<>();
+        // Map to store events for each combination of participants
+        Map<Long, Set<Long>> participantEventsMap = new HashMap<>();
+
+        // Populate the map
+        for (DetectionEventParticipant participant : participants) {
+            Set<Long> events = participantEventsMap.getOrDefault(participant.getUserId(), new HashSet<>());
+            events.add(participant.getDetectionEventId());
+            participantEventsMap.put(participant.getUserId(), events);
+        }
+
+        // Extract userIdGroups and eventIdGroups from the map
+        List<List<Long>> userIdGroups = new ArrayList<>(participantEventsMap.values());
         List<List<Long>> eventIdGroups = new ArrayList<>();
 
-        for (var participant : participants) {
-            var wasAdded = false;
-            Long userId = participant.getUserId();
-            Long eventId = participant.getDetectionEventId();
-            for (int i = 0; i < userIdGroups.size(); i++) {
-                var currentUserGroup = userIdGroups.get(i);
-                var currentEventGroup = eventIdGroups.get(i);
-                if (currentUserGroup.contains(userId)) {
-                    if (!currentEventGroup.contains(eventId)) {
-                        currentEventGroup.add(eventId);
-                        wasAdded = true;
-                    }
-                }
-                if (currentEventGroup.contains(eventId)) {
-                    if (!currentUserGroup.contains(userId)) {
-                        currentUserGroup.add(userId);
-                        wasAdded = true;
-                    }
-                }
+        for (List<Long> userIdGroup : userIdGroups) {
+            Set<Long> events = new HashSet<>();
+            for (Long userId : userIdGroup) {
+                events.addAll(participantEventsMap.get(userId));
             }
-            if (!wasAdded) {
-                userIdGroups.add(new ArrayList<>(Collections.singletonList(userId)));
-                eventIdGroups.add(new ArrayList<>(Collections.singletonList(eventId)));
-            }
+            eventIdGroups.add(new ArrayList<>(events));
         }
         return new ParticipantGroups(userIdGroups, eventIdGroups);
     }
@@ -379,9 +371,9 @@ public class CheatingDetectionFacade {
     private void auditAnswerSimilarityGroup(List<DetectionEventParticipant> participants, AnswerSimilarityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
 
-        csvData.append("\nANSWER SIMILARITY EVENT");
+        csvData.append("\nANSWER SIMILARITY EVENT\n");
         csvData.append("detected at,level title,answer,answer owner\n");
-        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectedAt(), event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()));
+        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
@@ -395,9 +387,9 @@ public class CheatingDetectionFacade {
     private void auditLocationSimilarityGroup(List<DetectionEventParticipant> participants, LocationSimilarityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
 
-        csvData.append("\nLOCATION SIMILARITY EVENT");
+        csvData.append("\nLOCATION SIMILARITY EVENT\n");
         csvData.append("detected at,level title,dns,ip address\n");
-        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectedAt(), event.getLevelTitle(), event.getDns(), event.getIpAddress()));
+        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle(), event.getDns(), event.getIpAddress()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time,ip address\n");
@@ -411,9 +403,9 @@ public class CheatingDetectionFacade {
     private void auditMinimalSolveTimeGroup(List<DetectionEventParticipant> participants, MinimalSolveTimeDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
 
-        csvData.append("\nMINIMAL SOLVE TIME EVENT");
+        csvData.append("\nMINIMAL SOLVE TIME EVENT\n");
         csvData.append("detected at,level title,minimal solve time\n");
-        csvData.append(String.format("%s,%s,%s\n",  event.getDetectedAt(), event.getLevelTitle(), event.getMinimalSolveTime()));
+        csvData.append(String.format("%s,%s,%s\n",  event.getDetectedAt().format(formatter), event.getLevelTitle(), event.getMinimalSolveTime()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time,solved in (seconds)\n");
@@ -428,9 +420,9 @@ public class CheatingDetectionFacade {
     private void auditTimeProximityGroup(List<DetectionEventParticipant> participants, TimeProximityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
 
-        csvData.append("\nTIME PROXIMITY EVENT");
+        csvData.append("\nTIME PROXIMITY EVENT\n");
         csvData.append("detected at,level title,proximity\n");
-        csvData.append(String.format("%s,%s,%s\n", event.getDetectedAt(), event.getLevelTitle(), event.getThreshold()));
+        csvData.append(String.format("%s,%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle(), event.getThreshold()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
@@ -445,9 +437,9 @@ public class CheatingDetectionFacade {
     private void auditNoCommandsGroup(List<DetectionEventParticipant> participants, NoCommandsDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
 
-        csvData.append("\nNO COMMANDS EVENT");
+        csvData.append("\nNO COMMANDS EVENT\n");
         csvData.append("detected at,level title\n");
-        csvData.append(String.format("%s,%s\n", event.getDetectedAt(), event.getLevelTitle()));
+        csvData.append(String.format("%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
@@ -462,9 +454,9 @@ public class CheatingDetectionFacade {
     private void auditForbiddenCommandsGroup(List<DetectionEventParticipant> participants, ForbiddenCommandsDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
 
-        csvData.append("\nFORBIDDEN COMMANDS EVENT");
+        csvData.append("\nFORBIDDEN COMMANDS EVENT\n");
         csvData.append("detected at,level title,proximity\n");
-        csvData.append(String.format("%s,%s\n", event.getDetectedAt(), event.getLevelTitle()));
+        csvData.append(String.format("%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
