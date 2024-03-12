@@ -305,7 +305,7 @@ public class CheatingDetectionFacade {
             if(usersString.length() > 0) {
                 usersString.deleteCharAt(usersString.length() - 1);
             }
-            ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/" + usersString + AbstractFileExtensions.CSV_FILE_EXTENSION);
+            ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/_" + i + "_" + usersString + AbstractFileExtensions.CSV_FILE_EXTENSION);
             zos.putNextEntry(participantResponseEntry);
             auditParticipants(currentUserGroup, zos);
             auditParticipantGroupEvents(currentEventGroup, zos);
