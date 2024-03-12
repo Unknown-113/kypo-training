@@ -320,7 +320,7 @@ public class CheatingDetectionFacade {
             UserRefDTO user = userService.getUserRefDTOByUserRefId(userId);
             csvData.append(String.format("%s,%s,%s\n", userId, user.getUserRefFullName(), user.getUserRefSub()));
         }
-        csvData.append("\n");
+        csvData.append("\n\nEVENTS\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
@@ -383,6 +383,7 @@ public class CheatingDetectionFacade {
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
         }
+        csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
@@ -399,6 +400,7 @@ public class CheatingDetectionFacade {
         for (var participant : participants) {
             csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt(), participant.getIpAddress()));
         }
+        csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
@@ -415,7 +417,7 @@ public class CheatingDetectionFacade {
         for (var participant : participants) {
             csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt(), participant.getSolvedInTime()));
         }
-
+        csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
@@ -432,7 +434,7 @@ public class CheatingDetectionFacade {
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
         }
-
+        csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
@@ -449,7 +451,7 @@ public class CheatingDetectionFacade {
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n\n", participant.getParticipantName(), participant.getOccurredAt()));
         }
-
+        csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
@@ -466,7 +468,7 @@ public class CheatingDetectionFacade {
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
         }
-
+        csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
