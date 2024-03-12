@@ -327,7 +327,8 @@ public class CheatingDetectionFacade {
 
     private ParticipantGroups populateParticipantGroups(Long cheatingDetectionId) {
         List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfCheatingDetection(cheatingDetectionId);
-        // Map to store events for each combination of participants
+
+        // Map to store events for each participant
         Map<Long, Set<Long>> participantEventsMap = new HashMap<>();
 
         // Populate the map
@@ -337,17 +338,19 @@ public class CheatingDetectionFacade {
             participantEventsMap.put(participant.getUserId(), events);
         }
 
-        // Extract userIdGroups and eventIdGroups from the map
-        List<List<Long>> userIdGroups = new ArrayList<>(participantEventsMap.values());
-        List<List<Long>> eventIdGroups = new ArrayList<>();
-
-        for (List<Long> userIdGroup : userIdGroups) {
-            Set<Long> events = new HashSet<>();
-            for (Long userId : userIdGroup) {
-                events.addAll(participantEventsMap.get(userId));
-            }
-            eventIdGroups.add(new ArrayList<>(events));
+        // Convert participantEventsMap values (sets of event IDs) to lists of event IDs
+        List<List<Long>> userIdGroups = new ArrayList<>();
+        for (Set<Long> eventSet : participantEventsMap.values()) {
+            userIdGroups.add(new ArrayList<>(eventSet));
         }
+
+        // Extract eventIdGroups from the map
+        List<List<Long>> eventIdGroups = new ArrayList<>();
+        for (Set<Long> eventSet : participantEventsMap.values()) {
+            List<Long> eventList = new ArrayList<>(eventSet);
+            eventIdGroups.add(eventList);
+        }
+
         return new ParticipantGroups(userIdGroups, eventIdGroups);
     }
 
