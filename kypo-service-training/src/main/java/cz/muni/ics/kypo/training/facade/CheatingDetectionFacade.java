@@ -287,28 +287,97 @@ public class CheatingDetectionFacade {
         }
     }
 
+    /**
+     * Find all cheating detections of a training instance
+     *
+     * @param trainingInstanceId id of Training instance for cheating detection.
+     * @param pageable           pageable parameter with information about pagination.
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
+            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
+    @TransactionalWO
+    public PageResultResource<CheatingDetectionDTO> findAllCheatingDetectionsOfTrainingInstance(Long trainingInstanceId, Pageable pageable) {
+
+        return cheatingDetectionMapper.mapToPageResultResource(
+                this.cheatingDetectionService.findAllCheatingDetectionsOfTrainingInstance(trainingInstanceId, pageable));
+    }
+
     private void writeTraineeParticipantGroups(ZipOutputStream zos, Long cheatingDetectionId) throws IOException {
-        ParticipantGroups groups = populateParticipantGroups(cheatingDetectionId);
+        List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfCheatingDetection(cheatingDetectionId);
+        Map<Long, Set<Long>> eventsByParticipants = populateParticipantGroups(participants);
+        Map<List<Long>, Set<Long>> participantGroups = createParticipantGroups(eventsByParticipants);
+
         ZipEntry participantsEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/participantGroupsObject" + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(participantsEntry);
-        List<List<Long>> userIdGroups = groups.getUserIdGroups();
-        List<List<Long>> eventIdGroups = groups.getEventIdGroups();
 
-        for (int i = 0; i < userIdGroups.size(); i++) {
-            List<Long> currentUserGroup = userIdGroups.get(i);
-            List<Long> currentEventGroup = eventIdGroups.get(i);
+        for (Map.Entry<List<Long>, Set<Long>> entry : participantGroups.entrySet()) {
+            List<Long> userGroup = entry.getKey();
+            Set<Long> eventGroup = entry.getValue();
+
             StringBuilder usersString = new StringBuilder();
-            for (var userId : currentUserGroup) {
+            for (var userId : userGroup) {
                 usersString.append(userId).append('_');
             }
             if(usersString.length() > 0) {
                 usersString.deleteCharAt(usersString.length() - 1);
             }
-            ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/_" + i + "_" + usersString + AbstractFileExtensions.CSV_FILE_EXTENSION);
+            ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/" + usersString + AbstractFileExtensions.CSV_FILE_EXTENSION);
             zos.putNextEntry(participantResponseEntry);
-            auditParticipants(currentUserGroup, zos);
-            auditParticipantGroupEvents(currentEventGroup, zos);
+            auditParticipants(userGroup, zos);
+            auditParticipantGroupEvents(eventGroup, zos);
+            System.out.println("User Group: " + userGroup + ", Event Group: " + eventGroup);
         }
+    }
+
+    private Map<List<Long>, Set<Long>> createParticipantGroups(Map<Long, Set<Long>> userEventMap) {
+        Map<List<Long>, Set<Long>> participantGroups = new HashMap<>();
+        Set<Long> visitedUsers = new HashSet<>();
+
+        for (Map.Entry<Long, Set<Long>> entry : userEventMap.entrySet()) {
+            Long userId = entry.getKey();
+            if (!visitedUsers.contains(userId)) {
+                List<Long> userGroup = new ArrayList<>();
+                Set<Long> eventGroup = new HashSet<>();
+                dfs(userEventMap, userId, visitedUsers, userGroup, eventGroup);
+                participantGroups.put(userGroup, eventGroup);
+            }
+        }
+
+        return participantGroups;
+    }
+
+    private void dfs(Map<Long, Set<Long>> userEventMap, Long userId, Set<Long> visitedUsers,
+                     List<Long> userGroup, Set<Long> eventGroup) {
+        visitedUsers.add(userId);
+        userGroup.add(userId);
+
+        Set<Long> events = userEventMap.get(userId);
+        if (events != null) {
+            eventGroup.addAll(events);
+            for (Long eventId : events) {
+                for (Map.Entry<Long, Set<Long>> entry : userEventMap.entrySet()) {
+                    Long nextUserId = entry.getKey();
+                    if (!visitedUsers.contains(nextUserId) && entry.getValue().contains(eventId)) {
+                        dfs(userEventMap, nextUserId, visitedUsers, userGroup, eventGroup);
+                    }
+                }
+            }
+        }
+    }
+
+    private Map<Long, Set<Long>> populateParticipantGroups(List<DetectionEventParticipant> participants) {
+        Map<Long, Set<Long>> userEventMap = new HashMap<>();
+
+        for (DetectionEventParticipant participant : participants) {
+            Long userId = participant.getUserId();
+            Long eventId = participant.getDetectionEventId();
+
+            // Retrieve or create a set of event IDs associated with the user ID
+            Set<Long> eventIds = userEventMap.getOrDefault(userId, new HashSet<>());
+            eventIds.add(eventId);
+            userEventMap.put(userId, eventIds);
+        }
+        return userEventMap;
     }
 
     private void auditParticipants(List<Long> userIds, ZipOutputStream zos) throws IOException {
@@ -325,36 +394,7 @@ public class CheatingDetectionFacade {
         zos.write(bytes, 0, bytes.length);
     }
 
-    private ParticipantGroups populateParticipantGroups(Long cheatingDetectionId) {
-        List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfCheatingDetection(cheatingDetectionId);
-
-        // Map to store events for each participant
-        Map<Long, Set<Long>> participantEventsMap = new HashMap<>();
-
-        // Populate the map
-        for (DetectionEventParticipant participant : participants) {
-            Set<Long> events = participantEventsMap.getOrDefault(participant.getUserId(), new HashSet<>());
-            events.add(participant.getDetectionEventId());
-            participantEventsMap.put(participant.getUserId(), events);
-        }
-
-        // Convert participantEventsMap values (sets of event IDs) to lists of event IDs
-        List<List<Long>> userIdGroups = new ArrayList<>();
-        for (Set<Long> eventSet : participantEventsMap.values()) {
-            userIdGroups.add(new ArrayList<>(eventSet));
-        }
-
-        // Extract eventIdGroups from the map
-        List<List<Long>> eventIdGroups = new ArrayList<>();
-        for (Set<Long> eventSet : participantEventsMap.values()) {
-            List<Long> eventList = new ArrayList<>(eventSet);
-            eventIdGroups.add(eventList);
-        }
-
-        return new ParticipantGroups(userIdGroups, eventIdGroups);
-    }
-
-    private void auditParticipantGroupEvents(List<Long> eventIds, ZipOutputStream zos) throws IOException {
+    private void auditParticipantGroupEvents(Set<Long> eventIds, ZipOutputStream zos) throws IOException {
 
         for (var eventId : eventIds) {
             AbstractDetectionEvent event = cheatingDetectionService.findDetectionEventById(eventId);
@@ -381,7 +421,7 @@ public class CheatingDetectionFacade {
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
         for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
+            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -398,7 +438,7 @@ public class CheatingDetectionFacade {
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time,ip address\n");
         for (var participant : participants) {
-            csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt(), participant.getIpAddress()));
+            csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter), participant.getIpAddress()));
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -415,7 +455,7 @@ public class CheatingDetectionFacade {
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time,solved in (seconds)\n");
         for (var participant : participants) {
-            csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt(), participant.getSolvedInTime()));
+            csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter), participant.getSolvedInTime()));
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -432,7 +472,7 @@ public class CheatingDetectionFacade {
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
         for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
+            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -449,7 +489,7 @@ public class CheatingDetectionFacade {
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
         for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
+            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -460,13 +500,13 @@ public class CheatingDetectionFacade {
         StringBuilder csvData = new StringBuilder();
 
         csvData.append("\nFORBIDDEN COMMANDS EVENT\n");
-        csvData.append("detected at,level title,proximity\n");
+        csvData.append("detected at,level title\n");
         csvData.append(String.format("%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
         for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
+            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -529,21 +569,6 @@ public class CheatingDetectionFacade {
         for (var event : detectionEventsOfFC) {
             writeDetectionEventToFile(zos, event, FORBIDDEN_COMMANDS_FOLDER);
         }
-    }
-
-    /**
-     * Find all cheating detections of a training instance
-     *
-     * @param trainingInstanceId id of Training instance for cheating detection.
-     * @param pageable           pageable parameter with information about pagination.
-     */
-    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)" +
-            "or @securityService.isOrganizerOfGivenTrainingInstance(#trainingInstanceId)")
-    @TransactionalWO
-    public PageResultResource<CheatingDetectionDTO> findAllCheatingDetectionsOfTrainingInstance(Long trainingInstanceId, Pageable pageable) {
-
-        return cheatingDetectionMapper.mapToPageResultResource(
-                this.cheatingDetectionService.findAllCheatingDetectionsOfTrainingInstance(trainingInstanceId, pageable));
     }
 }
 
