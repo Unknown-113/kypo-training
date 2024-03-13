@@ -449,7 +449,7 @@ public class CheatingDetectionFacade {
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
         for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n\n", participant.getParticipantName(), participant.getOccurredAt()));
+            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt()));
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();

@@ -5,6 +5,7 @@ import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.detection.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.CheatingDetectionState;
+import cz.muni.ics.kypo.training.persistence.model.enums.CommandType;
 import cz.muni.ics.kypo.training.persistence.model.enums.DetectionEventType;
 import cz.muni.ics.kypo.training.persistence.repository.SubmissionRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingLevelRepository;
@@ -525,7 +526,8 @@ public class CheatingDetectionService {
             String command = commandMap.get("cmd").toString();
             String type = commandMap.get("cmd_type").toString();
             for (var forbiddenCommand : fc) {
-                if (type.equals(forbiddenCommand.getType().toString()) && command != null && command.contains(forbiddenCommand.getCommand())) {
+                String forbiddenType = forbiddenCommand.getType() == CommandType.BASH ? "bash": "msf";
+                if (type.equals(forbiddenType) && command != null && command.contains(forbiddenCommand.getCommand())) {
                     DetectedForbiddenCommand detectedCommand = new DetectedForbiddenCommand();
                     detectedCommand.setCommand(forbiddenCommand.getCommand());
                     detectedCommand.setType(forbiddenCommand.getType());
