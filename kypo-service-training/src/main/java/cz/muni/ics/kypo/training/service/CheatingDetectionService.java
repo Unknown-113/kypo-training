@@ -773,13 +773,15 @@ public class CheatingDetectionService {
         trainingRunRepository.save(run);
         ForbiddenCommandsDetectionEvent event = new ForbiddenCommandsDetectionEvent();
         event.setCommonDetectionEventParameters(submission, cd, DetectionEventType.FORBIDDEN_COMMANDS, 1);
-        for (var command : detectedForbiddenCommands) {
-            detectedForbiddenCommandRepository.save(command);
-        }
         event.setCommandCount(detectedForbiddenCommands.size());
         event.setTrainingRunId(submission.getTrainingRun().getId());
         event.setParticipants(participant.getParticipantName());
-        participant.setDetectionEventId(forbiddenCommandsDetectionEventRepository.save(event).getId());
+        Long eventId = forbiddenCommandsDetectionEventRepository.save(event).getId();
+        participant.setDetectionEventId(eventId);
+        for (var command : detectedForbiddenCommands) {
+            command.setDetectionEventId(eventId);
+            detectedForbiddenCommandRepository.save(command);
+        }
         participant.setCheatingDetectionId(cd.getId());
         detectionEventParticipantRepository.save(participant);
     }
