@@ -526,10 +526,10 @@ public class CheatingDetectionService {
             String command = commandMap.get("cmd").toString();
             String type = commandMap.get("cmd_type").toString();
             for (var forbiddenCommand : fc) {
-                String forbiddenType = forbiddenCommand.getType() == CommandType.BASH ? "bash": "msf";
+                String forbiddenType = forbiddenCommand.getType() == CommandType.BASH ? "bash-command": "msf-command";
                 if (type.equals(forbiddenType) && command != null && command.contains(forbiddenCommand.getCommand())) {
                     DetectedForbiddenCommand detectedCommand = new DetectedForbiddenCommand();
-                    detectedCommand.setCommand(forbiddenCommand.getCommand());
+                    detectedCommand.setCommand(command);
                     detectedCommand.setType(forbiddenCommand.getType());
                     commandsList.add(detectedCommand);
                 }
