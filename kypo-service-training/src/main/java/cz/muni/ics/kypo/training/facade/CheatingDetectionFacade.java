@@ -483,13 +483,10 @@ public class CheatingDetectionFacade {
         ZipEntry detectionEventEntry = new ZipEntry(DETECTION_EVENTS_FOLDER + "/" + dirName + "/detection-event-id" + event.getId() + AbstractFileExtensions.JSON_FILE_EXTENSION);
         zos.putNextEntry(detectionEventEntry);
         List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfEvent(event.getId());
-        zos.write(objectMapper.writeValueAsBytes("{ Event: "));
         zos.write(objectMapper.writeValueAsBytes(event));
-        zos.write(objectMapper.writeValueAsBytes(" Participants: "));
-        for (var participant : participants) {
-            zos.write(objectMapper.writeValueAsBytes(participant));
-        }
-        zos.write(objectMapper.writeValueAsBytes(" }"));
+        ZipEntry detectionEventParticipantsEntry = new ZipEntry(DETECTION_EVENTS_FOLDER + "/" + dirName + "/detection-event-id" + event.getId() + "-participants" + AbstractFileExtensions.JSON_FILE_EXTENSION);
+        zos.putNextEntry(detectionEventParticipantsEntry);
+        zos.write(objectMapper.writeValueAsBytes(participants));
     }
 
     private void writeAnswerSimilarityDetectionEvents(ZipOutputStream zos, Long cheatingDetectionId) throws IOException {
