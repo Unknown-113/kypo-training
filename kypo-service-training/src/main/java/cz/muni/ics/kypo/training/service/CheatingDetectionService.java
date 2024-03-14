@@ -218,9 +218,9 @@ public class CheatingDetectionService {
                 }
                 var answerOwnerRef = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId());
                 String answerOwner = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId()).getUserRefFullName();
-                if (!(participants.size() > 1)) {
-                    continue;
-                }
+//                if (!(participants.size() > 1)) {
+//                    continue;
+//                }
                 auditAnswerSimilarityEvent(submission, cd, participants, answerOwner);
                 run.setHasDetectionEvent(true);
                 trainingRunRepository.save(run);
