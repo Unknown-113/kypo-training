@@ -10,6 +10,8 @@ import cz.muni.ics.kypo.training.api.responses.PageResultResource;
 import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.detection.*;
+import cz.muni.ics.kypo.training.persistence.model.enums.DetectionEventType;
+import cz.muni.ics.kypo.training.persistence.repository.detection.AbstractDetectionEventRepository;
 import cz.muni.ics.kypo.training.service.CheatingDetectionService;
 import cz.muni.ics.kypo.training.service.SecurityService;
 import cz.muni.ics.kypo.training.service.TrainingInstanceService;
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -303,7 +306,16 @@ public class CheatingDetectionFacade {
     }
 
     private void writeTraineeParticipantGroups(ZipOutputStream zos, Long cheatingDetectionId) throws IOException {
-        List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfCheatingDetection(cheatingDetectionId);
+        List<DetectionEventParticipant> participants = cheatingDetectionService
+                .findAllParticipantsOfCheatingDetection(cheatingDetectionId)
+                .stream()
+                .filter(participant -> {
+                    var participantEventType = cheatingDetectionService
+                            .findDetectionEventById(participant.getDetectionEventId())
+                            .getDetectionEventType();
+                    return participantEventType != DetectionEventType.MINIMAL_SOLVE_TIME;
+                })
+                .collect(Collectors.toList());
         Map<Long, Set<Long>> eventsByParticipants = populateParticipantGroups(participants);
         Map<List<Long>, Set<Long>> participantGroups = createParticipantGroups(eventsByParticipants);
 

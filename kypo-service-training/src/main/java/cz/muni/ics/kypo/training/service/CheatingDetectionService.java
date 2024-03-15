@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
+import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.cheatingdetection.DetectedForbiddenCommandDTO;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -205,27 +206,33 @@ public class CheatingDetectionService {
                                              String answerVariable, CheatingDetection cd) {
         String submissionSandboxId = submission.getTrainingRun().getSandboxInstanceRefId();
         String sandboxId = run.getSandboxInstanceRefId();
-        Set<DetectionEventParticipant> participants;
+        Set<DetectionEventParticipant> participants = new HashSet<>();
         if (sandboxId.equals(submissionSandboxId)) {
             return;
         }
         for (var answer : answers) {
             if (answer.getAnswerContent().equals(submission.getProvided()) && answerVariable.equals(answer.getAnswerVariableName())) {
-                participants = new HashSet<>();
                 DetectionEventParticipant participant = extractParticipant(submission);
                 if (!checkIfContainsParticipant(participants, participant)) {
                     participants.add(participant);
                 }
-                var answerOwnerRef = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId());
-                String answerOwner = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId()).getUserRefFullName();
-//                if (!(participants.size() > 1)) {
-//                    continue;
-//                }
-                auditAnswerSimilarityEvent(submission, cd, participants, answerOwner);
-                run.setHasDetectionEvent(true);
-                trainingRunRepository.save(run);
             }
         }
+        if (!participants.isEmpty()) {
+            String answerOwner = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId()).getUserRefFullName();
+            List<Submission> ownerSubmissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
+            for ( var ownerSubmission : ownerSubmissions) {
+                if (Objects.equals(ownerSubmission.getLevel().getId(), submission.getLevel().getId())) {
+                    participants.add(extractParticipant(ownerSubmission));
+                }
+            }
+            auditAnswerSimilarityEvent(submission, cd, participants, answerOwner);
+            run.setHasDetectionEvent(true);
+            trainingRunRepository.save(run);
+        }
+
+
+
     }
 
     /**
