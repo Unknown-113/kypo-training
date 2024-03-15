@@ -12,10 +12,7 @@ import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.detection.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.DetectionEventType;
 import cz.muni.ics.kypo.training.persistence.repository.detection.AbstractDetectionEventRepository;
-import cz.muni.ics.kypo.training.service.CheatingDetectionService;
-import cz.muni.ics.kypo.training.service.SecurityService;
-import cz.muni.ics.kypo.training.service.TrainingInstanceService;
-import cz.muni.ics.kypo.training.service.UserService;
+import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +48,7 @@ public class CheatingDetectionFacade {
     private final CheatingDetectionService cheatingDetectionService;
     public final UserService userService;
     private final TrainingInstanceService trainingInstanceService;
+    private final TrainingDefinitionService trainingDefinitionService;
     private final DetectionEventMapper detectionEventMapper;
     private final CheatingDetectionMapper cheatingDetectionMapper;
     private final DetectionEventParticipantMapper detectionEventParticipantMapper;
@@ -75,6 +73,7 @@ public class CheatingDetectionFacade {
     public CheatingDetectionFacade(CheatingDetectionService cheatingDetectionService,
                                    UserService userService,
                                    TrainingInstanceService trainingInstanceService,
+                                   TrainingDefinitionService trainingDefinitionService,
                                    DetectionEventMapper detectionEventMapper,
                                    CheatingDetectionMapper cheatingDetectionMapper,
                                    DetectionEventParticipantMapper detectionEventParticipantMapper,
@@ -84,6 +83,7 @@ public class CheatingDetectionFacade {
         this.cheatingDetectionService = cheatingDetectionService;
         this.userService = userService;
         this.trainingInstanceService = trainingInstanceService;
+        this.trainingDefinitionService = trainingDefinitionService;
         this.detectionEventMapper = detectionEventMapper;
         this.cheatingDetectionMapper = cheatingDetectionMapper;
         this.detectionEventParticipantMapper = detectionEventParticipantMapper;
@@ -319,9 +319,6 @@ public class CheatingDetectionFacade {
         Map<Long, Set<Long>> eventsByParticipants = populateParticipantGroups(participants);
         Map<List<Long>, Set<Long>> participantGroups = createParticipantGroups(eventsByParticipants);
 
-        ZipEntry participantsEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/participantGroupsObject" + AbstractFileExtensions.JSON_FILE_EXTENSION);
-        zos.putNextEntry(participantsEntry);
-
         for (Map.Entry<List<Long>, Set<Long>> entry : participantGroups.entrySet()) {
             List<Long> userGroup = entry.getKey();
             Set<Long> eventGroup = entry.getValue();
@@ -337,7 +334,6 @@ public class CheatingDetectionFacade {
             zos.putNextEntry(participantResponseEntry);
             auditParticipants(userGroup, zos);
             auditParticipantGroupEvents(eventGroup, zos);
-            System.out.println("User Group: " + userGroup + ", Event Group: " + eventGroup);
         }
     }
 
@@ -397,6 +393,7 @@ public class CheatingDetectionFacade {
 
         csvData.append("GROUP PARTICIPANTS\n");
         csvData.append("user id,name,ref\n");
+
         for (var userId : userIds) {
             UserRefDTO user = userService.getUserRefDTOByUserRefId(userId);
             csvData.append(String.format("%s,%s,%s\n", userId, user.getUserRefFullName(), user.getUserRefSub()));
@@ -407,9 +404,13 @@ public class CheatingDetectionFacade {
     }
 
     private void auditParticipantGroupEvents(Set<Long> eventIds, ZipOutputStream zos) throws IOException {
-
+        var first = true;
         for (var eventId : eventIds) {
             AbstractDetectionEvent event = cheatingDetectionService.findDetectionEventById(eventId);
+            if (first) {
+                writeDetectedAt(event, zos);
+                first = false;
+            }
             var eventType = event.getDetectionEventType();
             List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfEvent(eventId);
             switch (eventType) {
@@ -423,12 +424,20 @@ public class CheatingDetectionFacade {
         }
     }
 
+    private void writeDetectedAt(AbstractDetectionEvent event, ZipOutputStream zos) throws IOException {
+        StringBuilder csvData = new StringBuilder();
+        csvData.append(String.format("detected at:,%s\n", event.getDetectedAt().format(formatter)));
+        byte[] bytes = csvData.toString().getBytes();
+        zos.write(bytes, 0, bytes.length);
+    }
+
     private void auditAnswerSimilarityGroup(List<DetectionEventParticipant> participants, AnswerSimilarityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
 
         csvData.append("\nANSWER SIMILARITY EVENT\n");
-        csvData.append("detected at,level title,answer,answer owner\n");
-        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()));
+        csvData.append("level order,level title,answer,answer owner\n");
+        int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
+        csvData.append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
@@ -444,8 +453,9 @@ public class CheatingDetectionFacade {
         StringBuilder csvData = new StringBuilder();
 
         csvData.append("\nLOCATION SIMILARITY EVENT\n");
-        csvData.append("detected at,level title,dns,ip address\n");
-        csvData.append(String.format("%s,%s,%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle(), event.getDns(), event.getIpAddress()));
+        csvData.append("level order,level title,dns,ip address\n");
+        int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
+        csvData.append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getDns(), event.getIpAddress()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time,ip address\n");
@@ -461,8 +471,9 @@ public class CheatingDetectionFacade {
         StringBuilder csvData = new StringBuilder();
 
         csvData.append("\nMINIMAL SOLVE TIME EVENT\n");
-        csvData.append("detected at,level title,minimal solve time\n");
-        csvData.append(String.format("%s,%s,%s\n",  event.getDetectedAt().format(formatter), event.getLevelTitle(), event.getMinimalSolveTime()));
+        csvData.append("level order,level title,minimal solve time\n");
+        int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
+        csvData.append(String.format("%s,%s,%s\n",  order, event.getLevelTitle(), event.getMinimalSolveTime()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time,solved in (seconds)\n");
@@ -478,8 +489,9 @@ public class CheatingDetectionFacade {
         StringBuilder csvData = new StringBuilder();
 
         csvData.append("\nTIME PROXIMITY EVENT\n");
-        csvData.append("detected at,level title,proximity\n");
-        csvData.append(String.format("%s,%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle(), event.getThreshold()));
+        csvData.append("level order,level title,proximity\n");
+        int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
+        csvData.append(String.format("%s,%s,%s\n", order, event.getLevelTitle(), event.getThreshold()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
@@ -495,8 +507,9 @@ public class CheatingDetectionFacade {
         StringBuilder csvData = new StringBuilder();
 
         csvData.append("\nNO COMMANDS EVENT\n");
-        csvData.append("detected at,level title\n");
-        csvData.append(String.format("%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle()));
+        csvData.append("level order,level title\n");
+        int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
+        csvData.append(String.format("%s,%s\n", order, event.getLevelTitle()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
@@ -512,8 +525,9 @@ public class CheatingDetectionFacade {
         StringBuilder csvData = new StringBuilder();
 
         csvData.append("\nFORBIDDEN COMMANDS EVENT\n");
-        csvData.append("detected at,level title\n");
-        csvData.append(String.format("%s,%s\n", event.getDetectedAt().format(formatter), event.getLevelTitle()));
+        csvData.append("level order,level title\n");
+        int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
+        csvData.append(String.format("%s,%s\n", order, event.getLevelTitle()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time\n");
