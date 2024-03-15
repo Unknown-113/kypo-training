@@ -453,12 +453,12 @@ public class CheatingDetectionFacade {
         StringBuilder csvData = new StringBuilder();
 
         csvData.append("\nLOCATION SIMILARITY EVENT\n");
-        csvData.append("level order,level title,dns,ip address\n");
+        csvData.append("level order,level title,hostname,IP\n");
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
         csvData.append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getDns(), event.getIpAddress()));
 
         csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time,ip address\n");
+        csvData.append("participant,time,IP\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter), participant.getIpAddress()));
         }
