@@ -24,6 +24,14 @@ public class DetectedForbiddenCommand extends AbstractEntity<Long> {
     private CommandType type;
     @Column(name = "detection_event_id", nullable = false)
     private Long detectionEventId;
+    @Column(name = "hostname")
+    private String hostname;
+    @Column(name = "occurred_at")
+    private LocalDateTime occurredAt;
+
+    public DetectedForbiddenCommand() {
+    }
+
     public String getCommand() {
         return command;
     }
@@ -48,6 +56,22 @@ public class DetectedForbiddenCommand extends AbstractEntity<Long> {
         this.detectionEventId = detectionEventId;
     }
 
+    public String getHostname() {
+        return hostname;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    public LocalDateTime getOccurredAt() {
+        return occurredAt;
+    }
+
+    public void setOccurredAt(LocalDateTime occurredAt) {
+        this.occurredAt = occurredAt;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -55,12 +79,14 @@ public class DetectedForbiddenCommand extends AbstractEntity<Long> {
         DetectedForbiddenCommand that = (DetectedForbiddenCommand) o;
         return Objects.equals(command, that.command) &&
                 type == that.type &&
-                Objects.equals(detectionEventId, that.detectionEventId);
+                Objects.equals(detectionEventId, that.detectionEventId) &&
+                Objects.equals(hostname, that.hostname) &&
+                Objects.equals(occurredAt, that.occurredAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(command, type, detectionEventId);
+        return Objects.hash(command, type, detectionEventId, hostname, occurredAt);
     }
 
     @Override
@@ -69,6 +95,8 @@ public class DetectedForbiddenCommand extends AbstractEntity<Long> {
                 "command='" + command + '\'' +
                 ", type=" + type +
                 ", detectionEventId=" + detectionEventId +
+                ", hostname='" + hostname + '\'' +
+                ", occurredAt=" + occurredAt +
                 '}';
     }
 }

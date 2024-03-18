@@ -1,7 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
-import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
-import cz.muni.ics.kypo.training.api.dto.cheatingdetection.DetectedForbiddenCommandDTO;
+import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.persistence.model.*;
 import cz.muni.ics.kypo.training.persistence.model.detection.*;
@@ -14,7 +13,6 @@ import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
 import cz.muni.ics.kypo.training.persistence.repository.detection.*;
 import cz.muni.ics.kypo.training.service.api.AnswersStorageApiService;
 import cz.muni.ics.kypo.training.service.api.ElasticsearchApiService;
-import org.apache.commons.math3.analysis.function.Abs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -416,6 +414,15 @@ public class CheatingDetectionService {
         updateCheatingDetection(cd);
     }
 
+    private boolean wasSolutionDisplayed(List<AbstractAuditPOJO> events, Submission submission) {
+        for (AbstractAuditPOJO event : events) {
+            if (event.getLevel() == submission.getLevel().getId() && event.getType().contains("SolutionDisplayed")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Executes a cheating detection of type NO_COMMANDS
      *
@@ -437,12 +444,16 @@ public class CheatingDetectionService {
         LocalDateTime from;
         Submission submission;
         for (var run : trainingRuns) {
+            List<AbstractAuditPOJO> events = elasticsearchApiService.findAllEventsFromTrainingRun(run);
             submissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
             for (int i = 0; i < submissions.size() - 1; i++) {
                 submission = submissions.get(i);
                 from = (i == 0) ? run.getStartTime() : submissions.get(i - 1).getDate();
                 Long currentId = submission.getLevel().getId();
                 if (!trainingLevelsById.containsKey(currentId) || !trainingLevelsById.get(currentId).isCommandsRequired()) {
+                    continue;
+                }
+                if (wasSolutionDisplayed(events, submission)) {
                     continue;
                 }
                 if (evalCheatOfNoCommands(run.getSandboxInstanceRefId(), from, submission)) {
