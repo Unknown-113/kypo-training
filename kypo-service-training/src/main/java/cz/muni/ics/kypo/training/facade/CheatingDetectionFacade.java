@@ -327,7 +327,7 @@ public class CheatingDetectionFacade {
             for (var userId : userGroup) {
                 usersString.append(userId).append('_');
             }
-            if(usersString.length() > 0) {
+            if (usersString.length() > 0) {
                 usersString.deleteCharAt(usersString.length() - 1);
             }
             ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/" + usersString + AbstractFileExtensions.CSV_FILE_EXTENSION);
@@ -414,12 +414,18 @@ public class CheatingDetectionFacade {
             var eventType = event.getDetectionEventType();
             List<DetectionEventParticipant> participants = cheatingDetectionService.findAllParticipantsOfEvent(eventId);
             switch (eventType) {
-                case ANSWER_SIMILARITY -> auditAnswerSimilarityGroup(participants, cheatingDetectionService.findAnswerSimilarityEventById(eventId), zos);
-                case LOCATION_SIMILARITY -> auditLocationSimilarityGroup(participants, cheatingDetectionService.findLocationSimilarityEventById(eventId), zos);
-                case MINIMAL_SOLVE_TIME -> auditMinimalSolveTimeGroup(participants, cheatingDetectionService.findMinimalSolveTimeEventById(eventId), zos);
-                case TIME_PROXIMITY -> auditTimeProximityGroup(participants, cheatingDetectionService.findTimeProximityEventById(eventId), zos);
-                case NO_COMMANDS -> auditNoCommandsGroup(participants, cheatingDetectionService.findNoCommandsEventById(eventId), zos);
-                case FORBIDDEN_COMMANDS -> auditForbiddenCommandsGroup(participants, cheatingDetectionService.findForbiddenCommandsEventById(eventId), zos);
+                case ANSWER_SIMILARITY ->
+                        auditAnswerSimilarityGroup(participants, cheatingDetectionService.findAnswerSimilarityEventById(eventId), zos);
+                case LOCATION_SIMILARITY ->
+                        auditLocationSimilarityGroup(participants, cheatingDetectionService.findLocationSimilarityEventById(eventId), zos);
+                case MINIMAL_SOLVE_TIME ->
+                        auditMinimalSolveTimeGroup(participants, cheatingDetectionService.findMinimalSolveTimeEventById(eventId), zos);
+                case TIME_PROXIMITY ->
+                        auditTimeProximityGroup(participants, cheatingDetectionService.findTimeProximityEventById(eventId), zos);
+                case NO_COMMANDS ->
+                        auditNoCommandsGroup(participants, cheatingDetectionService.findNoCommandsEventById(eventId), zos);
+                case FORBIDDEN_COMMANDS ->
+                        auditForbiddenCommandsGroup(participants, cheatingDetectionService.findForbiddenCommandsEventById(eventId), zos);
             }
         }
     }
@@ -473,7 +479,7 @@ public class CheatingDetectionFacade {
         csvData.append("\nMINIMAL SOLVE TIME EVENT\n");
         csvData.append("level order,level title,minimal solve time\n");
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
-        csvData.append(String.format("%s,%s,%s\n",  order, event.getLevelTitle(), event.getMinimalSolveTime()));
+        csvData.append(String.format("%s,%s,%s\n", order, event.getLevelTitle(), event.getMinimalSolveTime()));
 
         csvData.append("\nPARTICIPANTS\n");
         csvData.append("participant,time,solved in (seconds)\n");
@@ -533,6 +539,13 @@ public class CheatingDetectionFacade {
         csvData.append("participant,time\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+        }
+
+        csvData.append("\nFORBIDDEN COMMANDS\n");
+        csvData.append("command,type\n");
+        List<DetectedForbiddenCommand> commands = cheatingDetectionService.findAllForbiddenCommandsOfDetectionEvent(event.getId());
+        for (var command : commands) {
+            csvData.append(String.format("%s,%s\n", command.getCommand(), command.getType()));
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
