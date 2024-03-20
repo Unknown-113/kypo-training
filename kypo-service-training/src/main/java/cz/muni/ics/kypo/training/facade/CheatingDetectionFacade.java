@@ -1,6 +1,5 @@
 package cz.muni.ics.kypo.training.facade;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
@@ -11,7 +10,6 @@ import cz.muni.ics.kypo.training.exceptions.InternalServerErrorException;
 import cz.muni.ics.kypo.training.mapping.mapstruct.*;
 import cz.muni.ics.kypo.training.persistence.model.detection.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.DetectionEventType;
-import cz.muni.ics.kypo.training.persistence.repository.detection.AbstractDetectionEventRepository;
 import cz.muni.ics.kypo.training.service.*;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,7 +44,6 @@ public class CheatingDetectionFacade {
     private static final String PARTICIPANT_RESPONSE_FOLDER = "participant_groups";
     private final CheatingDetectionService cheatingDetectionService;
     public final UserService userService;
-    private final TrainingInstanceService trainingInstanceService;
     private final TrainingDefinitionService trainingDefinitionService;
     private final DetectionEventMapper detectionEventMapper;
     private final CheatingDetectionMapper cheatingDetectionMapper;
@@ -72,7 +68,6 @@ public class CheatingDetectionFacade {
     @Autowired
     public CheatingDetectionFacade(CheatingDetectionService cheatingDetectionService,
                                    UserService userService,
-                                   TrainingInstanceService trainingInstanceService,
                                    TrainingDefinitionService trainingDefinitionService,
                                    DetectionEventMapper detectionEventMapper,
                                    CheatingDetectionMapper cheatingDetectionMapper,
@@ -82,7 +77,6 @@ public class CheatingDetectionFacade {
                                    ObjectMapper objectMapper) {
         this.cheatingDetectionService = cheatingDetectionService;
         this.userService = userService;
-        this.trainingInstanceService = trainingInstanceService;
         this.trainingDefinitionService = trainingDefinitionService;
         this.detectionEventMapper = detectionEventMapper;
         this.cheatingDetectionMapper = cheatingDetectionMapper;
@@ -280,7 +274,6 @@ public class CheatingDetectionFacade {
             writeTraineeParticipantGroups(zos, cheatingDetectionId);
 
             zos.closeEntry();
-            zos.close();
             FileToReturnDTO fileToReturnDTO = new FileToReturnDTO();
             fileToReturnDTO.setContent(baos.toByteArray());
             fileToReturnDTO.setTitle("cheating-detection-" + cheatingDetection.getId().toString());
@@ -327,7 +320,7 @@ public class CheatingDetectionFacade {
             for (var userId : userGroup) {
                 usersString.append(userId).append('_');
             }
-            if (usersString.length() > 0) {
+            if (!usersString.isEmpty()) {
                 usersString.deleteCharAt(usersString.length() - 1);
             }
             ZipEntry participantResponseEntry = new ZipEntry(PARTICIPANT_RESPONSE_FOLDER + "/" + usersString + AbstractFileExtensions.CSV_FILE_EXTENSION);
@@ -431,22 +424,18 @@ public class CheatingDetectionFacade {
     }
 
     private void writeDetectedAt(AbstractDetectionEvent event, ZipOutputStream zos) throws IOException {
-        StringBuilder csvData = new StringBuilder();
-        csvData.append(String.format("detected at:,%s\n", event.getDetectedAt().format(formatter)));
-        byte[] bytes = csvData.toString().getBytes();
+        byte[] bytes = String.format("detected at:,%s\n", event.getDetectedAt().format(formatter)).getBytes();
         zos.write(bytes, 0, bytes.length);
     }
 
     private void auditAnswerSimilarityGroup(List<DetectionEventParticipant> participants, AnswerSimilarityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
-
-        csvData.append("\nANSWER SIMILARITY EVENT\n");
-        csvData.append("level order,level title,answer,answer owner\n");
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
-        csvData.append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time\n");
+        csvData.append("\nANSWER SIMILARITY EVENT\nlevel order,level title,answer,answer owner\n")
+                .append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()))
+                .append("\nPARTICIPANTS\nparticipant,time\n")
+                .append(formatParticipants(participants))
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
         }
@@ -457,14 +446,11 @@ public class CheatingDetectionFacade {
 
     private void auditLocationSimilarityGroup(List<DetectionEventParticipant> participants, LocationSimilarityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
-
-        csvData.append("\nLOCATION SIMILARITY EVENT\n");
-        csvData.append("level order,level title,hostname,IP\n");
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
-        csvData.append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getDns(), event.getIpAddress()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time,IP\n");
+        csvData.append("\nLOCATION SIMILARITY EVENT\nlevel order,level title,hostname,IP\n")
+                .append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getDns(), event.getIpAddress()))
+                .append("\nPARTICIPANTS\nparticipant,time,IP\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter), participant.getIpAddress()));
         }
@@ -475,14 +461,11 @@ public class CheatingDetectionFacade {
 
     private void auditMinimalSolveTimeGroup(List<DetectionEventParticipant> participants, MinimalSolveTimeDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
-
-        csvData.append("\nMINIMAL SOLVE TIME EVENT\n");
-        csvData.append("level order,level title,minimal solve time\n");
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
-        csvData.append(String.format("%s,%s,%s\n", order, event.getLevelTitle(), event.getMinimalSolveTime()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time,solved in (seconds)\n");
+        csvData.append("\nMINIMAL SOLVE TIME EVENT\nlevel order,level title,minimal solve time\n")
+                .append(String.format("%s,%s,%s\n", order, event.getLevelTitle(), event.getMinimalSolveTime()))
+                .append("\nPARTICIPANTS\nparticipant,time,solved in (seconds)\n");
         for (var participant : participants) {
             csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter), participant.getSolvedInTime()));
         }
@@ -493,56 +476,53 @@ public class CheatingDetectionFacade {
 
     private void auditTimeProximityGroup(List<DetectionEventParticipant> participants, TimeProximityDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
-
-        csvData.append("\nTIME PROXIMITY EVENT\n");
-        csvData.append("level order,level title,proximity\n");
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
-        csvData.append(String.format("%s,%s,%s\n", order, event.getLevelTitle(), event.getThreshold()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time\n");
-        for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
-        }
-        csvData.append("\n\n\n");
+        csvData.append("\nTIME PROXIMITY EVENT\nlevel order,level title,proximity\n")
+                .append(String.format("%s,%s,%s\n", order, event.getLevelTitle(), event.getThreshold()))
+                .append("\nPARTICIPANTS\nparticipant,time\n")
+                .append(formatParticipants(participants))
+                .append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
 
+    private String formatParticipants(List<DetectionEventParticipant> participants) {
+        StringBuilder builder = new StringBuilder();
+        for (var participant : participants) {
+            builder.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+        }
+        return builder.toString();
+    }
+
     private void auditNoCommandsGroup(List<DetectionEventParticipant> participants, NoCommandsDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
-
-        csvData.append("\nNO COMMANDS EVENT\n");
-        csvData.append("level order,level title\n");
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
-        csvData.append(String.format("%s,%s\n", order, event.getLevelTitle()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time\n");
-        for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
-        }
-        csvData.append("\n\n\n");
+        csvData.append("\nNO COMMANDS EVENT\n")
+                .append("level order,level title\n")
+                .append(String.format("%s,%s\n", order, event.getLevelTitle()))
+                .append("\nPARTICIPANTS\n")
+                .append("participant,time\n")
+                .append("\nPARTICIPANTS\nparticipant,time\n")
+                .append(formatParticipants(participants))
+                .append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
         zos.write(bytes, 0, bytes.length);
     }
 
     private void auditForbiddenCommandsGroup(List<DetectionEventParticipant> participants, ForbiddenCommandsDetectionEvent event, ZipOutputStream zos) throws IOException {
         StringBuilder csvData = new StringBuilder();
-
-        csvData.append("\nFORBIDDEN COMMANDS EVENT\n");
-        csvData.append("level order,level title\n");
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
-        csvData.append(String.format("%s,%s\n", order, event.getLevelTitle()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time\n");
-        for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
-        }
-
-        csvData.append("\nFORBIDDEN COMMANDS\n");
-        csvData.append("command,type\n");
+        csvData.append("\nFORBIDDEN COMMANDS EVENT\n")
+                .append("level order,level title\n")
+                .append(String.format("%s,%s\n", order, event.getLevelTitle()))
+                .append("\nPARTICIPANTS\n")
+                .append("participant,time\n")
+                .append("\nPARTICIPANTS\nparticipant,time\n").append(formatParticipants(participants))
+                .append("\nFORBIDDEN COMMANDS\n")
+                .append("command,type\n");
         List<DetectedForbiddenCommand> commands = cheatingDetectionService.findAllForbiddenCommandsOfDetectionEvent(event.getId());
         for (var command : commands) {
             csvData.append(String.format("%s,%s\n", command.getCommand(), command.getType()));
