@@ -28,7 +28,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
-
 /**
  * The type Cheating detection service.
  */
@@ -36,7 +35,6 @@ import java.util.*;
 public class CheatingDetectionService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CheatingDetectionService.class);
-
     private final AbstractDetectionEventRepository detectionEventRepository;
     private final CheatingDetectionRepository cheatingDetectionRepository;
     private final TrainingLevelRepository trainingLevelRepository;
@@ -55,9 +53,9 @@ public class CheatingDetectionService {
     private final TrainingInstanceService trainingInstanceService;
     private final ElasticsearchApiService elasticsearchApiService;
     private final UserService userService;
-
     @Autowired
     Environment environment;
+
     /**
      * Instantiates a new Cheating detection service.
      *
@@ -155,7 +153,6 @@ public class CheatingDetectionService {
         updateCheatingDetection(cd);
     }
 
-
     private void executeCheatingDetectionOfAnswerSimilarity(CheatingDetection cd) {
         cd.setAnswerSimilarityState(CheatingDetectionState.RUNNING);
         updateCheatingDetection(cd);
@@ -216,7 +213,7 @@ public class CheatingDetectionService {
         if (!participants.isEmpty()) {
             String answerOwner = userService.getUserRefDTOByUserRefId(run.getParticipantRef().getUserRefId()).getUserRefFullName();
             List<Submission> ownerSubmissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
-            for ( var ownerSubmission : ownerSubmissions) {
+            for (var ownerSubmission : ownerSubmissions) {
                 if (Objects.equals(ownerSubmission.getLevel().getId(), submission.getLevel().getId())) {
                     participants.add(extractParticipant(ownerSubmission));
                 }
@@ -375,8 +372,8 @@ public class CheatingDetectionService {
                     }
                 }
                 levelEnd = current.getDate();
-                Long levelDuration = Duration.between(levelStart, levelEnd).toSeconds();
-                Long minimalSolveTime = current.getLevel().getMinimalPossibleSolveTime() * 60;
+                long levelDuration = Duration.between(levelStart, levelEnd).toSeconds();
+                long minimalSolveTime = current.getLevel().getMinimalPossibleSolveTime() * 60;
 
                 if (levelDuration < minimalSolveTime) {
                     var arr = detectedByLevel.get(current.getLevel().getId());
@@ -534,7 +531,7 @@ public class CheatingDetectionService {
             String command = commandMap.get("cmd").toString();
             String type = commandMap.get("cmd_type").toString();
             for (var forbiddenCommand : fc) {
-                String forbiddenType = forbiddenCommand.getType() == CommandType.BASH ? "bash-command": "msf-command";
+                String forbiddenType = forbiddenCommand.getType() == CommandType.BASH ? "bash-command" : "msf-command";
                 if (type.equals(forbiddenType) && command != null && command.contains(forbiddenCommand.getCommand())) {
                     DetectedForbiddenCommand detectedCommand = new DetectedForbiddenCommand();
                     detectedCommand.setCommand(command);
@@ -633,12 +630,8 @@ public class CheatingDetectionService {
         return detectionEventParticipantRepository.findAllByEventId(eventId);
     }
 
-    public List<DetectionEventParticipant>  findAllParticipantsOfCheatingDetection(Long cheatingDetectionId) {
+    public List<DetectionEventParticipant> findAllParticipantsOfCheatingDetection(Long cheatingDetectionId) {
         return detectionEventParticipantRepository.findAllParticipantsOfCheatingDetection(cheatingDetectionId);
-    }
-
-    public List<Long> getAllDetectionEventsIdsOfparticipant(Long userId) {
-        return detectionEventParticipantRepository.getAllDetectionEventsIdsOfParticipant(userId);
     }
 
     public Page<DetectedForbiddenCommand> findAllForbiddenCommandsOfDetectionEvent(Long eventId, Pageable pageable) {
@@ -694,7 +687,6 @@ public class CheatingDetectionService {
         return false;
     }
 
-
     private void auditAnswerSimilarityEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants, String answerOwner) {
         TrainingRun run = submission.getTrainingRun();
         run.setHasDetectionEvent(true);
@@ -707,9 +699,6 @@ public class CheatingDetectionService {
         answerSimilarityDetectionEventRepository.save(event);
         saveParticipants(participants, event.getId(), cd.getId());
     }
-
-
-
 
     private void auditLocationSimilarityEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants) {
         TrainingRun run = submission.getTrainingRun();
@@ -731,7 +720,6 @@ public class CheatingDetectionService {
         event.setParticipants(generateParticipantString(participants));
         saveParticipants(participants, locationSimilarityDetectionEventRepository.save(event).getId(), cd.getId());
     }
-
 
     private void auditMinimalSolveTimeEvent(Submission submission, CheatingDetection cd, Set<DetectionEventParticipant> participants,
                                             Long minimalSolveTime) {
