@@ -192,12 +192,9 @@ public class CheatingDetectionService {
     }
 
     private boolean checkIfAnswerBelongsToDifferentLevel(List<VariantAnswer> answers, String provided) {
-        for (var answer : answers) {
-            if (answer.getAnswerContent().equals(provided)) {
-                return true;
-            }
-        }
-        return false;
+        return answers.stream()
+                .map(VariantAnswer::getAnswerContent)
+                .anyMatch(provided::equals);
     }
 
     private void evalCheatOfAnswerSimilarity(TrainingRun run, Submission submission, List<VariantAnswer> answers,
@@ -228,9 +225,6 @@ public class CheatingDetectionService {
             run.setHasDetectionEvent(true);
             trainingRunRepository.save(run);
         }
-
-
-
     }
 
     /**
@@ -349,12 +343,8 @@ public class CheatingDetectionService {
     }
 
     private boolean checkIfContainsParticipant(Set<DetectionEventParticipant> participants, DetectionEventParticipant participant) {
-        for (var elem : participants ) {
-            if (elem.getUserId().equals(participant.getUserId())) {
-                return true;
-            }
-        }
-        return false;
+        return participants.stream()
+                .anyMatch(elem -> elem.getUserId().equals(participant.getUserId()));
     }
 
     private void executeCheatingDetectionOfMinimalSolveTime(CheatingDetection cd) {
@@ -366,7 +356,7 @@ public class CheatingDetectionService {
         Map<Long, Long> submissionTimes = new HashMap<>();
         Set<DetectionEventParticipant> participants;
         boolean newParticipant = true;
-        LocalDateTime levelStart = LocalDateTime.now();
+        LocalDateTime levelStart;
         LocalDateTime levelEnd;
         Submission current;
         Submission previous = new Submission();
@@ -631,14 +621,6 @@ public class CheatingDetectionService {
         return forbiddenCommandsDetectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId);
     }
 
-    private CheatingDetectionState[] getStatesByFlags(boolean[] flags) {
-        CheatingDetectionState[] states = new CheatingDetectionState[6];
-        for (int i = 0; i < flags.length; i++) {
-            states[i] = flags[i] ? CheatingDetectionState.QUEUED : CheatingDetectionState.DISABLED;
-        }
-        return states;
-    }
-
     public Page<AbstractDetectionEvent> findAllDetectionEventsOfCheatingDetection(Long cheatingDetectionId, Pageable pageable) {
         return detectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId, pageable);
     }
@@ -807,8 +789,7 @@ public class CheatingDetectionService {
     private String generateParticipantString(Set<DetectionEventParticipant> participants) {
         StringBuilder participantString = new StringBuilder();
         for (var participant : participants) {
-            participantString.append(',').append(' ');
-            participantString.append(participant.getParticipantName());
+            participantString.append(',').append(' ').append(participant.getParticipantName());
         }
         participantString.delete(0, 2);
         return participantString.toString();
