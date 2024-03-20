@@ -435,7 +435,7 @@ public class CheatingDetectionFacade {
         csvData.append("\nANSWER SIMILARITY EVENT\nlevel order,level title,answer,answer owner\n")
                 .append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()))
                 .append("\nPARTICIPANTS\nparticipant,time\n")
-                .append(formatParticipants(participants))
+                .append(formatParticipants(participants));
         for (var participant : participants) {
             csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
         }
