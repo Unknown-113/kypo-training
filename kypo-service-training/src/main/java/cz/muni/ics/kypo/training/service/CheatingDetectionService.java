@@ -531,19 +531,25 @@ public class CheatingDetectionService {
         for (var commandMap : submittedCommands) {
             String command = commandMap.get("cmd").toString();
             String type = commandMap.get("cmd_type").toString();
+<<<<<<< 00e1ced5b9907cbfa172b86a1b477e61002eedad
             String hostname = commandMap.get("hostname").toString();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ");
             String occurredAt = commandMap.get("timestamp_str").toString();
             LocalDateTime timestamp = LocalDateTime.parse(occurredAt, formatter);
 
+=======
+>>>>>>> 90d6b355ca6a69df710e605369681a698207ba30
             for (var forbiddenCommand : fc) {
                 String forbiddenType = forbiddenCommand.getType() == CommandType.BASH ? "bash-command" : "msf-command";
                 if (type.equals(forbiddenType) && command != null && command.contains(forbiddenCommand.getCommand())) {
                     DetectedForbiddenCommand detectedCommand = new DetectedForbiddenCommand();
                     detectedCommand.setCommand(command);
                     detectedCommand.setType(forbiddenCommand.getType());
+<<<<<<< 00e1ced5b9907cbfa172b86a1b477e61002eedad
                     detectedCommand.setHostname(hostname);
                     detectedCommand.setOccurredAt(timestamp);
+=======
+>>>>>>> 90d6b355ca6a69df710e605369681a698207ba30
                     commandsList.add(detectedCommand);
                 }
             }
