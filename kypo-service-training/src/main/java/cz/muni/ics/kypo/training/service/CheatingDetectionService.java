@@ -26,6 +26,7 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -530,12 +531,19 @@ public class CheatingDetectionService {
         for (var commandMap : submittedCommands) {
             String command = commandMap.get("cmd").toString();
             String type = commandMap.get("cmd_type").toString();
+            String hostname = commandMap.get("hostname").toString();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ");
+            String occurredAt = commandMap.get("timestamp_str").toString();
+            LocalDateTime timestamp = LocalDateTime.parse(occurredAt, formatter);
+
             for (var forbiddenCommand : fc) {
                 String forbiddenType = forbiddenCommand.getType() == CommandType.BASH ? "bash-command" : "msf-command";
                 if (type.equals(forbiddenType) && command != null && command.contains(forbiddenCommand.getCommand())) {
                     DetectedForbiddenCommand detectedCommand = new DetectedForbiddenCommand();
                     detectedCommand.setCommand(command);
                     detectedCommand.setType(forbiddenCommand.getType());
+                    detectedCommand.setHostname(hostname);
+                    detectedCommand.setOccurredAt(timestamp);
                     commandsList.add(detectedCommand);
                 }
             }
