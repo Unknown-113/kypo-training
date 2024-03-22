@@ -23,9 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 
 /**
@@ -531,7 +529,12 @@ public class CheatingDetectionService {
             String command = commandMap.get("cmd").toString();
             String type = commandMap.get("cmd_type").toString();
             String hostname = commandMap.get("hostname").toString();
-            LocalDateTime timestamp = LocalDateTime.parse((String) commandMap.get("timestamp_str"));
+
+            Instant instant = Instant.parse(commandMap.get("timestamp_str").toString());
+            ZonedDateTime zonedDateTime = instant.atZone(ZoneId.of("UTC"));
+
+            LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+
             for (var forbiddenCommand : fc) {
                 String forbiddenType = forbiddenCommand.getType() == CommandType.BASH ? "bash-command" : "msf-command";
                 if (type.equals(forbiddenType) && command != null && command.contains(forbiddenCommand.getCommand())) {
@@ -539,7 +542,7 @@ public class CheatingDetectionService {
                     detectedCommand.setCommand(command);
                     detectedCommand.setType(forbiddenCommand.getType());
                     detectedCommand.setHostname(hostname);
-                    detectedCommand.setOccurredAt(timestamp);
+                    detectedCommand.setOccurredAt(localDateTime);
                     commandsList.add(detectedCommand);
                 }
             }
