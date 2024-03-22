@@ -445,10 +445,12 @@ public class CheatingDetectionFacade {
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
         csvData.append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getAnswer(), event.getAnswerOwner()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time\n");
-        for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+        if (participants.size() > 1) {
+            csvData.append("\nPARTICIPANTS\n");
+            csvData.append("participant,time\n");
+            for (var participant : participants) {
+                csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+            }
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -463,10 +465,12 @@ public class CheatingDetectionFacade {
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
         csvData.append(String.format("%s,%s,%s,%s\n", order, event.getLevelTitle(), event.getDns(), event.getIpAddress()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time,IP\n");
-        for (var participant : participants) {
-            csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter), participant.getIpAddress()));
+        if (participants.size() > 1) {
+            csvData.append("\nPARTICIPANTS\n");
+            csvData.append("participant,time,IP\n");
+            for (var participant : participants) {
+                csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter), participant.getIpAddress()));
+            }
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -481,10 +485,12 @@ public class CheatingDetectionFacade {
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
         csvData.append(String.format("%s,%s,%s\n", order, event.getLevelTitle(), event.getMinimalSolveTime()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time,solved in (seconds)\n");
-        for (var participant : participants) {
-            csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter), participant.getSolvedInTime()));
+        if (participants.size() > 1) {
+            csvData.append("\nPARTICIPANTS\n");
+            csvData.append("participant,time,solved in (seconds)\n");
+            for (var participant : participants) {
+                csvData.append(String.format("%s,%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter), participant.getSolvedInTime()));
+            }
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -499,10 +505,12 @@ public class CheatingDetectionFacade {
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
         csvData.append(String.format("%s,%s,%s\n", order, event.getLevelTitle(), event.getThreshold()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time\n");
-        for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+        if (participants.size() > 1) {
+            csvData.append("\nPARTICIPANTS\n");
+            csvData.append("participant,time\n");
+            for (var participant : participants) {
+                csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+            }
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -517,10 +525,12 @@ public class CheatingDetectionFacade {
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
         csvData.append(String.format("%s,%s\n", order, event.getLevelTitle()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time\n");
-        for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+        if (participants.size() > 1) {
+            csvData.append("\nPARTICIPANTS\n");
+            csvData.append("participant,time\n");
+            for (var participant : participants) {
+                csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+            }
         }
         csvData.append("\n\n\n");
         byte[] bytes = csvData.toString().getBytes();
@@ -535,12 +545,13 @@ public class CheatingDetectionFacade {
         int order = trainingDefinitionService.findLevelById(event.getLevelId()).getOrder();
         csvData.append(String.format("%s,%s\n", order, event.getLevelTitle()));
 
-        csvData.append("\nPARTICIPANTS\n");
-        csvData.append("participant,time\n");
-        for (var participant : participants) {
-            csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+        if (participants.size() > 1) {
+            csvData.append("\nPARTICIPANTS\n");
+            csvData.append("participant,time\n");
+            for (var participant : participants) {
+                csvData.append(String.format("%s,%s\n", participant.getParticipantName(), participant.getOccurredAt().format(formatter)));
+            }
         }
-
         csvData.append("\nFORBIDDEN COMMANDS\n");
         csvData.append("command,type,hostname,time\n");
         List<DetectedForbiddenCommand> commands = cheatingDetectionService.findAllForbiddenCommandsOfDetectionEvent(event.getId());
