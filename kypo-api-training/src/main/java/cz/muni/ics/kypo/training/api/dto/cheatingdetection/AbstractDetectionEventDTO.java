@@ -46,6 +46,8 @@ public class AbstractDetectionEventDTO {
     private Long cheatingDetectionId;
     @ApiModelProperty(value = "Training level id in which the event occurred.", example = "3")
     private Long levelId;
+    @ApiModelProperty(value = "Training level order in which the event occurred.", example = "3")
+    private int levelOrder;
     @ApiModelProperty(value = "Title of the training level.", example = "SQL injection")
     private String levelTitle;
     @ApiModelProperty(value = "Time at which the event was detected.", example = "1.1.2022 5:55:23")
@@ -200,38 +202,50 @@ public class AbstractDetectionEventDTO {
         this.id = id;
     }
 
+    public int getLevelOrder() {
+        return levelOrder;
+    }
+
+    public void setLevelOrder(int levelOrder) {
+        this.levelOrder = levelOrder;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AbstractDetectionEventDTO that = (AbstractDetectionEventDTO) o;
-        return Objects.equals(trainingInstanceId, that.trainingInstanceId) &&
+        return levelOrder == that.levelOrder &&
+                Objects.equals(id, that.id) &&
+                Objects.equals(trainingInstanceId, that.trainingInstanceId) &&
                 Objects.equals(cheatingDetectionId, that.cheatingDetectionId) &&
-                Objects.equals(levelId, that.levelId) && Objects.equals(levelTitle, that.levelTitle) &&
+                Objects.equals(levelId, that.levelId) &&
+                Objects.equals(levelTitle, that.levelTitle) &&
                 Objects.equals(detectedAt, that.detectedAt) &&
                 Objects.equals(participantCount, that.participantCount) &&
-                Objects.equals(detectionEventType, that.detectionEventType) &&
-                Objects.equals(participants, that.participants) &&
-                Objects.equals(id, that.id);
+                detectionEventType == that.detectionEventType &&
+                Objects.equals(participants, that.participants);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(trainingInstanceId, cheatingDetectionId, levelId, levelTitle, detectedAt, participantCount, detectionEventType, id, participants);
+        return Objects.hash(id, trainingInstanceId, cheatingDetectionId, levelId, levelOrder, levelTitle, detectedAt, participantCount, detectionEventType, participants);
     }
 
-    @java.lang.Override
-    public java.lang.String toString() {
+    @Override
+    public String toString() {
         return "AbstractDetectionEventDTO{" +
-                "trainingInstanceId=" + trainingInstanceId +
+                "id=" + id +
+                ", trainingInstanceId=" + trainingInstanceId +
                 ", cheatingDetectionId=" + cheatingDetectionId +
                 ", levelId=" + levelId +
+                ", levelOrder=" + levelOrder +
                 ", levelTitle='" + levelTitle + '\'' +
                 ", detectedAt=" + detectedAt +
                 ", participantCount=" + participantCount +
                 ", detectionEventType=" + detectionEventType +
-                ", participants=" + participants +
-                ", id=" + id +
+                ", participants='" + participants + '\'' +
                 '}';
     }
 }
