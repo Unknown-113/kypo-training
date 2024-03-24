@@ -200,7 +200,6 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
         this.levelOrder = levelOrder;
     }
 
-<<<<<<< 3475c7e7418c1fe1b74cabd8fe8a4d07d5a241bd
     public Long getTrainingRunId() {
         return trainingRunId;
     }
@@ -209,8 +208,6 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
         this.trainingRunId = trainingRunId;
     }
 
-=======
->>>>>>> e4772f927622c3f60ea310366c60d9e71e1b92ef
     public void setCommonDetectionEventParameters(Submission submission, CheatingDetection cd, DetectionEventType type, int size) {
         this.setCheatingDetectionId(cd.getId());
         this.setDetectedAt(cd.getExecuteTime());
@@ -228,7 +225,6 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AbstractDetectionEvent that = (AbstractDetectionEvent) o;
-<<<<<<< 3475c7e7418c1fe1b74cabd8fe8a4d07d5a241bd
         return participantCount == that.participantCount &&
                 Objects.equals(trainingInstanceId, that.trainingInstanceId) &&
                 Objects.equals(cheatingDetectionId, that.cheatingDetectionId) &&
@@ -239,14 +235,10 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
                 Objects.equals(detectedAt, that.detectedAt) &&
                 detectionEventType == that.detectionEventType &&
                 Objects.equals(participants, that.participants);
-=======
-        return participantCount == that.participantCount && Objects.equals(trainingInstanceId, that.trainingInstanceId) && Objects.equals(cheatingDetectionId, that.cheatingDetectionId) && Objects.equals(levelId, that.levelId) && Objects.equals(levelOrder, that.levelOrder) && Objects.equals(levelTitle, that.levelTitle) && Objects.equals(detectedAt, that.detectedAt) && detectionEventType == that.detectionEventType && Objects.equals(participants, that.participants);
->>>>>>> e4772f927622c3f60ea310366c60d9e71e1b92ef
     }
 
     @Override
     public int hashCode() {
-<<<<<<< 3475c7e7418c1fe1b74cabd8fe8a4d07d5a241bd
         return Objects.hash(
                 trainingInstanceId,
                 cheatingDetectionId,
@@ -258,9 +250,6 @@ public class AbstractDetectionEvent extends AbstractEntity<Long> {
                 participantCount,
                 detectionEventType,
                 participants);
-=======
-        return Objects.hash(trainingInstanceId, cheatingDetectionId, levelId, levelOrder, levelTitle, detectedAt, participantCount, detectionEventType, participants);
->>>>>>> e4772f927622c3f60ea310366c60d9e71e1b92ef
     }
 
     @Override
