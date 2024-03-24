@@ -24,8 +24,6 @@ public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
 
     @Column(name = "command_count", nullable = false)
     private int commandCount;
-    @Column(name = "training_run_id", nullable = false)
-    private Long trainingRunId;
 
     public int getCommandCount() {
         return commandCount;
@@ -35,27 +33,18 @@ public class ForbiddenCommandsDetectionEvent extends AbstractDetectionEvent {
         this.commandCount = commandCount;
     }
 
-    public Long getTrainingRunId() {
-        return trainingRunId;
-    }
-
-    public void setTrainingRunId(Long trainingRunId) {
-        this.trainingRunId = trainingRunId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ForbiddenCommandsDetectionEvent)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        ForbiddenCommandsDetectionEvent other = (ForbiddenCommandsDetectionEvent) o;
-        return Objects.equals(getCommandCount(), other.getCommandCount()) &&
-                Objects.equals(getTrainingRunId(), other.getTrainingRunId());
+        ForbiddenCommandsDetectionEvent that = (ForbiddenCommandsDetectionEvent) o;
+        return commandCount == that.commandCount;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getCommandCount());
+        return Objects.hash(super.hashCode(), commandCount);
     }
 
     @Override

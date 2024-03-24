@@ -15,6 +15,7 @@ import cz.muni.ics.kypo.training.facade.CheatingDetectionFacade;
 import cz.muni.ics.kypo.training.persistence.model.TrainingInstance;
 import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
 import cz.muni.ics.kypo.training.persistence.model.detection.CheatingDetection;
+import cz.muni.ics.kypo.training.persistence.model.detection.DetectedForbiddenCommand;
 import cz.muni.ics.kypo.training.rest.ApiError;
 import cz.muni.ics.kypo.training.rest.utils.annotations.ApiPageableSwagger;
 import cz.muni.ics.kypo.training.utils.AbstractFileExtensions;
@@ -218,7 +219,7 @@ public class CheatingDetectionsRestController {
      * @return all detected forbidden commands occurred in a detection event.
      */
     @ApiOperation(httpMethod = "GET",
-            value = "Get all participants of detection event.",
+            value = "Get all forbidden commands of detection event.",
             response = DetectionEventParticipantRestResource.class,
             nickname = "findAllForbiddenCommandsOfEvent",
             notes = "This can only be done by organizer of training instance or administrator.",
@@ -239,6 +240,30 @@ public class CheatingDetectionsRestController {
         PageResultResource<DetectedForbiddenCommandDTO> participantsResource = cheatingDetectionFacade.findAllForbiddenCommandsOfDetectionEvent(eventId, pageable);
         Squiggly.init(objectMapper, fields);
         return new ResponseEntity<>(SquigglyUtils.stringify(objectMapper, participantsResource), HttpStatus.OK);
+    }
+
+    /**
+     * Get all forbidden commands of Detection Event for visualization.
+     *
+     * @param eventId             id of detection event.
+     * @return all detected forbidden commands occurred in a detection event for visualization.
+     */
+    @ApiOperation(httpMethod = "GET",
+            value = "Get all forbidden commands of detection event.",
+            response = Object.class,
+            nickname = "findAllForbiddenCommandsOfEvent",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Forbidden commands have been found.", response = DetectionEventRestResource.class),
+            @ApiResponse(code = 404, message = "The forbidden commands have not been found.", response = ApiError.class),
+            @ApiResponse(code = 500, message = "Unexpected condition was encountered.", response = ApiError.class)
+    })
+    @GetMapping(path = "/detected-commands/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<DetectedForbiddenCommandDTO>> findAllForbiddenCommandsOfDetectionEvent(@ApiParam(value = "the event id", required = true)
+                                                                               @PathVariable Long eventId) {
+         ;
+        return ResponseEntity.ok(cheatingDetectionFacade.findAllForbiddenCommandsOfDetectionEvent(eventId));
     }
 
     /**

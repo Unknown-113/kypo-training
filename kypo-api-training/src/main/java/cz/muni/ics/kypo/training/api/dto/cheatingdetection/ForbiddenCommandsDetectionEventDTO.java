@@ -16,9 +16,6 @@ public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDT
 
     @ApiModelProperty(value = "count of forbidden commands.", example = "10")
     private int commandCount;
-    @ApiModelProperty(value = "id of training run.", example = "1")
-    private Long trainingRunId;
-
     public int getCommandCount() {
         return commandCount;
     }
@@ -27,33 +24,24 @@ public class ForbiddenCommandsDetectionEventDTO extends AbstractDetectionEventDT
         this.commandCount = commandCount;
     }
 
-    public Long getTrainingRunId() {
-        return trainingRunId;
-    }
-
-    public void setTrainingRunId(Long trainingRunId) {
-        this.trainingRunId = trainingRunId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ForbiddenCommandsDetectionEventDTO that = (ForbiddenCommandsDetectionEventDTO) o;
-        return commandCount == that.commandCount && trainingRunId == that.trainingRunId;
+        return commandCount == that.commandCount;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), commandCount, trainingRunId);
+        return Objects.hash(super.hashCode(), commandCount);
     }
 
     @Override
     public String toString() {
         return "ForbiddenCommandsDetectionEventDTO{" +
                 "commandCount=" + commandCount +
-                "trainingRunId=" + trainingRunId +
                 '}';
     }
 }

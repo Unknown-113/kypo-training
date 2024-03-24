@@ -1,0 +1,2 @@
+alter table abstract_detection_event add column training_run_id int4;
+alter table forbidden_commands_detection_event drop column training_run_id;

@@ -180,6 +180,17 @@ public class CheatingDetectionFacade {
     }
 
     /**
+     * Finds all forbidden commands of detection event for visualization.
+     *
+     * @param eventId  the detection event ID
+     */
+    @PreAuthorize("hasAuthority(T(cz.muni.ics.kypo.training.enums.RoleTypeSecurity).ROLE_TRAINING_ADMINISTRATOR)")
+    @TransactionalWO
+    public List<DetectedForbiddenCommandDTO> findAllForbiddenCommandsOfDetectionEvent(Long eventId) {
+        return detectedForbiddenCommandMapper.mapToListDTO(this.cheatingDetectionService.findAllForbiddenCommandsOfDetectionEvent(eventId));
+    }
+
+    /**
      * Find detection event by its ID.
      *
      * @param eventId the detection event ID
