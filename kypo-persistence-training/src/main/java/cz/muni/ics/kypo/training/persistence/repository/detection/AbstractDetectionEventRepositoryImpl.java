@@ -3,7 +3,6 @@ package cz.muni.ics.kypo.training.persistence.repository.detection;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
 import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
 import cz.muni.ics.kypo.training.persistence.model.detection.QAbstractDetectionEvent;
 import org.springframework.data.domain.Page;
@@ -34,7 +33,7 @@ public class AbstractDetectionEventRepositoryImpl extends QuerydslRepositorySupp
 
         QAbstractDetectionEvent abstractDetectionEvent = QAbstractDetectionEvent.abstractDetectionEvent;
 
-        JPQLQuery<TrainingRun> query = new JPAQueryFactory(entityManager).selectFrom(abstractDetectionEvent).distinct()
+        JPQLQuery<AbstractDetectionEvent> query = new JPAQueryFactory(entityManager).selectFrom(abstractDetectionEvent).distinct()
                 .where(abstractDetectionEvent.cheatingDetectionId.eq(cheatingDetectionId));
 
         if (predicate != null) {
