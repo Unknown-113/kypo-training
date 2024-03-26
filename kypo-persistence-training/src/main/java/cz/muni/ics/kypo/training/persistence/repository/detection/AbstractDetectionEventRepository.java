@@ -16,6 +16,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.Modifying;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -57,6 +58,13 @@ public interface AbstractDetectionEventRepository extends JpaRepository<Abstract
     Page<AbstractDetectionEvent> findAllByCheatingDetectionId(@Param("cheatingDetectionId") Long cheatingDetectionId,
                                                               @Param("pageable") Pageable pageable,
                                                               Predicate predicate);
+
+    /**
+     * Finds all detection events by cheating detection id.
+     *
+     * @param cheatingDetectionId the cheating detection id
+     */
+    List<AbstractDetectionEvent> findAllByCheatingDetectionId(@Param("cheatingDetectionId") Long cheatingDetectionId);
 
     /**
      * Delete all cheats by training instance.

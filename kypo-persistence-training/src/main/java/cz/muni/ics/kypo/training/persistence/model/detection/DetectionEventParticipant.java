@@ -14,6 +14,10 @@ import java.util.Objects;
                 query = "SELECT dep FROM DetectionEventParticipant dep " +
                         "WHERE dep.detectionEventId = :eventId " +
                         "ORDER BY dep.occurredAt"
+        ),
+        @NamedQuery(
+                name = "DetectionEventParticipant.deleteAllParticipantsByCheatingDetectionId",
+                query = "DELETE FROM DetectionEventParticipant dep WHERE dep.cheatingDetectionId = :cheatingDetectionId"
         )
 })
 public class DetectionEventParticipant extends AbstractEntity<Long> {

@@ -14,6 +14,10 @@ import java.util.Objects;
                 name = "DetectedForbiddenCommand.findAllByEventId",
                 query = "SELECT dfc FROM DetectedForbiddenCommand dfc " +
                         "WHERE dfc.detectionEventId = :eventId"
+        ),
+        @NamedQuery(
+                name = "DetectedForbiddenCommand.deleteAllByDetectionEventId",
+                query = "DELETE FROM DetectedForbiddenCommand dfc WHERE dfc.detectionEventId = :eventId"
         )
 })
 public class DetectedForbiddenCommand extends AbstractEntity<Long> {

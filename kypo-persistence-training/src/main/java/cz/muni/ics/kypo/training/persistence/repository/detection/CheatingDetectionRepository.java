@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface CheatingDetectionRepository extends JpaRepository<CheatingDetection, Long>, QuerydslPredicateExecutor<CheatingDetection> {
 
     /**
@@ -18,6 +20,14 @@ public interface CheatingDetectionRepository extends JpaRepository<CheatingDetec
      * @return the page of all {@link CheatingDetection}s occurred in a training instance
      */
     Page<CheatingDetection> findAllByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId, Pageable pageable);
+
+    /**
+     * Find all cheating detections of a training Instance
+     *
+     * @param trainingInstanceId the training instance id
+     * @return the page of all {@link CheatingDetection}s occurred in a training instance
+     */
+    List<CheatingDetection> findAllByTrainingInstanceId(@Param("trainingInstanceId") Long trainingInstanceId);
 
     /**
      * Find all cheating detections of a training Instance

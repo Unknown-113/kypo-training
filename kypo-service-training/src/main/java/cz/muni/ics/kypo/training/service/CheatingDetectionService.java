@@ -561,11 +561,24 @@ public class CheatingDetectionService {
             run.setHasDetectionEvent(false);
             trainingRunRepository.save(run);
         }
+        List<AbstractDetectionEvent> events = detectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId);
+        detectionEventParticipantRepository.deleteAllParticipantsByCheatingDetectionId(cheatingDetectionId);
+        for (var event : events) {
+            detectedForbiddenCommandRepository.deleteAllByDetectionEventId(event.getId());
+        }
         detectionEventRepository.deleteDetectionEventsOfCheatingDetection(cheatingDetectionId);
         cheatingDetectionRepository.deleteCheatingDetectionById(cheatingDetectionId);
     }
 
     public void deleteAllCheatingDetectionsOfTrainingInstance(Long trainingInstanceId) {
+        List<CheatingDetection> detections = cheatingDetectionRepository.findAllByTrainingInstanceId(trainingInstanceId);
+        for (var detection : detections) {
+            List<AbstractDetectionEvent> events = detectionEventRepository.findAllByCheatingDetectionId(detection.getId());
+            detectionEventParticipantRepository.deleteAllParticipantsByCheatingDetectionId(detection.getId());
+            for (var event : events) {
+                detectedForbiddenCommandRepository.deleteAllByDetectionEventId(event.getId());
+            }
+        }
         detectionEventRepository.deleteDetectionEventsOfTrainingInstance(trainingInstanceId);
         cheatingDetectionRepository.deleteAllCheatingDetectionsOfTrainingInstance(trainingInstanceId);
     }
@@ -577,25 +590,14 @@ public class CheatingDetectionService {
     public void rerunCheatingDetection(Long cheatingDetectionId) {
         CheatingDetection cd = cheatingDetectionRepository.findCheatingDetectionById(cheatingDetectionId);
         cd.setCurrentState(CheatingDetectionState.RUNNING);
-        if (cd.getAnswerSimilarityState() != CheatingDetectionState.DISABLED) {
-            cd.setAnswerSimilarityState(CheatingDetectionState.QUEUED);
+        cd.setExecuteStates();
+        List<AbstractDetectionEvent> events = detectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId);
+        detectionEventParticipantRepository.deleteAllParticipantsByCheatingDetectionId(cheatingDetectionId);
+        for (var event : events) {
+            detectedForbiddenCommandRepository.deleteAllByDetectionEventId(event.getId());
         }
-        if (cd.getLocationSimilarityState() != CheatingDetectionState.DISABLED) {
-            cd.setLocationSimilarityState(CheatingDetectionState.QUEUED);
-        }
-        if (cd.getTimeProximityState() != CheatingDetectionState.DISABLED) {
-            cd.setTimeProximityState(CheatingDetectionState.QUEUED);
-        }
-        if (cd.getMinimalSolveTimeState() != CheatingDetectionState.DISABLED) {
-            cd.setMinimalSolveTimeState(CheatingDetectionState.QUEUED);
-        }
-        if (cd.getNoCommandsState() != CheatingDetectionState.DISABLED) {
-            cd.setNoCommandsState(CheatingDetectionState.QUEUED);
-        }
-        if (cd.getForbiddenCommandsState() != CheatingDetectionState.DISABLED) {
-            cd.setForbiddenCommandsState(CheatingDetectionState.QUEUED);
-        }
-        detectionEventRepository.deleteDetectionEventsOfCheatingDetection(cd.getId());
+        detectionEventRepository.deleteDetectionEventsOfCheatingDetection(cheatingDetectionId);
+        detectionEventParticipantRepository.deleteAllParticipantsByCheatingDetectionId(cd.getId());
         cd.setExecuteTime(LocalDateTime.now());
         cd.setResults(0L);
         cheatingDetectionRepository.save(cd);
