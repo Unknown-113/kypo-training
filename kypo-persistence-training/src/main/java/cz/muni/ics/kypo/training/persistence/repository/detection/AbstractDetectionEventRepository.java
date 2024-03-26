@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.repository.detection;
 
 import com.querydsl.core.types.Predicate;
+import cz.muni.ics.kypo.training.persistence.model.detection.QAbstractDetectionEvent;
 import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
