@@ -1,5 +1,6 @@
 package cz.muni.ics.kypo.training.service;
 
+import com.querydsl.core.types.Predicate;
 import cz.muni.csirt.kypo.events.AbstractAuditPOJO;
 import cz.muni.ics.kypo.training.api.responses.VariantAnswer;
 import cz.muni.ics.kypo.training.persistence.model.*;
@@ -625,8 +626,8 @@ public class CheatingDetectionService {
         return forbiddenCommandsDetectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId);
     }
 
-    public Page<AbstractDetectionEvent> findAllDetectionEventsOfCheatingDetection(Long cheatingDetectionId, Pageable pageable) {
-        return detectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId, pageable);
+    public Page<AbstractDetectionEvent> findAllDetectionEventsOfCheatingDetection(Long cheatingDetectionId, Pageable pageable, Predicate predicate) {
+        return detectionEventRepository.findAllByCheatingDetectionId(cheatingDetectionId, pageable, predicate);
     }
 
     public Page<DetectionEventParticipant> findAllParticipantsOfEvent(Long eventId, Pageable pageable) {

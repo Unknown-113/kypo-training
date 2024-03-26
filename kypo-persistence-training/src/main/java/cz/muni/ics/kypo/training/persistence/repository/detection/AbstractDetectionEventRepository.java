@@ -1,8 +1,10 @@
 package cz.muni.ics.kypo.training.persistence.repository.detection;
 
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.persistence.model.detection.AbstractDetectionEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +16,7 @@ import org.springframework.data.jpa.repository.Modifying;
  * The JPA repository interface to manage {@link AbstractDetectionEvent} instances.
  */
 @Repository
-public interface AbstractDetectionEventRepository extends JpaRepository<AbstractDetectionEvent, Long>, QuerydslPredicateExecutor<AbstractDetectionEvent> {
+public interface AbstractDetectionEventRepository extends JpaRepository<AbstractDetectionEvent, Long>, AbstractDetectionEventRepositoryCustom, QuerydslPredicateExecutor<AbstractDetectionEvent>, QuerydslBinderCustomizer<QAbstractDetectionEvent> {
 
     /**
      * Delete all detection events by cheating detection id.
@@ -31,7 +33,8 @@ public interface AbstractDetectionEventRepository extends JpaRepository<Abstract
      * @param pageable            the pageable
      */
     Page<AbstractDetectionEvent> findAllByCheatingDetectionId(@Param("cheatingDetectionId") Long cheatingDetectionId,
-                                                              @Param("pageable") Pageable pageable);
+                                                              @Param("pageable") Pageable pageable,
+                                                              Predicate predicate);
 
     /**
      * Delete all cheats by training instance.

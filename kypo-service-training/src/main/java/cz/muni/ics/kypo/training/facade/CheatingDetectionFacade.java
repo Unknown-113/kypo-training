@@ -1,6 +1,7 @@
 package cz.muni.ics.kypo.training.facade;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.querydsl.core.types.Predicate;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalRO;
 import cz.muni.ics.kypo.training.annotations.transactions.TransactionalWO;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
@@ -146,9 +147,10 @@ public class CheatingDetectionFacade {
     @TransactionalWO
     public PageResultResource<AbstractDetectionEventDTO> findAllDetectionEventsOfCheatingDetection(Long cheatingDetectionId,
                                                                                                    Long trainingInstanceId,
-                                                                                                   Pageable pageable) {
+                                                                                                   Pageable pageable,
+                                                                                                   Predicate predicate) {
         return detectionEventMapper.mapToPageResultResource(
-                this.cheatingDetectionService.findAllDetectionEventsOfCheatingDetection(cheatingDetectionId, pageable));
+                this.cheatingDetectionService.findAllDetectionEventsOfCheatingDetection(cheatingDetectionId, pageable, predicate));
     }
 
     /**
