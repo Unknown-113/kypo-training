@@ -8,6 +8,7 @@ import cz.muni.ics.kypo.training.persistence.model.detection.*;
 import cz.muni.ics.kypo.training.persistence.model.enums.CheatingDetectionState;
 import cz.muni.ics.kypo.training.persistence.model.enums.CommandType;
 import cz.muni.ics.kypo.training.persistence.model.enums.DetectionEventType;
+import cz.muni.ics.kypo.training.persistence.model.enums.TRState;
 import cz.muni.ics.kypo.training.persistence.repository.SubmissionRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingLevelRepository;
 import cz.muni.ics.kypo.training.persistence.repository.TrainingRunRepository;
@@ -502,6 +503,7 @@ public class CheatingDetectionService {
         List<Submission> submissions;
         List<Map<String, Object>> submittedCommands;
         LocalDateTime from;
+        LocalDateTime to;
         Submission currentSubmission;
         List<DetectedForbiddenCommand> forbiddenCommands;
 
@@ -510,10 +512,14 @@ public class CheatingDetectionService {
             for (int i = 0; i < submissions.size(); i++) {
                 currentSubmission = submissions.get(i);
                 from = (i == 0) ? run.getStartTime() : submissions.get(i - 1).getDate();
+                to = currentSubmission.getDate();
+                if (i == submissions.size() - 1 && run.getState() == TRState.RUNNING) {
+                    to = LocalDateTime.now();
+                }
                 submittedCommands = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(
                         run.getSandboxInstanceRefId(),
                         from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
-                        currentSubmission.getDate().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
+                        to.atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
                 forbiddenCommands = evaluateForbiddenCommands(cd.getForbiddenCommands(), submittedCommands);
                 if (!forbiddenCommands.isEmpty()) {
                     auditForbiddenCommandsEvent(currentSubmission, cd, extractParticipant(currentSubmission), forbiddenCommands);
