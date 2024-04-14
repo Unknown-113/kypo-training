@@ -509,13 +509,22 @@ public class CheatingDetectionService {
 
         for (var run : trainingRunService.findAllByTrainingInstanceId(trainingInstanceId)) {
             submissions = submissionRepository.getCorrectSubmissionsOfTrainingRunSorted(run.getId());
-            for (int i = 0; i < submissions.size(); i++) {
-                currentSubmission = submissions.get(i);
-                from = (i == 0) ? run.getStartTime() : submissions.get(i - 1).getDate();
-                to = currentSubmission.getDate();
-                if (i == submissions.size() - 1 && run.getState() == TRState.RUNNING) {
-                    to = LocalDateTime.now();
+            for (int i = 0; i < submissions.size() + 1; i++) {
+                if (i == submissions.size()) {
+                    currentSubmission = submissions.get(i - 1);
+                    if (run.getState() == TRState.RUNNING) {
+                        from = currentSubmission.getDate();
+                        to = LocalDateTime.now();
+                    }
+                    else {
+                        continue;
+                    }
+                } else {
+                    currentSubmission = submissions.get(i);
+                    from = (i == 0) ? run.getStartTime() : submissions.get(i - 1).getDate();
+                    to = currentSubmission.getDate();
                 }
+
                 submittedCommands = elasticsearchApiService.findAllConsoleCommandsBySandboxAndTimeRange(
                         run.getSandboxInstanceRefId(),
                         from.atZone(ZoneOffset.UTC).toInstant().toEpochMilli(),
