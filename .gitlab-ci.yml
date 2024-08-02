@@ -19,7 +19,7 @@ docker_image_push_development:
   before_script: [] #prevent global before_script from running
   variables:
     CI_CUSTOM_IMAGE_NAME: kypo-training-service
-  stage: docker_image_push
+  stage: docker_image_push_development
   image:
     name: gcr.io/kaniko-project/executor:v1.3.0-debug
     entrypoint: [ "" ]
