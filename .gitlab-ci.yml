@@ -12,103 +12,8 @@ variables:
   GIT_CLONE_URL: "git@${CI_SERVER_HOST}:${CI_PROJECT_PATH}.git"
 
 stages:
-  - build
-  - tests
-  - create_tag
-  - generate_docs
-  - docker_image_push
   - docker_image_push_development
 
-build:
-  stage: build
-  script:
-    - mvn clean install $MAVEN_CLI_OPTS -DskipTests -Dproprietary-repo-url=$PROPRIETARY_REPO_URL
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      changes:
-        - $DEPLOYMENT_INFO_VERSION_FILE
-      when: never
-    - if: '$CI_COMMIT_TAG'
-      changes:
-        - pom.xml
-      when: never
-    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_MESSAGE !~ /Updated Swagger documentation generated/'
-      when: always
-
-tests:
-  stage: tests
-  script:
-    - mvn test $MAVEN_CLI_OPTS -Dproprietary-repo-url=$PROPRIETARY_REPO_URL
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      changes:
-        - $DEPLOYMENT_INFO_VERSION_FILE
-      when: never
-    - if: '$CI_COMMIT_TAG'
-      changes:
-        - pom.xml
-      when: never
-    - if: '$CI_COMMIT_BRANCH && $CI_COMMIT_MESSAGE !~ /Updated Swagger documentation generated/'
-      when: always
-
-create_tag:
-  stage: create_tag
-  # https://gitlab.ics.muni.cz/csirt-mu-infra/devops-support/docker-images/csirtmu-docker-common-ci
-  image: 'registry.gitlab.ics.muni.cz:443/csirt-mu-devel/csirt-mu-devel-artifact-repository/docker-common-ci:v0.1.6'
-  variables:
-    GIT_STRATEGY: clone
-  script:
-    - source /app/export-tag-vars.sh $DEPLOYMENT_INFO_VERSION_FILE
-    - /app/import-ssh-key.sh
-    - /app/prepare-git.sh
-    - /app/set-version-java.sh
-    - /app/tag-and-push.sh
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      changes:
-        - $DEPLOYMENT_INFO_VERSION_FILE
-
-generate_docs:
-  stage: generate_docs
-  before_script:
-    # ssh config
-    - apt-get update -y && apt-get install openssh-client -y
-    - mkdir -m700 ~/.ssh/ && ssh-keyscan -H $TRUSTED_HOST >> ~/.ssh/known_hosts
-    - cat $SSH_PRIVKEY_B64_FILE | base64 -d > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - eval "$(ssh-agent -s)" && ssh-add ~/.ssh/id_rsa
-    # git config
-    - apt-get install git -y
-    - git config --global user.email "$GITLAB_USER_EMAIL"
-    - git config --global user.name "$GITLAB_USER_NAME"
-    - git remote set-url origin "$GIT_CLONE_URL"
-    - git fetch && git checkout master && git pull
-  script:
-    - mvn clean package $MAVEN_CLI_OPTS -DskipTests -Dswagger.skip=false -Dproprietary-repo-url=$PROPRIETARY_REPO_URL
-    - git add doc-files/kypo-training-swagger-open-api.yaml
-    - git commit -m "Updated Swagger documentation generated"
-    - git push
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
-      changes:
-        - $DEPLOYMENT_INFO_VERSION_FILE
-
-docker_image_push:
-  before_script: [] #prevent global before_script from running
-  variables:
-    CI_CUSTOM_IMAGE_NAME: kypo-training-service
-  stage: docker_image_push
-  image:
-    name: gcr.io/kaniko-project/executor:v1.3.0-debug
-    entrypoint: [ "" ]
-  script:
-    - export CI_CUSTOM_REGISTRY_IMAGE="${CI_REGISTRY}/${CI_CUSTOM_REGISTRY_PATH}/${CI_CUSTOM_IMAGE_NAME}"
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_CUSTOM_REGISTRY_USER\",\"password\":\"$CI_CUSTOM_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_CUSTOM_REGISTRY_IMAGE:$CI_COMMIT_TAG --build-arg PROPRIETARY_REPO_URL=$PROPRIETARY_REPO_URL
-  rules:
-    - if: '$CI_COMMIT_TAG'
-    - if: '$CI_COMMIT_BRANCH'
-      when: never
 
 docker_image_push_development:
   before_script: [] #prevent global before_script from running
@@ -121,7 +26,6 @@ docker_image_push_development:
   script:
     - export CI_CUSTOM_REGISTRY_IMAGE="${CI_REGISTRY}/${CI_CUSTOM_REGISTRY_PATH}/${CI_CUSTOM_IMAGE_NAME}"
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_CUSTOM_REGISTRY_USER\",\"password\":\"$CI_CUSTOM_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_CUSTOM_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG --build-arg PROPRIETARY_REPO_URL=$PROPRIETARY_REPO_URL
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_CUSTOM_REGISTRY_IMAGE:develop --build-arg PROPRIETARY_REPO_URL=$PROPRIETARY_REPO_URL
+
 
