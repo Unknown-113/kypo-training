@@ -4,8 +4,12 @@ import cz.muni.ics.kypo.training.persistence.model.AbstractEntity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
 @Entity
 @Table(name = "detection_event_participant")
 @NamedQueries({
@@ -36,92 +40,4 @@ public class DetectionEventParticipant extends AbstractEntity<Long> {
     private Long detectionEventId;
     @Column(name = "cheating_detection_id", nullable = false)
     private Long cheatingDetectionId;
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-
-    public LocalDateTime getOccurredAt() {
-        return occurredAt;
-    }
-
-    public void setOccurredAt(LocalDateTime occurredAt) {
-        this.occurredAt = occurredAt;
-    }
-
-    public String getParticipantName() {
-        return participantName;
-    }
-
-    public void setParticipantName(String participantName) {
-        this.participantName = participantName;
-    }
-
-    public Long getSolvedInTime() {
-        return solvedInTime;
-    }
-
-    public void setSolvedInTime(Long solvedInTime) {
-        this.solvedInTime = solvedInTime;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public Long getDetectionEventId() {
-        return detectionEventId;
-    }
-
-    public void setDetectionEventId(Long detectionEventId) {
-        this.detectionEventId = detectionEventId;
-    }
-
-    public Long getCheatingDetectionId() {
-        return cheatingDetectionId;
-    }
-
-    public void setCheatingDetectionId(Long cheatingDetectionId) {
-        this.cheatingDetectionId = cheatingDetectionId;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        DetectionEventParticipant that = (DetectionEventParticipant) o;
-        return Objects.equals(ipAddress, that.ipAddress) &&
-                Objects.equals(occurredAt, that.occurredAt) &&
-                Objects.equals(participantName, that.participantName) &&
-                Objects.equals(solvedInTime, that.solvedInTime) &&
-                Objects.equals(userId, that.userId) &&
-                Objects.equals(detectionEventId, that.detectionEventId) &&
-                Objects.equals(cheatingDetectionId, that.cheatingDetectionId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(ipAddress, occurredAt, participantName, solvedInTime, userId, detectionEventId, cheatingDetectionId);
-    }
-
-    @Override
-    public String toString() {
-        return "DetectionEventParticipant{" +
-                "ipAddress='" + ipAddress + '\'' +
-                ", occurredAt=" + occurredAt +
-                ", participantName=" + participantName +
-                ", solvedInTime=" + solvedInTime +
-                ", userId=" + userId +
-                ", detectionEventId=" + detectionEventId +
-                ", cheatingDetectionId=" + cheatingDetectionId +
-                '}';
-    }
 }

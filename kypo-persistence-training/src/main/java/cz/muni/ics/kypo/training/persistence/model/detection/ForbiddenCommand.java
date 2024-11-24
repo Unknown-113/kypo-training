@@ -4,9 +4,13 @@ import cz.muni.ics.kypo.training.persistence.model.AbstractEntity;
 import cz.muni.ics.kypo.training.persistence.model.enums.CommandType;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.Objects;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
 @Entity
 @Table(name = "forbidden_command")
 public class ForbiddenCommand extends AbstractEntity<Long> {
@@ -18,41 +22,4 @@ public class ForbiddenCommand extends AbstractEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cheating_detection_id")
     private CheatingDetection cheatingDetection;
-    public String getCommand() {
-        return command;
-    }
-
-    public void setCommand(String command) {
-        this.command = command;
-    }
-
-    public CommandType getType() {
-        return type;
-    }
-
-    public void setType(CommandType type) {
-        this.type = type;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ForbiddenCommand that = (ForbiddenCommand) o;
-        return Objects.equals(command, that.command) &&
-                type == that.type;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(command, type);
-    }
-
-    @Override
-    public String toString() {
-        return "ForbiddenCommand{" +
-                "command='" + command + '\'' +
-                ", type=" + type +
-                '}';
-    }
 }

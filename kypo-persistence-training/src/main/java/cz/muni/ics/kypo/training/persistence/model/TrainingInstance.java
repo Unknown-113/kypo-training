@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.*;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -7,12 +9,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import lombok.*;
 
 /**
  * Class represents Training instance.
  * Training instances can be created based on definitions.
  * Training runs can be created based on instances.
  */
+@EqualsAndHashCode
+@ToString
 @Entity
 @Table(name = "training_instance")
 @NamedEntityGraphs({
@@ -105,6 +110,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
     private boolean localEnvironment;
     @Column(name = "sandbox_definition_id")
     private Long sandboxDefinitionId;
+    @Column(name = "show_stepper_bar", nullable = false)
+    private boolean showStepperBar;
     @Column(name = "backward_mode", nullable = false)
     private boolean backwardMode;
 
@@ -344,6 +351,24 @@ public class TrainingInstance extends AbstractEntity<Long> {
     }
 
     /**
+     * Gets if stepper bar is shown while in run.
+     *
+     * @return true if bar is shown
+     */
+    public boolean isShowStepperBar() {
+        return showStepperBar;
+    }
+
+    /**
+     * Sets if stepper bar is shown while in run.
+     *
+     * @param showStepperBar true if bar is shown
+     */
+    public void setShowStepperBar(boolean showStepperBar) {
+        this.showStepperBar = showStepperBar;
+    }
+
+    /**
      * Gets if trainee can during training run move back to the previous levels.
      *
      * @return true if backward mode is enabled.
@@ -371,41 +396,5 @@ public class TrainingInstance extends AbstractEntity<Long> {
 
     public boolean notStarted() {
         return LocalDateTime.now(Clock.systemUTC()).isBefore(this.startTime);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(accessToken, startTime, endTime, title, trainingDefinition);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (!(obj instanceof TrainingInstance))
-            return false;
-        TrainingInstance other = (TrainingInstance) obj;
-        return Objects.equals(accessToken, other.getAccessToken())
-                && Objects.equals(startTime, other.getStartTime())
-                && Objects.equals(endTime, other.getEndTime())
-                && Objects.equals(title, other.getTitle())
-                && Objects.equals(localEnvironment, other.isLocalEnvironment())
-                && Objects.equals(trainingDefinition, other.getTrainingDefinition());
-    }
-
-    @Override
-    public String toString() {
-        return "TrainingInstance{" +
-                "id=" + super.getId() +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", title='" + title + '\'' +
-                ", localEnvironment='" + localEnvironment + '\'' +
-                ", accessToken='" + accessToken + '\'' +
-                ", sandboxDefinitionId='" + sandboxDefinitionId + '\'' +
-                ", backwardMode='" + backwardMode + '\'' +
-                '}';
     }
 }
