@@ -5,13 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import lombok.*;
 
 /**
  * Class representing DB reference for user and training instances and definition they can access
  */
-@EqualsAndHashCode
-@ToString
 @Entity
 @Table(name = "user_ref", uniqueConstraints = @UniqueConstraint(columnNames = {"user_ref_id"}))
 @NamedQueries({
@@ -190,5 +187,26 @@ public class UserRef extends AbstractEntity<Long> {
      */
     public void setBetaTesters(Set<BetaTestingGroup> betaTesters) {
         this.betaTesters = betaTesters;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserRef)) return false;
+        UserRef userRef = (UserRef) o;
+        return Objects.equals(getUserRefId(), userRef.getUserRefId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUserRefId());
+    }
+
+    @Override
+    public String toString() {
+        return "UserRef{" +
+                "id=" + super.getId() +
+                ", userRefId=" + userRefId +
+                '}';
     }
 }
