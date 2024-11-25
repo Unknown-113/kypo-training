@@ -9,15 +9,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import lombok.*;
 
 /**
  * Class represents Training instance.
  * Training instances can be created based on definitions.
  * Training runs can be created based on instances.
  */
-@EqualsAndHashCode
-@ToString
 @Entity
 @Table(name = "training_instance")
 @NamedEntityGraphs({
@@ -396,5 +393,42 @@ public class TrainingInstance extends AbstractEntity<Long> {
 
     public boolean notStarted() {
         return LocalDateTime.now(Clock.systemUTC()).isBefore(this.startTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accessToken, startTime, endTime, title, trainingDefinition);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (!(obj instanceof TrainingInstance))
+            return false;
+        TrainingInstance other = (TrainingInstance) obj;
+        return Objects.equals(accessToken, other.getAccessToken())
+                && Objects.equals(startTime, other.getStartTime())
+                && Objects.equals(endTime, other.getEndTime())
+                && Objects.equals(title, other.getTitle())
+                && Objects.equals(localEnvironment, other.isLocalEnvironment())
+                && Objects.equals(trainingDefinition, other.getTrainingDefinition());
+    }
+
+    @Override
+    public String toString() {
+        return "TrainingInstance{" +
+                "id=" + super.getId() +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", title='" + title + '\'' +
+                ", localEnvironment='" + localEnvironment + '\'' +
+                ", accessToken='" + accessToken + '\'' +
+                ", sandboxDefinitionId='" + sandboxDefinitionId + '\'' +
+                ", showStepperBar=" + showStepperBar +
+                ", backwardMode='" + backwardMode + '\'' +
+                '}';
     }
 }
