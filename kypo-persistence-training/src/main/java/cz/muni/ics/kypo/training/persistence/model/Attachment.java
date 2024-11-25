@@ -2,7 +2,7 @@ package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import lombok.*;
 
 /**
  * Class representing attachments of Training Level

@@ -3,13 +3,10 @@ package cz.muni.ics.kypo.training.persistence.model.detection;
 import cz.muni.ics.kypo.training.persistence.model.AbstractEntity;
 import cz.muni.ics.kypo.training.persistence.model.Submission;
 import cz.muni.ics.kypo.training.persistence.model.enums.DetectionEventType;
-import cz.muni.ics.kypo.training.persistence.model.enums.CommandType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import lombok.*;
 
 /**
  * Class representing Detection event.
