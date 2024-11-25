@@ -125,13 +125,13 @@ public class TestDataFactory {
     private HintImportDTO hintImportDTO = generateHintImportDTO("Hint Import", "Hint import content", 50);
 
     private TrainingDefinition unreleasedDefinition = generateTrainingDefinition("Unreleased definition", "Unreleased description",
-            new String[]{"p1", "p2"}, new String[]{"o1", "o2"}, TDState.UNRELEASED, true,
+            new String[]{"p1", "p2"}, new String[]{"o1", "o2"}, TDState.UNRELEASED,
             LocalDateTime.now(Clock.systemUTC()).minusHours(1), "John Doe", LocalDateTime.now(Clock.systemUTC()).minusHours(1));
     private TrainingDefinition releasedDefinition = generateTrainingDefinition("Released definition", "Released description",
-            new String[]{"p3", "p4"}, new String[]{"o3"}, TDState.RELEASED, true,
+            new String[]{"p3", "p4"}, new String[]{"o3"}, TDState.RELEASED,
             LocalDateTime.now(Clock.systemUTC()).minusHours(5), "John Doe", LocalDateTime.now(Clock.systemUTC()).minusHours(5));
     private TrainingDefinition archivedDefinition = generateTrainingDefinition("Archived definition", "Archived description",
-            new String[]{"p5"}, new String[]{"o4", "o5", "o6"}, TDState.ARCHIVED, false,
+            new String[]{"p5"}, new String[]{"o4", "o5", "o6"}, TDState.ARCHIVED,
             LocalDateTime.now(Clock.systemUTC()).minusHours(10),"Jane Doe", LocalDateTime.now(Clock.systemUTC()).minusHours(10));
     private TrainingDefinitionDTO unreleasedDefinitionDTO = generateTrainingDefinitionDTO(unreleasedDefinition);
     private TrainingDefinitionDTO releasedDefinitionDTO = generateTrainingDefinitionDTO(releasedDefinition);
@@ -140,15 +140,14 @@ public class TestDataFactory {
     private TrainingDefinitionInfoDTO releasedDefinitionInfoDTO = generateTrainingDefinitionInfoDTO(releasedDefinition);
     private TrainingDefinitionInfoDTO archivedDefinitionInfoDTO = generateTrainingDefinitionInfoDTO(archivedDefinition);
     private TrainingDefinitionCreateDTO trainingDefinitionCreateDTO = generateTrainingDefinitionCreateDTO("Training definition create DTO",
-            "Creation of definition", new String[]{"p8", "p9"}, new String[]{"o8", "o9"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED,
-            true);
+            "Creation of definition", new String[]{"p8", "p9"}, new String[]{"o8", "o9"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
     private TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO = generateTrainingDefinitionUpdateDTO("Training definition updaet DTO",
             "Update of definition", new String[]{"p6", "p7"}, new String[]{"o6", "o7"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED,
-            false, 7L);
+             7L);
     private ImportTrainingDefinitionDTO importTrainingDefinitionDTO = generateImportTrainingDefinitionDTO("Imported definition", "Imported description",
-            new String[]{"ip1", "ip2"}, new String[]{"io1", "io2"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED, true);
+            new String[]{"ip1", "ip2"}, new String[]{"io1", "io2"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
     private TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = generateTrainingDefinitionByIdDTO("TDbyId", "Definition by id",  new String[]{"p8", "p9"},
-            new String[]{"o8", "o9"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED,false, false,
+            new String[]{"o8", "o9"}, cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED,false,
             20L, LocalDateTime.now(Clock.systemUTC()).minusHours(15), LocalDateTime.now(Clock.systemUTC()).minusHours(15));
 
     private TrainingInstance futureInstance = generateTrainingInstance(LocalDateTime.now(Clock.systemUTC()).plusHours(10),
@@ -654,7 +653,7 @@ public class TestDataFactory {
     }
 
     private TrainingDefinition generateTrainingDefinition(String title, String description, String[] prerequisites,
-                                                          String[] outcomes, TDState state, boolean showStepperBar,
+                                                          String[] outcomes, TDState state,
                                                           LocalDateTime lastEdited, String lastEditedBy,
                                                           LocalDateTime createdAt){
         TrainingDefinition newTrainingDefinition = new TrainingDefinition();
@@ -663,7 +662,6 @@ public class TestDataFactory {
         newTrainingDefinition.setPrerequisites(prerequisites);
         newTrainingDefinition.setOutcomes(outcomes);
         newTrainingDefinition.setState(state);
-        newTrainingDefinition.setShowStepperBar(showStepperBar);
         newTrainingDefinition.setLastEdited(lastEdited);
         newTrainingDefinition.setLastEditedBy(lastEditedBy);
         newTrainingDefinition.setCreatedAt(createdAt);
@@ -677,7 +675,6 @@ public class TestDataFactory {
         trainingDefinitionDTO.setPrerequisites(trainingDefinition.getPrerequisites());
         trainingDefinitionDTO.setOutcomes(trainingDefinition.getOutcomes());
         trainingDefinitionDTO.setState(mapToTDState(trainingDefinition.getState()));
-        trainingDefinitionDTO.setShowStepperBar(trainingDefinition.isShowStepperBar());
         trainingDefinitionDTO.setLastEdited(trainingDefinition.getLastEdited());
         trainingDefinitionDTO.setCreatedAt(trainingDefinitionDTO.getCreatedAt());
         return trainingDefinitionDTO;
@@ -725,28 +722,25 @@ public class TestDataFactory {
     }
 
     private TrainingDefinitionCreateDTO generateTrainingDefinitionCreateDTO(String title, String description, String[] prerequisites,
-                                                                      String[] outcomes, cz.muni.ics.kypo.training.api.enums.TDState state,
-                                                                      boolean showStepperBar){
+                                                                      String[] outcomes, cz.muni.ics.kypo.training.api.enums.TDState state){
         TrainingDefinitionCreateDTO trainingDefinitionCreateDTO = new TrainingDefinitionCreateDTO();
         trainingDefinitionCreateDTO.setTitle(title);
         trainingDefinitionCreateDTO.setDescription(description);
         trainingDefinitionCreateDTO.setPrerequisites(prerequisites);
         trainingDefinitionCreateDTO.setOutcomes(outcomes);
         trainingDefinitionCreateDTO.setState(state);
-        trainingDefinitionCreateDTO.setShowStepperBar(showStepperBar);
         return trainingDefinitionCreateDTO;
     }
 
     private TrainingDefinitionUpdateDTO generateTrainingDefinitionUpdateDTO(String title, String description, String[] prerequisites,
                                                                             String[] outcomes, cz.muni.ics.kypo.training.api.enums.TDState state,
-                                                                            boolean showStepperBar, Long SDRefId){
+                                                                            Long SDRefId){
         TrainingDefinitionUpdateDTO trainingDefinitionUpdateDTO = new TrainingDefinitionUpdateDTO();
         trainingDefinitionUpdateDTO.setTitle(title);
         trainingDefinitionUpdateDTO.setDescription(description);
         trainingDefinitionUpdateDTO.setPrerequisites(prerequisites);
         trainingDefinitionUpdateDTO.setOutcomes(outcomes);
         trainingDefinitionUpdateDTO.setState(state);
-        trainingDefinitionUpdateDTO.setShowStepperBar(showStepperBar);
         return trainingDefinitionUpdateDTO;
     }
 
@@ -837,21 +831,19 @@ public class TestDataFactory {
     }
 
     private ImportTrainingDefinitionDTO generateImportTrainingDefinitionDTO(String title, String description, String[] prerequisites,
-                                                                            String[] outcomes, cz.muni.ics.kypo.training.api.enums.TDState state,
-                                                                            boolean showStepperBar){
+                                                                            String[] outcomes, cz.muni.ics.kypo.training.api.enums.TDState state){
         ImportTrainingDefinitionDTO importTrainingDefinitionDTO = new ImportTrainingDefinitionDTO();
         importTrainingDefinitionDTO.setTitle(title);
         importTrainingDefinitionDTO.setDescription(description);
         importTrainingDefinitionDTO.setPrerequisites(prerequisites);
         importTrainingDefinitionDTO.setOutcomes(outcomes);
         importTrainingDefinitionDTO.setState(state);
-        importTrainingDefinitionDTO.setShowStepperBar(showStepperBar);
         return importTrainingDefinitionDTO;
     }
 
     private TrainingDefinitionByIdDTO generateTrainingDefinitionByIdDTO(String title, String description, String[] prerequisites,
                                                                         String[] outcomes, cz.muni.ics.kypo.training.api.enums.TDState state,
-                                                                        boolean showStepperBar, boolean canBeArchived, long estimatedDuration,
+                                                                        boolean canBeArchived, long estimatedDuration,
                                                                         LocalDateTime lastEdited, LocalDateTime createdAt){
         TrainingDefinitionByIdDTO trainingDefinitionByIdDTO = new TrainingDefinitionByIdDTO();
         trainingDefinitionByIdDTO.setTitle(title);
@@ -859,7 +851,6 @@ public class TestDataFactory {
         trainingDefinitionByIdDTO.setPrerequisites(prerequisites);
         trainingDefinitionByIdDTO.setOutcomes(outcomes);
         trainingDefinitionByIdDTO.setState(state);
-        trainingDefinitionByIdDTO.setShowStepperBar(showStepperBar);
         trainingDefinitionByIdDTO.setCanBeArchived(canBeArchived);
         trainingDefinitionByIdDTO.setEstimatedDuration(estimatedDuration);
         trainingDefinitionByIdDTO.setLastEdited(lastEdited);

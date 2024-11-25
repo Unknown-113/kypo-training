@@ -62,7 +62,6 @@ public class BeanMappingTest {
         tDDTO.setPrerequisites(tD.getPrerequisites());
         tDDTO.setOutcomes(tD.getOutcomes());
         tDDTO.setState(cz.muni.ics.kypo.training.api.enums.TDState.UNRELEASED);
-        tDDTO.setShowStepperBar(tD.isShowStepperBar());
 
         iL1 = testDataFactory.getInfoLevel1();
         iL1.setId(1L);
@@ -102,7 +101,6 @@ public class BeanMappingTest {
         assertEquals(tD.getPrerequisites()[1], dto.getPrerequisites()[1]);
         assertEquals(tD.getOutcomes()[0], dto.getOutcomes()[0]);
         assertEquals(tD.getOutcomes()[1], dto.getOutcomes()[1]);
-        assertEquals(tD.isShowStepperBar(), dto.isShowStepperBar());
     }
 
     @Test
@@ -116,7 +114,6 @@ public class BeanMappingTest {
         assertEquals(tDDTO.getPrerequisites()[1], tD.getPrerequisites()[1]);
         assertEquals(tDDTO.getOutcomes()[0], tD.getOutcomes()[0]);
         assertEquals(tDDTO.getOutcomes()[1], tD.getOutcomes()[1]);
-        assertEquals(tDDTO.isShowStepperBar(), tD.isShowStepperBar());
     }
 
 }
