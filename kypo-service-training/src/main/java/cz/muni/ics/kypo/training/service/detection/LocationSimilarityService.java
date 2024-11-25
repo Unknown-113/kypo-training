@@ -184,10 +184,10 @@ public class LocationSimilarityService {
         try {
             InetAddress envAddress = InetAddress.getByName(environment.getProperty("server.address"));
             submissionDomainName = InetAddress.getByName(submission.getIpAddress()).getHostName();
-            event.setIsAddressDeploy(envAddress.getHostName().equals(submissionDomainName));
+            event.setAddressDeploy(envAddress.getHostName().equals(submissionDomainName));
         } catch (UnknownHostException e) {
             submissionDomainName = "unspecified";
-            event.setIsAddressDeploy(false);
+            event.setAddressDeploy(false);
         }
         event.setDns(submissionDomainName);
         event.setIpAddress(submission.getIpAddress());
