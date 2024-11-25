@@ -5,14 +5,11 @@ import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import lombok.*;
 
 /**
  * Class represents Training definition.
  * Training instances can be created based on definitions.
  */
-@EqualsAndHashCode
-@ToString
 @Entity
 @Table(name = "training_definition")
 @NamedEntityGraphs({
@@ -322,5 +319,41 @@ public class TrainingDefinition extends AbstractEntity<Long> {
      */
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(description, outcomes, prerequisites, state, title);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (!(obj instanceof TrainingDefinition))
+            return false;
+        TrainingDefinition other = (TrainingDefinition) obj;
+        return Objects.equals(description, other.getDescription())
+                && Arrays.equals(outcomes, other.getOutcomes())
+                && Arrays.equals(prerequisites, other.getPrerequisites())
+                && Objects.equals(state, other.getState())
+                && Objects.equals(title, other.getTitle());
+    }
+
+    @Override
+    public String toString() {
+        return "TrainingDefinition{" +
+                "id=" + super.getId() +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", prerequisites=" + Arrays.toString(prerequisites) +
+                ", outcomes=" + Arrays.toString(outcomes) +
+                ", state=" + state +
+                ", estimatedDuration=" + estimatedDuration +
+                ", lastEdited=" + lastEdited +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }
