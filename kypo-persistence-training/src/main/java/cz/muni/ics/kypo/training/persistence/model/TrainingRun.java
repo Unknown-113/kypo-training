@@ -6,15 +6,12 @@ import org.hibernate.annotations.Type;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import lombok.*;
 
 /**
  * Class represents Training run.
  * Training runs can be created based on instances.
  * Training runs are accessed by trainees
  */
-@EqualsAndHashCode
-@ToString
 @Entity
 @Table(name = "training_run")
 @NamedEntityGraphs({
@@ -622,5 +619,50 @@ public class TrainingRun extends AbstractEntity<Long> {
 
     public void setHasDetectionEvent(boolean hasDetectionEvent) {
         this.hasDetectionEvent = hasDetectionEvent;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(currentLevel, eventLogReference, startTime, endTime, state, trainingInstance, incorrectAnswerCount);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (!(obj instanceof TrainingRun))
+            return false;
+        TrainingRun other = (TrainingRun) obj;
+        return Objects.equals(currentLevel, other.getCurrentLevel())
+                && Objects.equals(eventLogReference, other.getEventLogReference())
+                && Objects.equals(startTime, other.getStartTime())
+                && Objects.equals(endTime, other.getEndTime())
+                && Objects.equals(state, other.getState())
+                && Objects.equals(incorrectAnswerCount, other.getIncorrectAnswerCount())
+                && Objects.equals(trainingInstance, other.getTrainingInstance())
+                && Objects.equals(participantRef, other.getParticipantRef())
+                && Objects.equals(solutionTaken, other.isSolutionTaken());
+    }
+
+    @Override
+    public String toString() {
+        return "TrainingRun{" +
+                "id=" + super.getId() +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", eventLogReference='" + eventLogReference + '\'' +
+                ", state=" + state +
+                ", incorrectAnswerCount=" + incorrectAnswerCount +
+                ", solutionTaken=" + solutionTaken +
+                ", currentLevel=" + currentLevel +
+                ", sandboxInstanceRefId=" + sandboxInstanceRefId +
+                ", sandboxInstanceAllocationId=" + sandboxInstanceAllocationId +
+                ", totalTrainingScore=" + totalTrainingScore +
+                ", totalAssessmentScore=" + totalAssessmentScore +
+                ", maxLevelScore=" + maxLevelScore +
+                ", levelAnswered=" + levelAnswered +
+                '}';
     }
 }
