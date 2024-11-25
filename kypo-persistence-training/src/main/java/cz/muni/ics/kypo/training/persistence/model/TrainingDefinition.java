@@ -1,8 +1,12 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import cz.muni.ics.kypo.training.persistence.model.enums.TDState;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
