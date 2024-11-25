@@ -16,7 +16,7 @@ import lombok.*;
 @Embeddable
 public class HintInfo {
     @Column(name = "training_level_id", nullable = false)
-    private long trainingLevelId;
+    private Long trainingLevelId;
     @Column(name = "hint_id", nullable = false)
     private long hintId;
     @Column(name = "hint_title", nullable = false)
