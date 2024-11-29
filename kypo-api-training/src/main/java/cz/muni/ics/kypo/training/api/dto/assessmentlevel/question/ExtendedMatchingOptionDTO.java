@@ -6,9 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-import java.util.HashSet;
-import java.util.Set;
+import lombok.*;
 
+@Getter
+@Setter
+@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtendedMatchingOptionDTO implements Ordered {
 
@@ -20,38 +22,4 @@ public class ExtendedMatchingOptionDTO implements Ordered {
     @ApiModelProperty(value = "The order of the option in question of type EMI.", example = "0")
     @Min(value = 0, message = "{emiOption.order.Min.message}")
     private int order;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-
-    @Override
-    public String toString() {
-        return "EMIOption{" +
-                "id=" + id +
-                ", text='" + text + '\'' +
-                ", order=" + order +
-                '}';
-    }
 }
