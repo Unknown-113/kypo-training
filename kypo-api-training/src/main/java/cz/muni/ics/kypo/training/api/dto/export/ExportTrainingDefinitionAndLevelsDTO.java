@@ -6,11 +6,16 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 /**
  * Encapsulates information about training definition and its levels.
  *
  */
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
 @ApiModel(value = "ExportTrainingDefinitionAndLevelsDTO", description = "An exported detailed information about training definition which also include individual levels.")
 public class ExportTrainingDefinitionAndLevelsDTO {
 
@@ -32,184 +37,4 @@ public class ExportTrainingDefinitionAndLevelsDTO {
     private int estimatedDuration;
     @ApiModelProperty(value = "Marking if levels flags/answers are randomly generated and are different for each trainee. Default is false.", example = "false")
     private boolean variantSandboxes;
-
-    /**
-     * Instantiates a new Export training definition and levels dto.
-     */
-    public ExportTrainingDefinitionAndLevelsDTO() {
-    }
-
-    /**
-     * Gets title.
-     *
-     * @return the title
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Sets title.
-     *
-     * @param title the title
-     */
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    /**
-     * Gets description.
-     *
-     * @return the description
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Sets description.
-     *
-     * @param description the description
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    /**
-     * Get prerequisites.
-     *
-     * @return the prerequisites
-     */
-    public String[] getPrerequisites() {
-        return prerequisites;
-    }
-
-    /**
-     * Sets prerequisites.
-     *
-     * @param prerequisites the prerequisites
-     */
-    public void setPrerequisites(String[] prerequisites) {
-        this.prerequisites = prerequisites;
-    }
-
-    /**
-     * Get outcomes.
-     *
-     * @return the outcomes
-     */
-    public String[] getOutcomes() {
-        return outcomes;
-    }
-
-    /**
-     * Sets outcomes.
-     *
-     * @param outcomes the outcomes
-     */
-    public void setOutcomes(String[] outcomes) {
-        this.outcomes = outcomes;
-    }
-
-    /**
-     * Gets development state.
-     *
-     * @return the {@link TDState}
-     */
-    public TDState getState() {
-        return state;
-    }
-
-    /**
-     * Sets development state.
-     *
-     * @param state {@link TDState}
-     */
-    public void setState(TDState state) {
-        this.state = state;
-    }
-
-    /**
-     * Is show stepper bar boolean.
-     *
-     * @return the boolean
-     */
-    public boolean isShowStepperBar() {
-        return showStepperBar;
-    }
-
-    /**
-     * Sets show stepper bar.
-     *
-     * @param showStepperBar the show stepper bar
-     */
-    public void setShowStepperBar(boolean showStepperBar) {
-        this.showStepperBar = showStepperBar;
-    }
-
-    /**
-     * Gets levels.
-     *
-     * @return the list of {@link AbstractLevelExportDTO}
-     */
-    public List<AbstractLevelExportDTO> getLevels() {
-        return levels;
-    }
-
-    /**
-     * Sets levels.
-     *
-     * @param levels the list of {@link AbstractLevelExportDTO}
-     */
-    public void setLevels(List<AbstractLevelExportDTO> levels) {
-        this.levels = levels;
-    }
-
-    /**
-     * Gets estimated duration.
-     *
-     * @return the estimated duration
-     */
-    public int getEstimatedDuration() {
-        return estimatedDuration;
-    }
-
-    /**
-     * Sets estimated duration.
-     *
-     * @param estimatedDuration the estimated duration
-     */
-    public void setEstimatedDuration(int estimatedDuration) {
-        this.estimatedDuration = estimatedDuration;
-    }
-
-    /**
-     * Is variant answers boolean.
-     *
-     * @return the boolean
-     */
-    public boolean isVariantSandboxes() {
-        return variantSandboxes;
-    }
-
-    /**
-     * Sets variant answers.
-     *
-     * @param variantSandboxes the variant answers
-     */
-    public void setVariantSandboxes(boolean variantSandboxes) {
-        this.variantSandboxes = variantSandboxes;
-    }
-
-    @Override
-    public String toString() {
-        return "ExportTrainingDefinitionAndLevelsDTO{" +
-                "title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", state=" + state +
-                ", showStepperBar=" + showStepperBar +
-                ", estimatedDuration=" + estimatedDuration +
-                ", variantSandboxes=" + variantSandboxes +
-                '}';
-    }
 }
