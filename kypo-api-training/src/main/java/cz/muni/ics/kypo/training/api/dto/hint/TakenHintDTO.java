@@ -4,10 +4,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Objects;
+import lombok.*;
 
 /**
  * Encapsulates information about hint that was already taken
  */
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "TakenHintDTO", description = "A taken brief textual description to aid the participant.")
 public class TakenHintDTO {
 

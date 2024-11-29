@@ -1,1 +1,0 @@
-alter table training_run add column has_detection_event boolean not null default (false);
