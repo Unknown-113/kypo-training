@@ -9,11 +9,16 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 /**
  * Encapsulates information about training definition and its levels.
  *
  */
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
 @ApiModel(value = "ImportTrainingDefinitionDTO", description = "A basic information about hint.")
 public class ImportTrainingDefinitionDTO {
 
@@ -41,184 +46,11 @@ public class ImportTrainingDefinitionDTO {
 	private boolean variantSandboxes;
 
 	/**
-	 * Instantiates a new Import training definition dto.
-	 */
-	public ImportTrainingDefinitionDTO() {
-	}
-
-	/**
-	 * Gets title.
-	 *
-	 * @return the title
-	 */
-	public String getTitle() {
-		return title;
-	}
-
-	/**
-	 * Sets title.
-	 *
-	 * @param title the title
-	 */
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	/**
-	 * Gets description.
-	 *
-	 * @return the description
-	 */
-	public String getDescription() {
-		return description;
-	}
-
-	/**
-	 * Sets description.
-	 *
-	 * @param description the description
-	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	/**
-	 * Get prerequisites.
-	 *
-	 * @return the prerequisites
-	 */
-	public String[] getPrerequisites() {
-		return prerequisites;
-	}
-
-	/**
-	 * Sets prerequisites.
-	 *
-	 * @param prerequisites the prerequisites
-	 */
-	public void setPrerequisites(String[] prerequisites) {
-		this.prerequisites = prerequisites;
-	}
-
-	/**
-	 * Get outcomes.
-	 *
-	 * @return the outcomes
-	 */
-	public String[] getOutcomes() {
-		return outcomes;
-	}
-
-	/**
-	 * Sets outcomes.
-	 *
-	 * @param outcomes the outcomes
-	 */
-	public void setOutcomes(String[] outcomes) {
-		this.outcomes = outcomes;
-	}
-
-	/**
-	 * Gets state.
-	 *
-	 * @return the {@link TDState}
-	 */
-	public TDState getState() {
-		return state;
-	}
-
-	/**
-	 * Sets state.
-	 *
-	 * @param state the {@link TDState}
-	 */
-	public void setState(TDState state) {
-		this.state = state;
-	}
-
-	/**
-	 * Gets if stepper bar is shown while in run.
-	 *
-	 * @return true if bar is shown
-	 */
-	public boolean isShowStepperBar() {
-		return showStepperBar;
-	}
-
-	/**
-	 * Gets if stepper bar is shown while in run.
-	 *
-	 * @param showStepperBar true if bar is shown
-	 */
-	public void setShowStepperBar(boolean showStepperBar) {
-		this.showStepperBar = showStepperBar;
-	}
-
-	/**
-	 * Gets levels.
-	 *
-	 * @return the list of {@link AbstractLevelImportDTO}
-	 */
-	public List<AbstractLevelImportDTO> getLevels() {
-		return levels;
-	}
-
-	/**
 	 * Sets levels.
 	 *
 	 * @param levels the list of {@link AbstractLevelImportDTO}
 	 */
 	public void setLevels(List<AbstractLevelImportDTO> levels) {
 		this.levels = new ArrayList<>(levels);
-	}
-
-
-	/**
-	 * Gets estimated duration.
-	 *
-	 * @return the estimated duration
-	 */
-	public Integer getEstimatedDuration() {
-		return estimatedDuration;
-	}
-
-	/**
-	 * Sets estimated duration.
-	 *
-	 * @param estimatedDuration the estimated duration
-	 */
-	public void setEstimatedDuration(Integer estimatedDuration) {
-		this.estimatedDuration = estimatedDuration;
-	}
-
-	/**
-	 * Is variant answers boolean.
-	 *
-	 * @return the boolean
-	 */
-	public boolean isVariantSandboxes() {
-		return variantSandboxes;
-	}
-
-
-	/**
-	 * Sets variant answers.
-	 *
-	 * @param variantSandboxes the variant answers
-	 */
-	public void setVariantSandboxes(boolean variantSandboxes) {
-		this.variantSandboxes = variantSandboxes;
-	}
-
-	@Override
-	public String toString() {
-		return "ImportTrainingDefinitionDTO{" +
-				"title='" + title + '\'' +
-				", description='" + description + '\'' +
-				", state=" + state +
-				", showStepperBar=" + showStepperBar +
-				", estimatedDuration=" + estimatedDuration +
-				", variantSandboxes=" + variantSandboxes +
-				'}';
 	}
 }
