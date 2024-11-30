@@ -8,10 +8,15 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 /**
  * Encapsulates information about question of the specific assessment. Data used for visualizations.
  */
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "QuestionVisualizationDTO", description = "Information needed to visualize assessments statistic.")
 public class QuestionVisualizationDTO {
 
@@ -25,67 +30,4 @@ public class QuestionVisualizationDTO {
     private int order;
     @ApiModelProperty(value = "Free form question answers to questions submitted by participants.")
     private List<? extends AbstractAnswerDTO> answers = new ArrayList<>();
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public QuestionType getQuestionType() {
-        return questionType;
-    }
-
-    public void setQuestionType(QuestionType questionType) {
-        this.questionType = questionType;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    public List<? extends AbstractAnswerDTO> getAnswers() {
-        return answers;
-    }
-
-    public void setAnswers(List<? extends AbstractAnswerDTO> answers) {
-        this.answers = answers;
-    }
-
-    @Override
-    public String toString() {
-        return "QuestionVisualizationDTO{" +
-                "id=" + id +
-                ", questionType=" + questionType +
-                ", text='" + text + '\'' +
-                ", order=" + order +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof QuestionVisualizationDTO)) return false;
-        QuestionVisualizationDTO that = (QuestionVisualizationDTO) o;
-        return order == that.order && Objects.equal(id, that.id) && questionType == that.questionType && Objects.equal(text, that.text);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id, questionType, text, order);
-    }
 }
