@@ -4,12 +4,9 @@ import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
 import lombok.*;
 
-@EqualsAndHashCode
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor
-@AllArgsConstructor
 public class ClusteringLevelPlayerDTO extends PlayerDataDTO {
 
     private int participantLevelScore;
@@ -27,33 +24,5 @@ public class ClusteringLevelPlayerDTO extends PlayerDataDTO {
         super(userRef.getUserRefId(), userRef.getUserRefFullName(), userRef.getPicture(), trainingRunId, trainingTime);
         this.participantLevelScore = participantLevelScore;
         this.finished = finished;
-    }
-
-    public int getParticipantLevelScore() {
-        return participantLevelScore;
-    }
-
-    public void setParticipantLevelScore(int participantLevelScore) {
-        this.participantLevelScore = participantLevelScore;
-    }
-
-    public Boolean getFinished() {
-        return finished;
-    }
-
-    public void setFinished(Boolean finished) {
-        this.finished = finished;
-    }
-
-    @Override
-    public String toString() {
-        return "ClusteringPlayerDTO{" +
-                "id=" + getId() +
-                ", trainingRunId=" + getTrainingRunId() +
-                ", name='" + getName() + '\'' +
-                ", trainingTime=" + getTrainingTime() +
-                ", participantLevelScore=" + participantLevelScore +
-                ", finished=" + finished +
-                '}';
     }
 }
