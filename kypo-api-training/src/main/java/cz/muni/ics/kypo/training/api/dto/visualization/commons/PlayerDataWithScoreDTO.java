@@ -1,10 +1,5 @@
 package cz.muni.ics.kypo.training.api.dto.visualization.commons;
 
-import lombok.*;
-
-@Getter
-@Setter
-@ToString
 public class PlayerDataWithScoreDTO extends PlayerDataDTO {
 
     private Integer trainingScore;
@@ -26,5 +21,33 @@ public class PlayerDataWithScoreDTO extends PlayerDataDTO {
         super(id, name, picture, trainingRunId, trainingTime);
         this.trainingScore = trainingScore;
         this.assessmentScore = assessmentScore;
+    }
+
+    public Integer getTrainingScore() {
+        return trainingScore;
+    }
+
+    public void setTrainingScore(Integer trainingScore) {
+        this.trainingScore = trainingScore;
+    }
+
+    public Integer getAssessmentScore() {
+        return assessmentScore;
+    }
+
+    public void setAssessmentScore(Integer assessmentScore) {
+        this.assessmentScore = assessmentScore;
+    }
+
+    @Override
+    public String toString() {
+        return "PlayerDataWithScoreDTO{" +
+                "id=" + getId() +
+                ", trainingRunId=" + getTrainingRunId() +
+                ", name='" + getName() + '\'' +
+                ", trainingTime=" + getTrainingTime() +
+                ", trainingScore=" + trainingScore +
+                ", assessmentScore=" + assessmentScore +
+                '}';
     }
 }

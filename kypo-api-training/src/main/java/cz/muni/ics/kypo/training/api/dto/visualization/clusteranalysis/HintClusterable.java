@@ -4,10 +4,7 @@ import cz.muni.ics.kypo.training.utils.ClusterMathUtils;
 import org.apache.commons.math3.stat.clustering.Clusterable;
 
 import java.util.Collection;
-import lombok.*;
 
-@Getter
-@Setter
 public class HintClusterable implements Clusterable<HintClusterable> {
 
     private final Long userRefId;
@@ -24,6 +21,46 @@ public class HintClusterable implements Clusterable<HintClusterable> {
         this.wrongAnswersAfterHint = wrongAnswersAfterHint;
         this.timeSpentAfterHintNormalized = timeSpentAfterHint;
         this.wrongAnswersAfterHintNormalized = wrongAnswersAfterHint;
+    }
+
+    public Long getUserRefId() {
+        return userRefId;
+    }
+
+    public Long getLevel() {
+        return level;
+    }
+
+    public Double getTimeSpentAfterHint() {
+        return timeSpentAfterHint;
+    }
+
+    public void setTimeSpentAfterHint(Double timeSpentAfterHint) {
+        this.timeSpentAfterHint = timeSpentAfterHint;
+    }
+
+    public Double getWrongAnswersAfterHint() {
+        return wrongAnswersAfterHint;
+    }
+
+    public void setWrongAnswersAfterHint(Double wrongAnswersAfterHint) {
+        this.wrongAnswersAfterHint = wrongAnswersAfterHint;
+    }
+
+    public Double getTimeSpentAfterHintNormalized() {
+        return timeSpentAfterHintNormalized;
+    }
+
+    public void setTimeSpentAfterHintNormalized(Double timeSpentAfterHintNormalized) {
+        this.timeSpentAfterHintNormalized = timeSpentAfterHintNormalized;
+    }
+
+    public Double getWrongAnswersAfterHintNormalized() {
+        return wrongAnswersAfterHintNormalized;
+    }
+
+    public void setWrongAnswersAfterHintNormalized(Double wrongAnswersAfterHintNormalized) {
+        this.wrongAnswersAfterHintNormalized = wrongAnswersAfterHintNormalized;
     }
 
     @Override
@@ -51,5 +88,7 @@ public class HintClusterable implements Clusterable<HintClusterable> {
                 Double::sum
         );
     }
+
+
 }
 
