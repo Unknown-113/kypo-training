@@ -3,7 +3,7 @@ package cz.muni.ics.kypo.training.api.dto.visualization.assessment.answer;
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
+import lombok.*;
 
 import java.util.List;
 
