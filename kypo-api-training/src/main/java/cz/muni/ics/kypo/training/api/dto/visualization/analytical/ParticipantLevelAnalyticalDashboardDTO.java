@@ -5,10 +5,14 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 /**
  * Analytical dashboard - level details of the particular participant.
  */
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "ParticipantLevelAnalyticalDashboardDTO", description = "Analytical dashboard - level details of the particular participant.")
 public class ParticipantLevelAnalyticalDashboardDTO {
 
@@ -25,71 +29,12 @@ public class ParticipantLevelAnalyticalDashboardDTO {
     @ApiModelProperty(value = "Indicates if the participant submitted a wrong answer.", example = "true")
     private List<String> wrongAnswers = new ArrayList<>();
 
-    public Long getLevelId() {
-        return levelId;
-    }
-
-    public void setLevelId(Long levelId) {
-        this.levelId = levelId;
-    }
-
-    public String getLevelTitle() {
-        return levelTitle;
-    }
-
-    public void setLevelTitle(String levelTitle) {
-        this.levelTitle = levelTitle;
-    }
-
-    public int getHintsTaken() {
-        return hintsTaken;
-    }
-
-    public void setHintsTaken(int hintsTaken) {
-        this.hintsTaken = hintsTaken;
-    }
-
     public void increaseHintTaken() {
         this.hintsTaken++;
-    }
-
-    public long getDuration() {
-        return duration;
-    }
-
-    public void setDuration(long duration) {
-        this.duration = duration;
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
-
-    public List<String> getWrongAnswers() {
-        return wrongAnswers;
-    }
-
-    public void setWrongAnswers(List<String> wrongAnswers) {
-        this.wrongAnswers = wrongAnswers;
     }
 
     public void addWrongAnswer(String wrongAnswer) {
         this.wrongAnswers.add(wrongAnswer);
     }
 
-    @Override
-    public String toString() {
-        return "ParticipantLevelAnalyticalDashboardDTO{" +
-                "levelId=" + levelId +
-                ", levelTitle=" + levelTitle +
-                ", hintsTaken=" + hintsTaken +
-                ", duration=" + duration +
-                ", score=" + score +
-                ", wrongAnswersSubmitted=" + wrongAnswers +
-                '}';
-    }
 }

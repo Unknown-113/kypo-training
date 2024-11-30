@@ -4,7 +4,10 @@ import cz.muni.ics.kypo.training.utils.ClusterMathUtils;
 import org.apache.commons.math3.stat.clustering.Clusterable;
 
 import java.util.Collection;
+import lombok.*;
 
+@Getter
+@Setter
 public class WrongAnswersClusterable implements Clusterable<WrongAnswersClusterable> {
 
     private final Long userRefId;
@@ -19,42 +22,6 @@ public class WrongAnswersClusterable implements Clusterable<WrongAnswersClustera
         this.timePlayed = timePlayed;
         this.wrongAnswersSubmittedNormalized = wrongAnswersSubmitted;
         this.timePlayedNormalized = timePlayed;
-    }
-
-    public Long getUserRefId() {
-        return userRefId;
-    }
-
-    public Double getWrongAnswersSubmitted() {
-        return wrongAnswersSubmitted;
-    }
-
-    public void setWrongAnswersSubmitted(Double wrongAnswersSubmitted) {
-        this.wrongAnswersSubmitted = wrongAnswersSubmitted;
-    }
-
-    public Double getTimePlayed() {
-        return timePlayed;
-    }
-
-    public void setTimePlayed(Double timePlayed) {
-        this.timePlayed = timePlayed;
-    }
-
-    public Double getWrongAnswersSubmittedNormalized() {
-        return wrongAnswersSubmittedNormalized;
-    }
-
-    public void setWrongAnswersSubmittedNormalized(Double wrongAnswersSubmittedNormalized) {
-        this.wrongAnswersSubmittedNormalized = wrongAnswersSubmittedNormalized;
-    }
-
-    public Double getTimePlayedNormalized() {
-        return timePlayedNormalized;
-    }
-
-    public void setTimePlayedNormalized(Double timePlayedNormalized) {
-        this.timePlayedNormalized = timePlayedNormalized;
     }
 
     @Override
@@ -82,6 +49,5 @@ public class WrongAnswersClusterable implements Clusterable<WrongAnswersClustera
                 Double::sum
         );
     }
-
 }
 
