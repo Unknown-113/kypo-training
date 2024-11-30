@@ -9,12 +9,17 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class VisualizationAbstractLevelDTO {
     private Long id;
     private int order;
     private LevelType levelType;
+
+    public VisualizationAbstractLevelDTO(BaseBuilder<?, ?> timelineLevelBuilder) {
+        this.id = timelineLevelBuilder.id;
+        this.order = timelineLevelBuilder.order;
+        this.levelType = timelineLevelBuilder.levelType;
+    }
 
     public static abstract class BaseBuilder<T extends VisualizationAbstractLevelDTO, B extends BaseBuilder<?, ?>> {
         protected T actualClass;
