@@ -3,6 +3,7 @@ package cz.muni.ics.kypo.training.api.dto.traininglevel;
 import cz.muni.ics.kypo.training.api.dto.AbstractLevelUpdateDTO;
 import cz.muni.ics.kypo.training.api.dto.hint.HintDTO;
 import cz.muni.ics.kypo.training.api.dto.technique.MitreTechniqueDTO;
+import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
