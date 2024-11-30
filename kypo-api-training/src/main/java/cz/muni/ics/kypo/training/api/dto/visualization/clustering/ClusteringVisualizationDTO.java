@@ -3,7 +3,14 @@ package cz.muni.ics.kypo.training.api.dto.visualization.clustering;
 import io.swagger.annotations.ApiModel;
 
 import java.util.List;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @ApiModel(value = "ClusteringVisualizationDTO", description = "Clustering visualization.")
 public class ClusteringVisualizationDTO {
 

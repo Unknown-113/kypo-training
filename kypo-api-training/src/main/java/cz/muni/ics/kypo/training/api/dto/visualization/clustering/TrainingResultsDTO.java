@@ -4,8 +4,14 @@ import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class TrainingResultsDTO {
 
     private long estimatedTime;

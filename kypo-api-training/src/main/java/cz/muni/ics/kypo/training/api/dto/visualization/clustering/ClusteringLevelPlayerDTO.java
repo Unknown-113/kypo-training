@@ -2,7 +2,14 @@ package cz.muni.ics.kypo.training.api.dto.visualization.clustering;
 
 import cz.muni.ics.kypo.training.api.dto.UserRefDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClusteringLevelPlayerDTO extends PlayerDataDTO {
 
     private int participantLevelScore;
