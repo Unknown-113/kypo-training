@@ -6,7 +6,11 @@ import cz.muni.ics.kypo.training.api.dto.visualization.commons.VisualizationAbst
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
 public class TablePlayerDTO extends PlayerDataWithScoreDTO {
 
     private Boolean finished;
@@ -29,36 +33,7 @@ public class TablePlayerDTO extends PlayerDataWithScoreDTO {
         super(userRef.getUserRefId(), userRef.getUserRefFullName(), userRef.getPicture(), trainingRunId, trainingScore, assessmentScore);
     }
 
-    public Boolean getFinished() {
-        return finished;
-    }
-
-    public void setFinished(Boolean finished) {
-        this.finished = finished;
-    }
-
-    public List<VisualizationAbstractLevelDTO> getLevels() {
-        return levels;
-    }
-
-    public void setLevels(List<VisualizationAbstractLevelDTO> levels) {
-        this.levels = levels;
-    }
-
     public void addTableLevel(VisualizationAbstractLevelDTO visualizationAbstractLevelDTO) {
         this.levels.add(visualizationAbstractLevelDTO);
-    }
-
-    @Override
-    public String toString() {
-        return "TablePlayerDTO{" +
-                "id=" + getId() +
-                ", trainingRunId=" + getTrainingRunId() +
-                ", name='" + getName() + '\'' +
-                ", trainingScore=" + getTrainingScore() +
-                ", assessmentScore=" + getAssessmentScore() +
-                ", trainingTime=" + getTrainingTime() +
-                ", finished=" + finished +
-                '}';
     }
 }
