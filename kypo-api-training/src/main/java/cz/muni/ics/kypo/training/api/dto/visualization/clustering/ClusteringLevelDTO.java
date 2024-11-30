@@ -1,12 +1,12 @@
 package cz.muni.ics.kypo.training.api.dto.visualization.clustering;
 
+import cz.muni.ics.kypo.training.api.dto.visualization.commons.PlayerDataDTO;
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.VisualizationAbstractLevelDTO;
 
 import java.util.ArrayList;
 import java.util.List;
-import lombok.*;
+import java.util.Objects;
 
-@Getter
 public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
 
     private final String title;
@@ -28,6 +28,51 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
         this.averageTime = builder.averageTime;
         this.averageScore = builder.averageScore;
         this.playerData = builder.playerData;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public long getEstimatedTime() {
+        return estimatedTime;
+    }
+
+    public int getMaxParticipantScore() {
+        return maxParticipantScore;
+    }
+    public int getMaxAchievableScore() {
+        return maxAchievableScore;
+    }
+
+    public long getMaxParticipantTime() {
+        return maxParticipantTime;
+    }
+
+    public float getAverageTime() {
+        return averageTime;
+    }
+
+    public float getAverageScore() {
+        return averageScore;
+    }
+
+    public List<ClusteringLevelPlayerDTO> getPlayerData() {
+        return playerData;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ClusteringLevelDTO that = (ClusteringLevelDTO) o;
+        return getTitle().equals(that.getTitle());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getTitle());
     }
 
     public static class ClusteringLevelBuilder extends VisualizationAbstractLevelDTO.BaseBuilder<ClusteringLevelDTO, ClusteringLevelBuilder> {
@@ -94,4 +139,5 @@ public class ClusteringLevelDTO extends VisualizationAbstractLevelDTO {
             return new ClusteringLevelDTO(this);
         }
     }
+
 }
