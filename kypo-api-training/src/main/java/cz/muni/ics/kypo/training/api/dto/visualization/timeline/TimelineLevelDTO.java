@@ -5,8 +5,11 @@ import cz.muni.ics.kypo.training.api.dto.visualization.commons.VisualizationAbst
 import cz.muni.ics.kypo.training.api.enums.AssessmentType;
 
 import java.util.List;
-import java.util.Objects;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
 public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
 
     private final Long solutionDisplayedTime;
@@ -29,53 +32,6 @@ public class TimelineLevelDTO extends VisualizationAbstractLevelDTO {
         this.participantLevelScore = timelineLevelBuilder.participantScore;
         this.events = timelineLevelBuilder.events;
         this.startTime = timelineLevelBuilder.startTime;
-    }
-
-    public Long getCorrectAnswerTime() {
-        return correctAnswerTime;
-    }
-
-    public Long getSolutionDisplayedTime() {
-        return solutionDisplayedTime;
-    }
-
-    public Integer getWrongAnswers() {
-        return wrongAnswers;
-    }
-
-    public Integer getHintsTaken() {
-        return hintsTaken;
-    }
-
-    public AssessmentType getAssessmentType() {
-        return assessmentType;
-    }
-
-    public Long getStartTime() {
-        return startTime;
-    }
-
-    public int getParticipantLevelScore() {
-        return participantLevelScore;
-    }
-
-    public List<EventDTO> getEvents() {
-        return events;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        TimelineLevelDTO that = (TimelineLevelDTO) o;
-        return getParticipantLevelScore() == that.getParticipantLevelScore() &&
-                Objects.equals(getEvents(), that.getEvents());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getParticipantLevelScore(), getEvents());
     }
 
     public static class TimelineLevelBuilder extends BaseBuilder<TimelineLevelDTO, TimelineLevelBuilder> {

@@ -12,7 +12,6 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor
 @ApiModel(value = "VisualizationProgressDTO", description = "A model includes necessary information about training instance which is needed for visualizations.")
 public class VisualizationProgressDTO {
 

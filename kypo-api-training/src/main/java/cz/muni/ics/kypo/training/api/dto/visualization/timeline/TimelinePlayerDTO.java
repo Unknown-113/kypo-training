@@ -6,7 +6,11 @@ import cz.muni.ics.kypo.training.api.dto.visualization.commons.VisualizationAbst
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
+@Getter
+@Setter
+@ToString
 public class TimelinePlayerDTO extends PlayerDataWithScoreDTO {
 
     private List<VisualizationAbstractLevelDTO> levels = new ArrayList<>();
@@ -20,29 +24,7 @@ public class TimelinePlayerDTO extends PlayerDataWithScoreDTO {
         super(userRef.getUserRefId(), userRef.getUserRefFullName(), userRef.getPicture(), trainingRunId, trainingScore, assessmentScore);
     }
 
-    public List<VisualizationAbstractLevelDTO> getLevels() {
-        return levels;
-    }
-
-    public void setLevels(List<VisualizationAbstractLevelDTO> levels) {
-        this.levels = levels;
-    }
-
     public void addTableLevel(VisualizationAbstractLevelDTO visualizationAbstractLevelDTO) {
         this.levels.add(visualizationAbstractLevelDTO);
     }
-
-    @Override
-    public String toString() {
-        return "TimelinePlayerDTO{" +
-                "id=" + getId() +
-                ", trainingRunId=" + getTrainingRunId() +
-                ", name='" + getName() + '\'' +
-                ", trainingScore=" + getTrainingScore() +
-                ", assessmentScore=" + getAssessmentScore() +
-                ", trainingTime=" + getTrainingTime() +
-                '}';
-    }
-
-
 }
