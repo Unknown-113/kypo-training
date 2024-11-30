@@ -5,8 +5,12 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.*;
 import java.util.List;
-import java.util.Objects;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "ReferenceSolutionNodeDTO", description = "Definition of the node in the reference graph..")
 public class ReferenceSolutionNodeDTO {
 
@@ -27,81 +31,4 @@ public class ReferenceSolutionNodeDTO {
     private String cmdRegex;
     @ApiModelProperty(value = "Mark if the node is optional in the training progress. Default is 'false'", required = false, example = "20")
     private boolean optional;
-
-    public String getStateName() {
-        return stateName;
-    }
-
-    public void setStateName(String stateName) {
-        this.stateName = stateName;
-    }
-
-    public List<String> getPrereqState() {
-        return prereqState;
-    }
-
-    public void setPrereqState(List<String> prereqState) {
-        this.prereqState = prereqState;
-    }
-
-    public String getCmd() {
-        return cmd;
-    }
-
-    public void setCmd(String cmd) {
-        this.cmd = cmd;
-    }
-
-    public String getCmdType() {
-        return cmdType;
-    }
-
-    public void setCmdType(String cmdType) {
-        this.cmdType = cmdType;
-    }
-
-    public String getCmdRegex() {
-        return cmdRegex;
-    }
-
-    public void setCmdRegex(String cmdRegex) {
-        this.cmdRegex = cmdRegex;
-    }
-
-    public boolean isOptional() {
-        return optional;
-    }
-
-    public void setOptional(boolean optional) {
-        this.optional = optional;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ReferenceSolutionNodeDTO)) return false;
-        ReferenceSolutionNodeDTO that = (ReferenceSolutionNodeDTO) o;
-        return isOptional() == that.isOptional() && Objects.equals(getStateName(), that.getStateName())
-                && Objects.equals(getPrereqState(), that.getPrereqState())
-                && Objects.equals(getCmd(), that.getCmd())
-                && Objects.equals(getCmdType(), that.getCmdType())
-                && Objects.equals(getCmdRegex(), that.getCmdRegex());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getStateName(), getPrereqState(), getCmd(), getCmdType(), getCmdRegex(), isOptional());
-    }
-
-    @Override
-    public String toString() {
-        return "ReferenceSolutionNodeDTO{" +
-                "stateName='" + stateName + '\'' +
-                ", prereqStates=" + prereqState +
-                ", cmd='" + cmd + '\'' +
-                ", cmdType='" + cmdType + '\'' +
-                ", cmdRegex='" + cmdRegex + '\'' +
-                ", optional=" + optional +
-                '}';
-    }
 }
