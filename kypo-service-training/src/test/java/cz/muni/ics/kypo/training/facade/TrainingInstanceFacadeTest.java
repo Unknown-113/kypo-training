@@ -255,7 +255,7 @@ public class TrainingInstanceFacadeTest {
     public void checkIfInstanceCanBeDeleted_TRUE(){
         given(trainingInstanceService.checkIfInstanceIsFinished(anyLong())).willReturn(true);
         TrainingInstanceIsFinishedInfoDTO info = trainingInstanceFacade.checkIfInstanceCanBeDeleted(1L);
-        assertTrue(info.getHasFinished());
+        assertTrue(info.isHasFinished());
         assertEquals("Training instance has already finished and can be safely deleted.", info.getMessage());
     }
 
@@ -263,7 +263,7 @@ public class TrainingInstanceFacadeTest {
     public void checkIfInstanceCanBeDeleted_FALSE(){
         given(trainingInstanceService.checkIfInstanceIsFinished(anyLong())).willReturn(false);
         TrainingInstanceIsFinishedInfoDTO info = trainingInstanceFacade.checkIfInstanceCanBeDeleted(1L);
-        assertFalse(info.getHasFinished());
+        assertFalse(info.isHasFinished());
         assertEquals("WARNING: Training instance is still running! Are you sure you want to delete it?", info.getMessage());
     }
 
