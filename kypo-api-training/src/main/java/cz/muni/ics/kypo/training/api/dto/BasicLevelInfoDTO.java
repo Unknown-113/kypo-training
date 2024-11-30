@@ -23,8 +23,8 @@ public class BasicLevelInfoDTO {
     private Long id;
     @ApiModelProperty(value = "Short textual description of the level.", example = "Training Level1")
     private String title;
-    @ApiModelProperty(value = "Order of level among levels in training definition starting from 0.", example = "1")
-    private int order;
     @ApiModelProperty(value = "Type of the level.", example = "TRAINING")
     private LevelType levelType;
+    @ApiModelProperty(value = "Order of level among levels in training definition starting from 0.", example = "1")
+    private int order;
 }
