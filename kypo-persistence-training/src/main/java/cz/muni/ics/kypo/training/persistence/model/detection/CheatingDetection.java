@@ -6,12 +6,17 @@ import cz.muni.ics.kypo.training.persistence.model.enums.CheatingDetectionState;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import lombok.*;
 
 /**
  * Class representing cheating detection.
  * Cheating detections are executed by organizers.
  * Cheating detections are bound to a training instance.
  */
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
 @Entity
 @Table(name = "cheating_detection")
 @NamedQueries({
@@ -88,154 +93,5 @@ public class CheatingDetection extends AbstractEntity<Long> {
         this.setTimeProximityState(setExecuteState(this.getTimeProximityState()));
         this.setNoCommandsState(setExecuteState(this.getNoCommandsState()));
         this.setForbiddenCommandsState(setExecuteState(this.getForbiddenCommandsState()));
-    }
-    public Long getTrainingInstanceId() {
-        return trainingInstanceId;
-    }
-
-    public void setTrainingInstanceId(Long trainingInstanceId) {
-        this.trainingInstanceId = trainingInstanceId;
-    }
-
-    public String getExecutedBy() {
-        return executedBy;
-    }
-
-    public void setExecutedBy(String executedBy) {
-        this.executedBy = executedBy;
-    }
-
-    public LocalDateTime getExecuteTime() {
-        return executeTime;
-    }
-
-    public void setExecuteTime(LocalDateTime executeTime) {
-        this.executeTime = executeTime;
-    }
-
-    public Long getProximityThreshold() {
-        return proximityThreshold;
-    }
-
-    public void setProximityThreshold(Long proximityThreshold) {
-        this.proximityThreshold = proximityThreshold;
-    }
-
-    public CheatingDetectionState getCurrentState() {
-        return currentState;
-    }
-
-    public void setCurrentState(CheatingDetectionState currentState) {
-        this.currentState = currentState;
-    }
-
-    public Long getResults() {
-        return results;
-    }
-
-    public void setResults(Long results) {
-        this.results = results;
-    }
-
-    public CheatingDetectionState getAnswerSimilarityState() {
-        return answerSimilarityState;
-    }
-
-    public void setAnswerSimilarityState(CheatingDetectionState answerSimilarityState) {
-        this.answerSimilarityState = answerSimilarityState;
-    }
-
-    public CheatingDetectionState getLocationSimilarityState() {
-        return locationSimilarityState;
-    }
-
-    public void setLocationSimilarityState(CheatingDetectionState locationSimilarityState) {
-        this.locationSimilarityState = locationSimilarityState;
-    }
-
-    public CheatingDetectionState getTimeProximityState() {
-        return timeProximityState;
-    }
-
-    public void setTimeProximityState(CheatingDetectionState timeProximityState) {
-        this.timeProximityState = timeProximityState;
-    }
-
-    public CheatingDetectionState getMinimalSolveTimeState() {
-        return minimalSolveTimeState;
-    }
-
-    public void setMinimalSolveTimeState(CheatingDetectionState minimalSolveTimeState) {
-        this.minimalSolveTimeState = minimalSolveTimeState;
-    }
-
-    public CheatingDetectionState getForbiddenCommandsState() {
-        return forbiddenCommandsState;
-    }
-
-    public void setForbiddenCommandsState(CheatingDetectionState forbiddenCommandsState) {
-        this.forbiddenCommandsState = forbiddenCommandsState;
-    }
-
-    public CheatingDetectionState getNoCommandsState() {
-        return noCommandsState;
-    }
-
-    public void setNoCommandsState(CheatingDetectionState noCommandsState) {
-        this.noCommandsState = noCommandsState;
-    }
-
-    public List<ForbiddenCommand> getForbiddenCommands() {
-        return commands;
-    }
-
-    public void setForbiddenCommands(List<ForbiddenCommand> commands) {
-        this.commands = commands;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CheatingDetection that = (CheatingDetection) o;
-        return Objects.equals(trainingInstanceId, that.trainingInstanceId) &&
-                Objects.equals(executedBy, that.executedBy) &&
-                Objects.equals(executeTime, that.executeTime) &&
-                Objects.equals(proximityThreshold, that.proximityThreshold) &&
-                currentState == that.currentState &&
-                Objects.equals(results, that.results) &&
-                answerSimilarityState == that.answerSimilarityState &&
-                locationSimilarityState == that.locationSimilarityState &&
-                timeProximityState == that.timeProximityState &&
-                minimalSolveTimeState == that.minimalSolveTimeState &&
-                forbiddenCommandsState == that.forbiddenCommandsState &&
-                noCommandsState == that.noCommandsState &&
-                Objects.equals(commands, that.commands);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(trainingInstanceId, executedBy, executeTime, proximityThreshold,
-                currentState, results, answerSimilarityState, locationSimilarityState, timeProximityState,
-                minimalSolveTimeState, forbiddenCommandsState, noCommandsState, commands);
-    }
-
-    @Override
-    public String toString() {
-        return "CheatingDetection{" +
-                "trainingInstanceId=" + trainingInstanceId +
-                ", executedBy='" + executedBy + '\'' +
-                ", executeTime=" + executeTime +
-                ", proximityThreshold=" + proximityThreshold +
-                ", currentState=" + currentState +
-                ", results=" + results +
-                ", answerSimilarityState=" + answerSimilarityState +
-                ", locationSimilarityState=" + locationSimilarityState +
-                ", timeProximityState=" + timeProximityState +
-                ", minimalSolveTimeState=" + minimalSolveTimeState +
-                ", forbiddenCommandsState=" + forbiddenCommandsState +
-                ", noCommandsState=" + noCommandsState +
-                ", forbiddenCommands=" + commands +
-                '}';
     }
 }

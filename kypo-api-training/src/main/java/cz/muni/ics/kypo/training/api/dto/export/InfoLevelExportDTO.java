@@ -2,11 +2,15 @@ package cz.muni.ics.kypo.training.api.dto.export;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.*;
 
 /**
  * Encapsulates information about info level. Inherits from {@link AbstractLevelExportDTO}
  *
  */
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "InfoLevelExportDTO", description = "Exported info level.", parent = AbstractLevelExportDTO.class)
 public class InfoLevelExportDTO extends AbstractLevelExportDTO {
 
@@ -18,30 +22,5 @@ public class InfoLevelExportDTO extends AbstractLevelExportDTO {
      */
     public InfoLevelExportDTO() {
         this.content = "";
-    }
-
-    /**
-     * Gets content.
-     *
-     * @return the content
-     */
-    public String getContent() {
-        return content;
-    }
-
-    /**
-     * Sets content.
-     *
-     * @param content the content
-     */
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    @Override
-    public String toString() {
-        return "InfoLevelExportDTO{" +
-                "content='" + content + '\'' +
-                '}';
     }
 }

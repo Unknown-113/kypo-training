@@ -3,7 +3,11 @@ package cz.muni.ics.kypo.training.api.dto.archive;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import lombok.*;
 
+@Getter
+@Setter
+@ToString
 public class QuestionAnswersDetailsDTO {
     private String question;
     private Map<String, Integer> answers = new HashMap<>();
@@ -11,30 +15,6 @@ public class QuestionAnswersDetailsDTO {
 
     public QuestionAnswersDetailsDTO(String question) {
         this.question = question;
-    }
-
-    public String getQuestion() {
-        return question;
-    }
-
-    public void setQuestion(String question) {
-        this.question = question;
-    }
-
-    public Map<String, Integer> getAnswers() {
-        return answers;
-    }
-
-    public void setAnswers(Map<String, Integer> answers) {
-        this.answers = answers;
-    }
-
-    public int getTotalAnswers() {
-        return totalAnswers;
-    }
-
-    public void setTotalAnswers(int totalAnswers) {
-        this.totalAnswers = totalAnswers;
     }
 
     public void addAnswers(Set<String> answers) {

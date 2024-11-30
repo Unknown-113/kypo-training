@@ -7,12 +7,14 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.HashSet;
 import java.util.Set;
-
+import lombok.*;
 
 /**
  * Encapsulates basic information about training level.
  */
-
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "TrainingLevelViewDTO", description = "An assignment containing security tasks whose completion yields a answer.", parent = AbstractLevelDTO.class)
 public class TrainingLevelViewDTO extends AbstractLevelDTO {
 
@@ -26,96 +28,4 @@ public class TrainingLevelViewDTO extends AbstractLevelDTO {
     private int incorrectAnswerLimit;
     @ApiModelProperty(value = "Information which helps player resolve the level.")
     private Set<HintForTrainingLevelViewDTO> hints = new HashSet<>();
-
-
-    /**
-     * Gets content.
-     *
-     * @return the content
-     */
-    public String getContent() {
-        return content;
-    }
-
-    /**
-     * Sets content.
-     *
-     * @param content the content
-     */
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    /**
-     * Is solution penalized boolean.
-     *
-     * @return true if incorrect solution is penalized
-     */
-    public boolean isSolutionPenalized() {
-        return solutionPenalized;
-    }
-
-    /**
-     * Sets solution penalized.
-     *
-     * @param solutionPenalized the solution penalized
-     */
-    public void setSolutionPenalized(boolean solutionPenalized) {
-        this.solutionPenalized = solutionPenalized;
-    }
-
-    public int getEstimatedDuration() {
-        return estimatedDuration;
-    }
-
-    public void setEstimatedDuration(int estimatedDuration) {
-        this.estimatedDuration = estimatedDuration;
-    }
-
-    /**
-     * Gets incorrect answer limit.
-     *
-     * @return the incorrect answer limit
-     */
-    public int getIncorrectAnswerLimit() {
-        return incorrectAnswerLimit;
-    }
-
-    /**
-     * Sets incorrect answer limit.
-     *
-     * @param incorrectAnswerLimit the incorrect answer limit
-     */
-    public void setIncorrectAnswerLimit(int incorrectAnswerLimit) {
-        this.incorrectAnswerLimit = incorrectAnswerLimit;
-    }
-
-    /**
-     * Gets hints.
-     *
-     * @return the set of {@link HintForTrainingLevelViewDTO}s
-     */
-    public Set<HintForTrainingLevelViewDTO> getHints() {
-        return hints;
-    }
-
-    /**
-     * Sets hints.
-     *
-     * @param hints the set of {@link HintForTrainingLevelViewDTO}s
-     */
-    public void setHints(Set<HintForTrainingLevelViewDTO> hints) {
-        this.hints = hints;
-    }
-
-    @Override
-    public String toString() {
-        return "TrainingLevelViewDTO{" +
-                "content='" + content + '\'' +
-                ", solutionPenalized=" + solutionPenalized +
-                ", estimatedDuration=" + estimatedDuration +
-                ", incorrectAnswerLimit=" + incorrectAnswerLimit +
-                ", hints=" + hints +
-                '}';
-    }
 }

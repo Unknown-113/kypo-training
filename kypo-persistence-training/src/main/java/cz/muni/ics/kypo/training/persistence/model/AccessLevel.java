@@ -1,12 +1,14 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
 import javax.persistence.*;
-import java.util.Objects;
+import lombok.*;
 
 /**
  * Class specifying Abstract level as access level.
  * Access levels contain instructions on how to connect to the virtual machines.
  */
+@EqualsAndHashCode
+@ToString
 @Entity
 @Table(name = "access_level")
 @PrimaryKeyJoinColumn(name = "id")
@@ -74,29 +76,5 @@ public class AccessLevel extends AbstractLevel {
      */
     public void setLocalContent(String localContent) {
         this.localContent = localContent;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AccessLevel)) return false;
-        if (!super.equals(o)) return false;
-        AccessLevel trainingLevel = (AccessLevel) o;
-        return Objects.equals(getCloudContent(), trainingLevel.getCloudContent()) &&
-               Objects.equals(getLocalContent(), trainingLevel.getLocalContent());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getCloudContent(), getLocalContent());
-    }
-
-    @Override
-    public String toString() {
-        return "AccessLevel{" +
-                "passkey='" + passkey + '\'' +
-                ", cloudContent='" + cloudContent + '\'' +
-                ", localContent='" + localContent + '\'' +
-                '}';
     }
 }

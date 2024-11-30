@@ -1,10 +1,11 @@
 package cz.muni.ics.kypo.training.persistence.model.detection;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
+@EqualsAndHashCode
+@ToString
 @Entity
 @Table(name = "no_commands_detection_event")
 @PrimaryKeyJoinColumn(name = "id")
@@ -18,23 +19,4 @@ import java.util.Objects;
                 query = "SELECT ncde FROM NoCommandsDetectionEvent ncde WHERE ncde.cheatingDetectionId = :cheatingDetectionId"
         )
 })
-public class NoCommandsDetectionEvent extends AbstractDetectionEvent {
-
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NoCommandsDetectionEvent)) return false;
-        if (!super.equals(o)) return false;
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode());
-    }
-
-    @Override
-    public String toString() {
-        return "NoCommandsDetectionEvent{" +
-                '}';
-    }
-}
+public class NoCommandsDetectionEvent extends AbstractDetectionEvent { }

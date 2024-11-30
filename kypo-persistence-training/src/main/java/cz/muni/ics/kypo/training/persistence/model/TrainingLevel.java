@@ -4,11 +4,15 @@ import cz.muni.ics.kypo.training.persistence.converters.ReferenceSolutionConvert
 
 import javax.persistence.*;
 import java.util.*;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Class specifying Abstract level as training level.
  * Training levels contain tasks for trainees to solve.
  */
+@EqualsAndHashCode
+@ToString
 @Entity
 @Table(name = "training_level")
 @PrimaryKeyJoinColumn(name = "id")
@@ -320,33 +324,5 @@ public class TrainingLevel extends AbstractLevel {
      */
     public void setCommandsRequired(boolean commandsRequired) {
         this.commandsRequired = commandsRequired;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TrainingLevel)) return false;
-        if (!super.equals(o)) return false;
-        TrainingLevel trainingLevel = (TrainingLevel) o;
-        return Objects.equals(getContent(), trainingLevel.getContent()) &&
-                Objects.equals(getSolution(), trainingLevel.getSolution());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getContent(), getSolution());
-    }
-
-    @Override
-    public String toString() {
-        return "TrainingLevel{" +
-                "answer='" + answer + '\'' +
-                ", content='" + content + '\'' +
-                ", solution='" + solution + '\'' +
-                ", solutionPenalized=" + solutionPenalized +
-                ", incorrectAnswerLimit=" + incorrectAnswerLimit +
-                ", variantAnswers=" + variantAnswers +
-                ", commandsRequired=" + commandsRequired +
-                '}';
     }
 }

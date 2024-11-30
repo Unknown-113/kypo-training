@@ -2,8 +2,10 @@ package cz.muni.ics.kypo.training.api.dto.visualization.table;
 
 import cz.muni.ics.kypo.training.api.dto.visualization.commons.VisualizationAbstractLevelDTO;
 
-import java.util.Objects;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
 public class TableLevelDTO extends VisualizationAbstractLevelDTO {
     private final Integer wrongAnswers;
     private final Integer hintsTaken;
@@ -14,32 +16,6 @@ public class TableLevelDTO extends VisualizationAbstractLevelDTO {
         this.wrongAnswers = builder.wrongAnswers;
         this.hintsTaken = builder.hintsTaken;
         this.participantLevelScore = builder.score;
-    }
-
-    public Integer getWrongAnswers() {
-        return wrongAnswers;
-    }
-
-    public Integer getHintsTaken() {
-        return hintsTaken;
-    }
-
-    public int getParticipantLevelScore() {
-        return participantLevelScore;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        TableLevelDTO that = (TableLevelDTO) o;
-        return getParticipantLevelScore() == that.getParticipantLevelScore();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getParticipantLevelScore());
     }
 
     public static class TableLevelBuilder extends BaseBuilder<TableLevelDTO, TableLevelDTO.TableLevelBuilder> {

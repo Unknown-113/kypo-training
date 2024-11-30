@@ -1,5 +1,7 @@
 package cz.muni.ics.kypo.training.persistence.model;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.*;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -105,6 +107,8 @@ public class TrainingInstance extends AbstractEntity<Long> {
     private boolean localEnvironment;
     @Column(name = "sandbox_definition_id")
     private Long sandboxDefinitionId;
+    @Column(name = "show_stepper_bar", nullable = false)
+    private boolean showStepperBar;
     @Column(name = "backward_mode", nullable = false)
     private boolean backwardMode;
 
@@ -344,6 +348,24 @@ public class TrainingInstance extends AbstractEntity<Long> {
     }
 
     /**
+     * Gets if stepper bar is shown while in run.
+     *
+     * @return true if bar is shown
+     */
+    public boolean isShowStepperBar() {
+        return showStepperBar;
+    }
+
+    /**
+     * Sets if stepper bar is shown while in run.
+     *
+     * @param showStepperBar true if bar is shown
+     */
+    public void setShowStepperBar(boolean showStepperBar) {
+        this.showStepperBar = showStepperBar;
+    }
+
+    /**
      * Gets if trainee can during training run move back to the previous levels.
      *
      * @return true if backward mode is enabled.
@@ -405,6 +427,7 @@ public class TrainingInstance extends AbstractEntity<Long> {
                 ", localEnvironment='" + localEnvironment + '\'' +
                 ", accessToken='" + accessToken + '\'' +
                 ", sandboxDefinitionId='" + sandboxDefinitionId + '\'' +
+                ", showStepperBar=" + showStepperBar +
                 ", backwardMode='" + backwardMode + '\'' +
                 '}';
     }

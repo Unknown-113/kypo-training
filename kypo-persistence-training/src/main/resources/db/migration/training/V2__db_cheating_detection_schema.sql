@@ -7,6 +7,9 @@ create table abstract_detection_event (
     detected_at timestamp not null,
     participant_count int8 not null,
     detection_event_type text not null,
+    participants text not null,
+    level_order int4,
+    training_run_id int4,
     primary key (id)
 );
 
@@ -49,9 +52,20 @@ create table no_commands_detection_event (
 
 create table forbidden_commands_detection_event (
    id  bigserial not null,
-    forbidden_commands text not null,
+    forbidden_commands text,
+    command_count int8 not null,
     primary key (id),
     foreign key (id) references abstract_detection_event
+);
+
+create table detected_forbidden_command (
+   id bigserial not null,
+    command varchar(255) not null,
+    command_type varchar(255) not null,
+    detection_event_id int8 not null,
+    hostname varchar(255),
+    occurred_at timestamp,
+    primary key (id)
 );
 
 create table cheating_detection (
@@ -75,9 +89,8 @@ create table forbidden_command (
    id  bigserial not null,
     command varchar(255) not null,
     command_type varchar(255) not null,
-    cheating_detection_id int8 not null,
+    cheating_detection_id int8,
     primary key (id),
-    foreign key (cheating_detection_id) references cheating_detection
 );
 
 create table detection_event_participant (
@@ -88,5 +101,6 @@ create table detection_event_participant (
     participant_name varchar(255),
     solved_in_time int8,
     detection_event_id int8 not null,
+    cheating_detection_id int8 not null,
     primary key (id)
 );

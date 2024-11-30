@@ -452,7 +452,6 @@ public class TrainingDefinitionsIT {
         assertEquals(trainingDefinitionUpdateDTO.getTitle(), updatedDefinition.getTitle());
         assertEquals(trainingDefinitionUpdateDTO.getDescription(), updatedDefinition.getDescription());
         assertEquals(trainingDefinitionUpdateDTO.getState().toString(), updatedDefinition.getState().toString());
-        assertEquals(trainingDefinitionUpdateDTO.isShowStepperBar(), updatedDefinition.isShowStepperBar());
         assertEquals(unreleasedTrainingDefinition.getAuthors(), updatedDefinition.getAuthors());
     }
 
@@ -529,7 +528,6 @@ public class TrainingDefinitionsIT {
         assertTrue(clonedTrainingDefinition.isPresent());
         assertEquals("title", clonedTrainingDefinition.get().getTitle());
         assertEquals(clonedTrainingDefinition.get().getState().toString(), TDState.UNRELEASED.toString());
-        assertEquals(clonedTrainingDefinition.get().isShowStepperBar(), unreleasedTrainingDefinition.isShowStepperBar());
         assertNull(clonedTrainingDefinition.get().getBetaTestingGroup());
     }
 

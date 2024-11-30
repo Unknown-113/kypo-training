@@ -1,1 +1,0 @@
-alter table training_level add column commands_required boolean not null default (true);

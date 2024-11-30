@@ -139,7 +139,7 @@ public class ForbiddenCommandsService {
     }
 
     private void generateForbiddenCommandEvent(CheatingDetection cd, TrainingRun run, LocalDateTime from, LocalDateTime to, Submission currentSubmission) {
-        List<DetectedForbiddenCommand> forbiddenCommands = evaluateForbiddenCommands(cd.getForbiddenCommands(), getSubmittedCommandsFromRunInInterval(run, from, to));
+        List<DetectedForbiddenCommand> forbiddenCommands = evaluateForbiddenCommands(cd.getCommands(), getSubmittedCommandsFromRunInInterval(run, from, to));
         if (!forbiddenCommands.isEmpty()) {
             DetectionEventParticipant participant = extractParticipant(currentSubmission, detectionEventService.getUserFullName(currentSubmission));
             auditForbiddenCommandsEvent(currentSubmission, cd, participant, forbiddenCommands);

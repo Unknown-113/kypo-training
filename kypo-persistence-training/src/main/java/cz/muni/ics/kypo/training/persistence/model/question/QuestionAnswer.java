@@ -2,14 +2,12 @@ package cz.muni.ics.kypo.training.persistence.model.question;
 
 
 import cz.muni.ics.kypo.training.persistence.model.TrainingRun;
-import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-
+import lombok.ToString;
 
 @NamedQueries({
         @NamedQuery(
@@ -21,6 +19,7 @@ import java.util.stream.Collectors;
                         "WHERE q.id = :questionId AND ti.id = :instanceId"
         )
 })
+@ToString
 @Entity
 @Table(name = "question_answer")
 public class QuestionAnswer implements Serializable {
@@ -87,11 +86,4 @@ public class QuestionAnswer implements Serializable {
         this.answers = answers;
     }
 
-    @Override
-    public String toString() {
-        return "{ " +
-                "\"questionId\": " + this.getQuestionAnswerId().getQuestionId() +
-                ", \"answers\": " + this.getAnswers().stream().map(answer -> this.question.getQuestionType() == QuestionType.EMI ? answer : "\"" + answer + "\"").collect(Collectors.toList()) +
-                " }";
-    }
 }

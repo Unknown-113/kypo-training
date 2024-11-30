@@ -6,7 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import lombok.*;
 
+@Getter
+@Setter
+@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtendedMatchingStatementPreviewDTO implements Ordered {
 
@@ -20,46 +24,4 @@ public class ExtendedMatchingStatementPreviewDTO implements Ordered {
     private int order;
     @ApiModelProperty(value = "The order of the user chosen option from the list of extended matching options.", example = "0")
     private Integer userOptionOrder;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    public Integer getUserOptionOrder() {
-        return userOptionOrder;
-    }
-
-    public void setUserOptionOrder(Integer userOptionOrder) {
-        this.userOptionOrder = userOptionOrder;
-    }
-
-    @Override
-    public String toString() {
-        return "ExtendedMatchingStatementPreviewDTO{" +
-                "id=" + id +
-                ", text='" + text + '\'' +
-                ", order=" + order +
-                ", userOptionOrder=" + userOptionOrder +
-                '}';
-    }
 }

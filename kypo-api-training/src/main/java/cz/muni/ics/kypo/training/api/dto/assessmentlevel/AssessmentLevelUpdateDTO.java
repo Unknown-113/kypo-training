@@ -9,17 +9,18 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 /**
  * Encapsulates information needed to update assessment level.
  *
  */
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "AssessmentLevelUpdateDTO", description = "Assessment level to update.")
 @JsonIgnoreProperties(value = { "max_score" })
 public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
@@ -40,108 +41,5 @@ public class AssessmentLevelUpdateDTO extends AbstractLevelUpdateDTO {
 
     public AssessmentLevelUpdateDTO() {
         this.levelType = LevelType.ASSESSMENT_LEVEL;
-    }
-
-    /**
-     * Gets questions.
-     *
-     * @return the questions
-     */
-    public List<QuestionDTO> getQuestions() {
-        return questions;
-    }
-
-    /**
-     * Sets questions.
-     *
-     * @param questions the questions
-     */
-    public void setQuestions(List<QuestionDTO> questions) {
-        this.questions = questions;
-    }
-
-    /**
-     * Gets instructions.
-     *
-     * @return the instructions
-     */
-    public String getInstructions() {
-        return instructions;
-    }
-
-    /**
-     * Sets instructions.
-     *
-     * @param instructions the instructions
-     */
-    public void setInstructions(String instructions) {
-        this.instructions = instructions;
-    }
-
-    /**
-     * Gets assessment type.
-     *
-     * @return the {@link AssessmentType}
-     */
-    public AssessmentType getType() {
-        return type;
-    }
-
-    /**
-     * Sets assessment type.
-     *
-     * @param type the {@link AssessmentType}
-     */
-    public void setType(AssessmentType type) {
-        this.type = type;
-    }
-
-    /**
-     * Gets estimated duration.
-     *
-     * @return the estimated duration
-     */
-    public int getEstimatedDuration() {
-        return estimatedDuration;
-    }
-
-    /**
-     * Sets estimated duration.
-     *
-     * @param estimatedDuration the estimated duration
-     */
-    public void setEstimatedDuration(int estimatedDuration) {
-        this.estimatedDuration = estimatedDuration;
-    }
-
-    /**
-     * Gets minimal possible solve time.
-     *
-     * @return the minimal possible solve time
-     */
-    public Integer getMinimalPossibleSolveTime() {
-        return minimalPossibleSolveTime;
-    }
-
-    /**
-     * Sets minimal possible solve time.
-     *
-     * @param minimalPossibleSolveTime the minimal possible solve time
-     */
-    public void setMinimalPossibleSolveTime(Integer minimalPossibleSolveTime) {
-        this.minimalPossibleSolveTime = minimalPossibleSolveTime;
-    }
-
-    @Override
-    public String toString() {
-        return "AssessmentLevelUpdateDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", levelType=" + levelType +
-                ", instructions='" + instructions + '\'' +
-                ", type=" + type +
-                ", estimatedDuration=" + estimatedDuration +
-                ", minimalPossibleSolveTime=" + minimalPossibleSolveTime +
-                '}';
     }
 }

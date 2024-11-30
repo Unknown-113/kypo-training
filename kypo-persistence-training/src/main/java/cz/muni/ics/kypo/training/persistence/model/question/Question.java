@@ -6,7 +6,12 @@ import cz.muni.ics.kypo.training.persistence.model.enums.QuestionType;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.*;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
 @Entity
 @Table(name = "question")
 public class Question implements Serializable {
@@ -57,75 +62,6 @@ public class Question implements Serializable {
     )
     private List<ExtendedMatchingOption> extendedMatchingOptions = new ArrayList<>();
 
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public QuestionType getQuestionType() {
-        return questionType;
-    }
-
-    public void setQuestionType(QuestionType questionType) {
-        this.questionType = questionType;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    public int getPoints() {
-        return points;
-    }
-
-    public void setPoints(int points) {
-        this.points = points;
-    }
-
-    public int getPenalty() {
-        return penalty;
-    }
-
-    public void setPenalty(int penalty) {
-        this.penalty = penalty;
-    }
-
-    public boolean isAnswerRequired() {
-        return answerRequired;
-    }
-
-    public void setAnswerRequired(boolean answerRequired) {
-        this.answerRequired = answerRequired;
-    }
-
-    public AssessmentLevel getAssessmentLevel() {
-        return assessmentLevel;
-    }
-
-    public void setAssessmentLevel(AssessmentLevel assessmentLevel) {
-        this.assessmentLevel = assessmentLevel;
-    }
-
-    public List<QuestionChoice> getChoices() {
-        return choices;
-    }
-
     public void setChoices(List<QuestionChoice> questionChoices) {
         this.choices = questionChoices;
         this.choices.forEach(choice -> choice.setQuestion(this));
@@ -147,30 +83,5 @@ public class Question implements Serializable {
     public void setExtendedMatchingOptions(List<ExtendedMatchingOption> extendedMatchingOptions) {
         this.extendedMatchingOptions = extendedMatchingOptions;
         this.extendedMatchingOptions.forEach(option -> option.setQuestion(this));
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Question)) return false;
-        Question question = (Question) o;
-        return getOrder() == question.getOrder() &&
-                getQuestionType() == question.getQuestionType() &&
-                Objects.equals(getText(), question.getText());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getQuestionType(), getText(), getOrder());
-    }
-
-    @Override
-    public String toString() {
-        return "Question{" +
-                "id=" + this.getId() +
-                ", questionType=" + this.getQuestionType() +
-                ", text='" + this.getText() + '\'' +
-                ", order=" + this.getOrder() +
-                '}';
     }
 }

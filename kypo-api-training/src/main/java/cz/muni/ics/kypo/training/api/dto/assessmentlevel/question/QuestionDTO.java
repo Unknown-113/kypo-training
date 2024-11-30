@@ -12,7 +12,11 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import lombok.*;
 
+@Getter
+@Setter
+@ToString
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class QuestionDTO {
 
@@ -49,74 +53,10 @@ public class QuestionDTO {
     @ValidOrder
     private List<ExtendedMatchingStatementDTO> extendedMatchingStatements = new ArrayList<>();
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public QuestionType getQuestionType() {
-        return questionType;
-    }
-
-    public void setQuestionType(QuestionType questionType) {
-        this.questionType = questionType;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public int getPoints() {
-        return points;
-    }
-
-    public void setPoints(int points) {
-        this.points = points;
-    }
-
-    public int getPenalty() {
-        return penalty;
-    }
-
-    public void setPenalty(int penalty) {
-        this.penalty = penalty;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    public boolean isAnswerRequired() {
-        return answerRequired;
-    }
-
-    public void setAnswerRequired(boolean answerRequired) {
-        this.answerRequired = answerRequired;
-    }
-
-    public List<QuestionChoiceDTO> getChoices() {
-        return choices;
-    }
-
     public void setChoices(List<QuestionChoiceDTO> choices) {
         this.choices = choices;
         this.choices.sort(Comparator.comparingInt(QuestionChoiceDTO::getOrder));
 
-    }
-
-    public List<ExtendedMatchingOptionDTO> getExtendedMatchingOptions() {
-        return extendedMatchingOptions;
     }
 
     public void setExtendedMatchingOptions(List<ExtendedMatchingOptionDTO> extendedMatchingOptions) {
@@ -124,13 +64,8 @@ public class QuestionDTO {
         this.extendedMatchingOptions.sort(Comparator.comparingInt(ExtendedMatchingOptionDTO::getOrder));
     }
 
-    public List<ExtendedMatchingStatementDTO> getExtendedMatchingStatements() {
-        return extendedMatchingStatements;
-    }
-
     public void setExtendedMatchingStatements(List<ExtendedMatchingStatementDTO> extendedMatchingStatements) {
         this.extendedMatchingStatements = extendedMatchingStatements;
         this.extendedMatchingStatements.sort(Comparator.comparingInt(ExtendedMatchingStatementDTO::getOrder));
     }
-
 }

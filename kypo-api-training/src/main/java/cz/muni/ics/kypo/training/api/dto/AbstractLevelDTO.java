@@ -11,13 +11,17 @@ import cz.muni.ics.kypo.training.api.enums.LevelType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.Objects;
+import lombok.*;
 
 /**
  * Encapsulates information about abstract level.
  * Extended by {@link AssessmentLevelDTO}, {@link TrainingLevelDTO}, {@link AccessLevelDTO} and {@link InfoLevelDTO}
  *
  */
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "AbstractLevelDTO", subTypes = {TrainingLevelDTO.class, AccessLevelDTO.class, InfoLevelDTO.class, AssessmentLevelDTO.class},
         description = "Superclass for classes TrainingLevelDTO, AccessLevelDTO, AssessmentLevelDTO and InfoLevelDTO")
 @JsonSubTypes({
@@ -44,199 +48,5 @@ public class AbstractLevelDTO {
     protected int order;
     @ApiModelProperty(value = "Minimal possible solve time (minutes) that must be taken by the player to solve the level.", example = "5")
     protected Integer minimalPossibleSolveTime;
-
-    /**
-     * Gets id.
-     *
-     * @return the id
-     */
-    public Long getId() {
-        return id;
-    }
-
-    /**
-     * Sets id.
-     *
-     * @param id the id
-     */
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    /**
-     * Gets title.
-     *
-     * @return the title
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Sets title.
-     *
-     * @param title the title
-     */
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    /**
-     * Gets max score.
-     *
-     * @return the max score
-     */
-    public int getMaxScore() {
-        return maxScore;
-    }
-
-    /**
-     * Sets max score.
-     *
-     * @param maxScore the max score
-     */
-    public void setMaxScore(int maxScore) {
-        this.maxScore = maxScore;
-    }
-
-    /**
-     * Gets snapshot hook.
-     *
-     * @return the {@link SnapshotHookDTO}
-     */
-    public SnapshotHookDTO getSnapshotHook() {
-        return snapshotHook;
-    }
-
-    /**
-     * Sets snapshot hook.
-     *
-     * @param snapshotHook the {@link SnapshotHookDTO}
-     */
-    public void setSnapshotHook(SnapshotHookDTO snapshotHook) {
-        this.snapshotHook = snapshotHook;
-    }
-
-    /**
-     * Gets level type.
-     *
-     * @return the {@link LevelType}
-     */
-    public LevelType getLevelType() {
-        return levelType;
-    }
-
-    /**
-     * Sets level type.
-     *
-     * @param levelType the {@link LevelType}
-     */
-    public void setLevelType(LevelType levelType) {
-        this.levelType = levelType;
-    }
-
-    /**
-     * Gets estimated duration.
-     *
-     * @return the estimated duration
-     */
-    public int getEstimatedDuration() {
-        return estimatedDuration;
-    }
-
-    /**
-     * Sets estimated duration.
-     *
-     * @param estimatedDuration the estimated duration
-     */
-    public void setEstimatedDuration(int estimatedDuration) {
-        this.estimatedDuration = estimatedDuration;
-    }
-
-    /**
-     * Gets training definition.
-     *
-     * @return the {@link TrainingDefinitionDTO}
-     */
-    public TrainingDefinitionDTO getTrainingDefinition() {
-        return trainingDefinition;
-    }
-
-    /**
-     * Sets training definition.
-     *
-     * @param trainingDefinition the {@link TrainingDefinitionDTO}
-     */
-    public void setTrainingDefinition(TrainingDefinitionDTO trainingDefinition) {
-        this.trainingDefinition = trainingDefinition;
-    }
-
-    /**
-     * Gets order number of level that is compared with order numbers of other levels associated with same definition.
-     * First level from definition has order of 0
-     *
-     * @return the order
-     */
-    public int getOrder() {
-        return order;
-    }
-
-    /**
-     * Sets order number of level that is compared with order numbers of other levels associated with same definition.
-     * First level from definition has order of 0
-     *
-     * @param order the order
-     */
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    /**
-     * Gets minimal possible solve time.
-     *
-     * @return the minimal possible solve time
-     */
-    public Integer getMinimalPossibleSolveTime() {
-        return minimalPossibleSolveTime;
-    }
-
-    /**
-     * Sets minimal possible solve time.
-     *
-     * @param minimalPossibleSolveTime the minimal possible solve time
-     */
-    public void setMinimalPossibleSolveTime(Integer minimalPossibleSolveTime) {
-        this.minimalPossibleSolveTime = minimalPossibleSolveTime;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (!(obj instanceof AbstractLevelDTO))
-            return false;
-        AbstractLevelDTO other = (AbstractLevelDTO) obj;
-        return Objects.equals(id, other.getId());
-    }
-
-    @Override
-    public String toString() {
-        return "AbstractLevelDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", maxScore=" + maxScore +
-                ", levelType=" + levelType +
-                ", estimatedDuration=" + estimatedDuration +
-                ", order=" + order +
-                ", minimalPossibleSolveTime=" + minimalPossibleSolveTime +
-                '}';
-    }
 }
 

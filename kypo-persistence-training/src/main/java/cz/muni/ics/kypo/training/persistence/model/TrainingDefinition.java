@@ -79,8 +79,6 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, optional = true, cascade = CascadeType.ALL)
     @JoinColumn(name = "beta_testing_group_id", unique = true)
     private BetaTestingGroup betaTestingGroup;
-    @Column(name = "show_stepper_bar", nullable = false)
-    private boolean showStepperBar;
     @Column(name = "estimated_duration", nullable = true)
     private long estimatedDuration;
     @Column(name = "last_edited", nullable = false)
@@ -258,24 +256,6 @@ public class TrainingDefinition extends AbstractEntity<Long> {
     }
 
     /**
-     * Gets if stepper bar is shown while in run.
-     *
-     * @return true if bar is shown
-     */
-    public boolean isShowStepperBar() {
-        return showStepperBar;
-    }
-
-    /**
-     * Sets if stepper bar is shown while in run.
-     *
-     * @param showStepperBar true if bar is shown
-     */
-    public void setShowStepperBar(boolean showStepperBar) {
-        this.showStepperBar = showStepperBar;
-    }
-
-    /**
      * Gets estimated duration in minutes that it should take to complete run based on given Training definition
      *
      * @return the estimated duration
@@ -375,7 +355,6 @@ public class TrainingDefinition extends AbstractEntity<Long> {
                 ", prerequisites=" + Arrays.toString(prerequisites) +
                 ", outcomes=" + Arrays.toString(outcomes) +
                 ", state=" + state +
-                ", showStepperBar=" + showStepperBar +
                 ", estimatedDuration=" + estimatedDuration +
                 ", lastEdited=" + lastEdited +
                 ", createdAt=" + createdAt +

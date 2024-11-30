@@ -7,12 +7,14 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.HashSet;
 import java.util.Set;
-
+import lombok.*;
 
 /**
  * Encapsulates basic information about training level.
  */
-
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "TrainingLevelPreviewDTO", description = "An assignment containing security tasks whose completion yields a answer.", parent = AbstractLevelDTO.class)
 public class TrainingLevelPreviewDTO extends AbstractLevelDTO {
 
@@ -22,40 +24,4 @@ public class TrainingLevelPreviewDTO extends AbstractLevelDTO {
     private Set<TakenHintDTO> hints = new HashSet<>();
     @ApiModelProperty(value = "Instruction how to get answer in training.", example = "This is how you do it")
     private String solution;
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public Set<TakenHintDTO> getHints() {
-        return hints;
-    }
-
-    public void setHints(Set<TakenHintDTO> hints) {
-        this.hints = hints;
-    }
-
-    public String getSolution() {
-        return solution;
-    }
-
-    public void setSolution(String solution) {
-        this.solution = solution;
-    }
-
-    @Override
-    public String toString() {
-        return "TrainingLevelPreviewDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", levelType=" + levelType +
-                ", order=" + order +
-                ", content='" + content + '\'' +
-                ", solution='" + solution + '\'' +
-                '}';
-    }
 }

@@ -4,12 +4,16 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import lombok.*;
 
 /**
  * Analytical dashboard - training level details.
  */
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
 @ApiModel(value = "LevelAnalyticalDashboardDTO", description = "Analytical dashboard - training level details.")
 public class LevelAnalyticalDashboardDTO {
 
@@ -26,9 +30,6 @@ public class LevelAnalyticalDashboardDTO {
     @ApiModelProperty(value = "List of all wrong answers submitted by participants.")
     private Set<String> wrongAnswers = new HashSet<>();
 
-    public LevelAnalyticalDashboardDTO() {
-    }
-
     public LevelAnalyticalDashboardDTO(Long levelId, Integer levelOrder, String levelTitle, String correctAnswer, String answerVariableName) {
         this.levelId = levelId;
         this.levelOrder = levelOrder;
@@ -36,67 +37,7 @@ public class LevelAnalyticalDashboardDTO {
         this.correctAnswer = correctAnswer == null ? answerVariableName : correctAnswer;
     }
 
-    public Long getLevelId() {
-        return levelId;
-    }
-
-    public void setLevelId(Long levelId) {
-        this.levelId = levelId;
-    }
-
-    public Integer getLevelOrder() {
-        return levelOrder;
-    }
-
-    public void setLevelOrder(Integer levelOrder) {
-        this.levelOrder = levelOrder;
-    }
-
-    public String getLevelTitle() {
-        return levelTitle;
-    }
-
-    public void setLevelTitle(String levelTitle) {
-        this.levelTitle = levelTitle;
-    }
-
-    public String getCorrectAnswer() {
-        return correctAnswer;
-    }
-
-    public void setCorrectAnswer(String correctAnswer) {
-        this.correctAnswer = correctAnswer;
-    }
-
-    public int getCorrectAnswersSubmitted() {
-        return correctAnswersSubmitted;
-    }
-
-    public void setCorrectAnswersSubmitted(int correctAnswersSubmitted) {
-        this.correctAnswersSubmitted = correctAnswersSubmitted;
-    }
-
     public void addCorrectAnswerSubmit() {
         this.correctAnswersSubmitted++;
-    }
-
-    public Set<String> getWrongAnswers() {
-        return wrongAnswers;
-    }
-
-    public void setWrongAnswers(Set<String> wrongAnswers) {
-        this.wrongAnswers = wrongAnswers;
-    }
-
-    @Override
-    public String toString() {
-        return "LevelAnalyticalDashboardDTO{" +
-                "levelId=" + levelId +
-                ", levelOrder=" + levelOrder +
-                ", levelTitle='" + levelTitle + '\'' +
-                ", correctAnswer='" + correctAnswer + '\'' +
-                ", correctAnswersSubmitted=" + correctAnswersSubmitted +
-                ", wrongAnswers=" + wrongAnswers +
-                '}';
     }
 }

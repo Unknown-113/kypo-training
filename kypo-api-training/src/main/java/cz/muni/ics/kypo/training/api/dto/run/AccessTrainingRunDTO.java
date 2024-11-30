@@ -11,10 +11,14 @@ import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.*;
 
 /**
  * Encapsulates information about Training Run, intended as a response to run accessing.
  */
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "AccessTrainingRunDTO", description = "Just accessed training run.")
 public class AccessTrainingRunDTO {
 
@@ -47,251 +51,11 @@ public class AccessTrainingRunDTO {
     private boolean isLevelAnswered;
 
     /**
-     * Gets training run id.
-     *
-     * @return the training run id
-     */
-    public Long getTrainingRunID() {
-        return trainingRunID;
-    }
-
-    /**
-     * Sets training run id.
-     *
-     * @param trainingRunID the training run id
-     */
-    public void setTrainingRunID(Long trainingRunID) {
-        this.trainingRunID = trainingRunID;
-    }
-
-    /**
-     * Gets if stepper bar is shown while in run.
-     *
-     * @return true if bar is shown
-     */
-    public boolean isShowStepperBar() {
-        return showStepperBar;
-    }
-
-    /**
-     * Sets if stepper bar is shown while in run.
-     *
-     * @param showStepperBar true if bar is shown
-     */
-    public void setShowStepperBar(boolean showStepperBar) {
-        this.showStepperBar = showStepperBar;
-    }
-
-    /**
-     * Gets sandbox instance id.
-     *
-     * @return the sandbox instance id
-     */
-    public String getSandboxInstanceRefId() {
-        return sandboxInstanceRefId;
-    }
-
-    /**
-     * Sets sandbox instance id.
-     *
-     * @param sandboxInstanceRefId the sandbox instance id
-     */
-    public void setSandboxInstanceRefId(String sandboxInstanceRefId) {
-        this.sandboxInstanceRefId = sandboxInstanceRefId;
-    }
-
-    /**
-     * Gets current level.
-     *
-     * @return the {@link AbstractLevelDTO}
-     */
-    public AbstractLevelDTO getAbstractLevelDTO() {
-        return abstractLevelDTO;
-    }
-
-    /**
-     * Sets current level.
-     *
-     * @param abstractLevelDTO the {@link AbstractLevelDTO}
-     */
-    public void setAbstractLevelDTO(AbstractLevelDTO abstractLevelDTO) {
-        this.abstractLevelDTO = abstractLevelDTO;
-    }
-
-    /**
-     * Gets basic info about all levels.
-     *
-     * @return the list of {@link BasicLevelInfoDTO}
-     */
-    public List<BasicLevelInfoDTO> getInfoAboutLevels() {
-        return infoAboutLevels;
-    }
-
-    /**
-     * Sets basic info about all levels.
-     *
-     * @param infoAboutLevels the list of {@link BasicLevelInfoDTO}
-     */
-    public void setInfoAboutLevels(List<BasicLevelInfoDTO> infoAboutLevels) {
-        this.infoAboutLevels = infoAboutLevels;
-    }
-
-    /**
-     * Gets instance id.
-     *
-     * @return the instance id
-     */
-    public Long getInstanceId() {
-        return instanceId;
-    }
-
-    /**
-     * Sets instance id.
-     *
-     * @param instanceId the instance id
-     */
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
-    }
-
-    /**
-     * Gets start time.
-     *
-     * @return the start time
-     */
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-
-    /**
-     * Sets start time.
-     *
-     * @param startTime the start time
-     */
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    /**
-     * Gets taken solution.
-     *
-     * @return the taken solution
-     */
-    public String getTakenSolution() {
-        return takenSolution;
-    }
-
-    /**
-     * Sets taken solution.
-     *
-     * @param takenSolution the taken solution
-     */
-    public void setTakenSolution(String takenSolution) {
-        this.takenSolution = takenSolution;
-    }
-
-    /**
-     * Gets taken hints.
-     *
-     * @return the list of {@link TakenHintDTO}
-     */
-    public List<TakenHintDTO> getTakenHints() {
-        return takenHints;
-    }
-
-    /**
-     * Sets taken hints.
-     *
-     * @param takenHints the list of {@link TakenHintDTO}
-     */
-    public void setTakenHints(List<TakenHintDTO> takenHints) {
-        this.takenHints = takenHints;
-    }
-
-    /**
      * Add taken hint to list of taken hints.
      *
      * @param takenHintDTO the {@link TakenHintDTO}
      */
     public void addTakenHint(TakenHintDTO takenHintDTO) {
         this.takenHints.add(takenHintDTO);
-    }
-
-    /**
-     * Gets if local environment (local sandboxes) is used for the training runs.
-     *
-     * @return true if local environment is enabled
-     */
-    public boolean isLocalEnvironment() {
-        return localEnvironment;
-    }
-
-    /**
-     * Sets if local environment (local sandboxes) is used for the training runs.
-     *
-     * @param localEnvironment true if local environment is enabled.
-     */
-    public void setLocalEnvironment(boolean localEnvironment) {
-        this.localEnvironment = localEnvironment;
-    }
-
-    /**
-     * Gets sandbox definition id.
-     *
-     * @return the sandbox definition id
-     */
-    public Long getSandboxDefinitionId() {
-        return sandboxDefinitionId;
-    }
-
-    /**
-     * Sets sandbox definition id.
-     *
-     * @param sandboxDefinitionId the sandbox definition id
-     */
-    public void setSandboxDefinitionId(Long sandboxDefinitionId) {
-        this.sandboxDefinitionId = sandboxDefinitionId;
-    }
-
-    /**
-     * Gets if trainee can during training run move back to the previous levels.
-     *
-     * @return true if backward mode is enabled.
-     */
-    public boolean isBackwardMode() {
-        return backwardMode;
-    }
-
-    /**
-     * Sets if trainee can during training run move back to the previous levels.
-     *
-     * @param backwardMode true if backward mode is enabled.
-     */
-    public void setBackwardMode(boolean backwardMode) {
-        this.backwardMode = backwardMode;
-    }
-
-    public boolean isLevelAnswered() {
-        return isLevelAnswered;
-    }
-
-    public void setLevelAnswered(boolean levelAnswered) {
-        isLevelAnswered = levelAnswered;
-    }
-
-    @Override
-    public String toString() {
-        return "AccessTrainingRunDTO{" +
-                "trainingRunID=" + trainingRunID +
-                ", showStepperBar=" + showStepperBar +
-                ", sandboxInstanceRefId=" + sandboxInstanceRefId +
-                ", instanceId=" + instanceId +
-                ", startTime=" + startTime +
-                ", takenSolution='" + takenSolution + '\'' +
-                ", localEnvironment=" + localEnvironment +
-                ", sandboxDefinitionId=" + sandboxDefinitionId +
-                ", backwardMode=" + backwardMode +
-                ", isLevelAnswered=" + isLevelAnswered +
-                '}';
     }
 }

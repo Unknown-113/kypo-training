@@ -6,8 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-import java.util.*;
+import lombok.*;
 
+@Getter
+@Setter
+@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtendedMatchingStatementDTO implements Ordered {
 
@@ -22,46 +25,4 @@ public class ExtendedMatchingStatementDTO implements Ordered {
     @ApiModelProperty(value = "The order of the correct option in the list of extended matching options.", example = "0")
     @Min(value = 0, message = "{emiStatement.correctOptionOrder.Min.message}")
     private Integer correctOptionOrder;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
-    }
-
-    public Integer getCorrectOptionOrder() {
-        return correctOptionOrder;
-    }
-
-    public void setCorrectOptionOrder(Integer correctOptionOrder) {
-        this.correctOptionOrder = correctOptionOrder;
-    }
-
-    @Override
-    public String toString() {
-        return "ExtendedMatchingStatementDTO{" +
-                "id=" + id +
-                ", text='" + text + '\'' +
-                ", order=" + order +
-                ", correctOptionOrder=" + correctOptionOrder +
-                '}';
-    }
 }

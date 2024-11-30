@@ -9,13 +9,17 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import lombok.*;
 
 /**
  * Encapsulates information about abstract level.
  * Extended by {@link AssessmentLevelImportDTO}, {@link TrainingLevelImportDTO}, {@link AccessLevelImportDTO} and {@link InfoLevelImportDTO}
  *
  */
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
 @ApiModel(value = "AbstractLevelImportDTO", subTypes = {TrainingLevelImportDTO.class, AccessLevelImportDTO.class, InfoLevelImportDTO.class, AssessmentLevelImportDTO.class},
 		description = "Superclass for classes TrainingLevelImportDTO, AccessLevelImportDTO, AssessmentLevelImportDTO and InfoLevelImportDTO")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "level_type", visible = true)
@@ -43,113 +47,4 @@ public class AbstractLevelImportDTO {
 	protected Integer estimatedDuration;
 	@ApiModelProperty(value = "Minimal possible solve time (minutes) that must be taken by the player to solve the level.", example = "5")
 	protected Integer minimalPossibleSolveTime;
-
-	/**
-	 * Instantiates a new Abstract level import dto.
-	 */
-	public AbstractLevelImportDTO() {
-	}
-
-	/**
-	 * Gets title.
-	 *
-	 * @return the title
-	 */
-	public String getTitle() {
-		return title;
-	}
-
-	/**
-	 * Sets title.
-	 *
-	 * @param title the title
-	 */
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	/**
-	 * Gets level type.
-	 *
-	 * @return the {@link LevelType}
-	 */
-	public LevelType getLevelType() {
-		return levelType;
-	}
-
-	/**
-	 * Sets level type.
-	 *
-	 * @param levelType the {@link LevelType}
-	 */
-	public void setLevelType(LevelType levelType) {
-		this.levelType = levelType;
-	}
-
-	/**
-	 * Gets order number of level that is compared with order numbers of other levels associated with same definition.
-	 * First level from definition has order of 0
-	 *
-	 * @return the order
-	 */
-	public Integer getOrder() {
-		return order;
-	}
-
-	/**
-	 * Sets order number of level that is compared with order numbers of other levels associated with same definition.
-	 * First level from definition has order of 0
-	 *
-	 * @param order the order
-	 */
-	public void setOrder(Integer order) {
-		this.order = order;
-	}
-
-	/**
-	 * Gets estimated duration.
-	 *
-	 * @return the estimated duration
-	 */
-	public Integer getEstimatedDuration() {
-		return estimatedDuration;
-	}
-
-	/**
-	 * Sets estimated duration.
-	 *
-	 * @param estimatedDuration the estimated duration
-	 */
-	public void setEstimatedDuration(Integer estimatedDuration) {
-		this.estimatedDuration = estimatedDuration;
-	}
-
-	/**
-	 * Gets minimal possible solve time.
-	 *
-	 * @return the minimal possible solve time
-	 */
-	public Integer getMinimalPossibleSolveTime() {
-		return minimalPossibleSolveTime;
-	}
-
-	/**
-	 * Sets minimal possible solve time.
-	 *
-	 * @param minimalPossibleSolveTime the minimal possible solve time
-	 */
-	public void setMinimalPossibleSolveTime(Integer minimalPossibleSolveTime) {
-		this.minimalPossibleSolveTime = minimalPossibleSolveTime;
-	}
-
-	@Override
-	public String toString() {
-		return "AbstractLevelImportDTO{" +
-				"title='" + title + '\'' +
-				", levelType=" + levelType +
-				", order=" + order +
-				", estimatedDuration=" + estimatedDuration +
-				", minimalPossibleSolveTime=" + minimalPossibleSolveTime +
-				'}';
-	}
 }
