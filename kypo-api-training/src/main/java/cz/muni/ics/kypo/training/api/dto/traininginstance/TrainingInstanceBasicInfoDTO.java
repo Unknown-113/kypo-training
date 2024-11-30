@@ -6,11 +6,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.time.LocalDateTime;
+import lombok.*;
 
 /**
  * Encapsulates information about Training Instance
  *
  */
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "TrainingInstanceBasicInfoDTO")
 public class TrainingInstanceBasicInfoDTO {
 
@@ -34,91 +38,4 @@ public class TrainingInstanceBasicInfoDTO {
     private Long sandboxDefinitionId;
     @ApiModelProperty(value = "Indicates if trainee can during training run move to the previous already solved levels.", example = "true")
     private boolean backwardMode;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    public Long getPoolId() {
-        return poolId;
-    }
-
-    public void setPoolId(Long poolId) {
-        this.poolId = poolId;
-    }
-
-    public boolean isLocalEnvironment() {
-        return localEnvironment;
-    }
-
-    public void setLocalEnvironment(boolean localEnvironment) {
-        this.localEnvironment = localEnvironment;
-    }
-
-    public Long getSandboxDefinitionId() {
-        return sandboxDefinitionId;
-    }
-
-    public void setSandboxDefinitionId(Long sandboxDefinitionId) {
-        this.sandboxDefinitionId = sandboxDefinitionId;
-    }
-
-    public boolean isBackwardMode() {
-        return backwardMode;
-    }
-
-    public void setBackwardMode(boolean backwardMode) {
-        this.backwardMode = backwardMode;
-    }
-
-    @Override
-    public String toString() {
-        return "TrainingInstanceBasicInfoDTO{" +
-                "id=" + id +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", title='" + title + '\'' +
-                ", accessToken='" + accessToken + '\'' +
-                ", poolId=" + poolId +
-                ", localEnvironment=" + localEnvironment +
-                ", sandboxDefinitionId=" + sandboxDefinitionId +
-                ", backwardMode=" + backwardMode +
-                '}';
-    }
 }
