@@ -4,8 +4,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
-import java.util.Objects;
+import lombok.*;
 
+@EqualsAndHashCode
+@Getter
+@Setter
+@ToString
 @ApiModel(value = "TrainingDefinitionMitreTechniqueDTO", description = "Represent training definition and all used mitre techniques.")
 public class TrainingDefinitionMitreTechniquesDTO {
 
@@ -17,59 +21,4 @@ public class TrainingDefinitionMitreTechniquesDTO {
     private boolean played;
     @ApiModelProperty(value = "List of MITRE technique keys.", example = "[TA0043.T1595, TA0042.T1588.006]")
     private List<String> mitreTechniques;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public boolean isPlayed() {
-        return played;
-    }
-
-    public void setPlayed(boolean played) {
-        this.played = played;
-    }
-
-    public List<String> getMitreTechniques() {
-        return mitreTechniques;
-    }
-
-    public void setMitreTechniques(List<String> mitreTechniques) {
-        this.mitreTechniques = mitreTechniques;
-    }
-
-    @Override
-    public String toString() {
-        return "TrainingDefinitionMitreTechniquesDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", played=" + played +
-                ", mitreTechniques=" + mitreTechniques +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TrainingDefinitionMitreTechniquesDTO that = (TrainingDefinitionMitreTechniquesDTO) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getTitle(), that.getTitle());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId(), getTitle());
-    }
 }
