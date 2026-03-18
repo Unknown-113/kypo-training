@@ -441,15 +441,39 @@ public class TrainingRunService {
      * @throws EntityNotFoundException training run is not found.
      * @throws BadRequestException     the current level of training run is not training level.
      */
-    public boolean isCorrectAnswer(Long runId, String answer) {
-        TrainingRun trainingRun = findByIdWithLevel(runId);
-        AbstractLevel level = trainingRun.getCurrentLevel();
-        if (level.getClass() != TrainingLevel.class) {
-            throw new BadRequestException("Current level is not training level and does not have answer.");
-        } else if (trainingRun.isLevelAnswered()) {
-                throw new EntityConflictException(new EntityErrorDetail(TrainingRun.class, "id", Long.class, runId, "The answer of the current level of training run has been already corrected."));
+
+    public boolean isCorrectAnswer(Long runId, String submittedAnswer) {
+        // 1. Lấy thông tin Run từ Database
+        TrainingRun trainingRun = findById(runId);
+    
+        // 2. Lấy ID người chơi để làm Seed
+        Long userId = trainingRun.getParticipantRef().getUserRefId();
+        String secret = "KYPO_OJT_SECRET_2026"; // Chuỗi này phải khớp với máy ảo
+
+        // 3. Lấy số phút hiện tại từ Unix Timestamp
+        long currentMinute = System.currentTimeMillis() / 60000;
+
+        // 4. Kiểm tra: Chấp nhận flag của phút hiện tại (T) và phút trước đó (T-1) để bù sai số
+        return validateDynamicFlag(submittedAnswer, userId, currentMinute, secret) || 
+               validateDynamicFlag(submittedAnswer, userId, currentMinute - 1, secret);
+    }
+
+    // Thêm hàm bổ trợ này vào trong class TrainingRunService
+    private boolean validateDynamicFlag(String submitted, Long userId, long minute, String secret) {
+        try {
+            String rawData = userId + ":" + secret + ":" + minute;
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hashBytes = md.digest(rawData.getBytes(StandardCharsets.UTF_8));
+        
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            String expectedFlag = "FLAG_" + sb.toString().substring(0, 8);
+            return Objects.equals(submitted, expectedFlag);
+        } catch (Exception e) {
+            return false;
         }
-        return evaluateTrainingLevelAnswer(trainingRun, answer);
     }
 
     private boolean evaluateTrainingLevelAnswer(TrainingRun trainingRun, String answer) {
