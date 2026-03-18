@@ -443,25 +443,21 @@ public class TrainingRunService {
      */
 
     public boolean isCorrectAnswer(Long runId, String submittedAnswer) {
-        // 1. Lấy thông tin Run từ Database
-        TrainingRun trainingRun = findById(runId);
-    
-        // 2. Lấy ID người chơi để làm Seed
-        Long userId = trainingRun.getParticipantRef().getUserRefId();
-        String secret = "KYPO_OJT_SECRET_2026"; // Chuỗi này phải khớp với máy ảo
+        // Secret này phải khớp 100% với file api.py trong Playbook
+        String secret = "KYPO_OJT_SECRET_2026"; 
 
-        // 3. Lấy số phút hiện tại từ Unix Timestamp
+        // Lấy số phút hiện tại từ Unix Timestamp
         long currentMinute = System.currentTimeMillis() / 60000;
 
-        // 4. Kiểm tra: Chấp nhận flag của phút hiện tại (T) và phút trước đó (T-1) để bù sai số
-        return validateDynamicFlag(submittedAnswer, userId, currentMinute, secret) || 
-               validateDynamicFlag(submittedAnswer, userId, currentMinute - 1, secret);
+        // Kiểm tra Flag phút hiện tại (T) và phút trước đó (T-1)
+        return validateDynamicFlag(submittedAnswer, currentMinute, secret) || 
+               validateDynamicFlag(submittedAnswer, currentMinute - 1, secret);
     }
 
-    // Thêm hàm bổ trợ này vào trong class TrainingRunService
-    private boolean validateDynamicFlag(String submitted, Long userId, long minute, String secret) {
+    private boolean validateDynamicFlag(String submitted, long minute, String secret) {
         try {
-            String rawData = userId + ":" + secret + ":" + minute;
+            String rawData = secret + ":" + minute;
+        
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] hashBytes = md.digest(rawData.getBytes(StandardCharsets.UTF_8));
         
